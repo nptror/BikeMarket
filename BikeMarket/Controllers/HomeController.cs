@@ -15,7 +15,9 @@ namespace BikeMarket.Controllers
 
         public IActionResult Index()
         {
-            return View();
+           
+                return RedirectToAction("Login", "Users");
+           
         }
 
         public IActionResult Privacy()
