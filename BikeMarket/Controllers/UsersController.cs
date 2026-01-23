@@ -168,7 +168,7 @@ namespace BikeMarket.Controllers
             }
 
             //chuyển qua trang view Index
-            return RedirectToAction(nameof(Index));
+            return RedirectToAction("Index", "Chat");
         }
 
         // GET: Users/Edit/5

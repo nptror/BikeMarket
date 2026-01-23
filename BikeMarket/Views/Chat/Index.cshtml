@@ -1,0 +1,77 @@
+﻿<h2>SignalR Chat</h2>
+
+<div style="display:flex; height:500px">
+
+    <!-- ===== LEFT: CONVERSATIONS ===== -->
+    <div style="width:30%; border-right:1px solid #ccc; padding:10px">
+        <ul id="conversationList"></ul>
+    </div>
+
+    <!-- ===== RIGHT: CHAT ===== -->
+    <div style="width:70%; padding:10px">
+        <ul id="messagesList" style="height:400px; overflow-y:auto"></ul>
+
+        <input type="text" id="messageInput" placeholder="Type a message..."
+               style="width:80%" />
+        <button onclick="sendMessage()">Send</button>
+    </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/7.0.5/signalr.min.js"></script>
+
+<script>
+    let currentConversationId = null;
+
+    const connection = new signalR.HubConnectionBuilder()
+        .withUrl("/chatHub")
+        .build();
+
+    connection.on("ReceiveMessage", function (conversationId, senderId, message) {
+        if (conversationId !== currentConversationId) return;
+
+        const li = document.createElement("li");
+        li.textContent = `${senderId}: ${message}`;
+        document.getElementById("messagesList").appendChild(li);
+    });
+
+    connection.start().then(loadConversations);
+
+    function loadConversations() {
+        fetch("/api/chat/conversations")
+            .then(res => res.json())
+            .then(data => {
+                const ul = document.getElementById("conversationList");
+                ul.innerHTML = "";
+
+                data.forEach(c => {
+                    const li = document.createElement("li");
+                    li.textContent = `Vehicle ${c.vehicleId}`;
+                    li.style.cursor = "pointer";
+                    li.onclick = () => openConversation(c.id);
+                    ul.appendChild(li);
+                });
+            });
+    }
+
+    function openConversation(conversationId) {
+        currentConversationId = conversationId;
+        document.getElementById("messagesList").innerHTML = "";
+
+        fetch(`/api/chat/messages/${conversationId}`)
+            .then(res => res.json())
+            .then(data => {
+                data.forEach(m => {
+                    const li = document.createElement("li");
+                    li.textContent = `${m.senderId}: ${m.content}`;
+                    document.getElementById("messagesList").appendChild(li);
+                });
+            });
+    }
+
+    function sendMessage() {
+        const message = document.getElementById("messageInput").value;
+        connection.invoke("SendMessage", currentConversationId, message);
+        document.getElementById("messageInput").value = "";
+    }
+</script>
+    

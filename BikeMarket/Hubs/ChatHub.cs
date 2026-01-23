@@ -9,9 +9,6 @@ namespace BikeMarket.Hubs
     {
         private readonly VehicleMarketContext _context;
 
-        // Map userId -> connectionId (demo level)
-        private static Dictionary<int, string> UserConnections = new();
-
         public ChatHub(VehicleMarketContext context)
         {
             _context = context;
@@ -19,61 +16,57 @@ namespace BikeMarket.Hubs
 
         public override async Task OnConnectedAsync()
         {
-            var userId = int.Parse(Context.User.FindFirst(ClaimTypes.NameIdentifier).Value);
-            UserConnections[userId] = Context.ConnectionId;
-
+            var userId = Context.User.FindFirstValue(ClaimTypes.NameIdentifier);
+            await Groups.AddToGroupAsync(Context.ConnectionId, $"user-{userId}");
             await base.OnConnectedAsync();
         }
 
-        public override async Task OnDisconnectedAsync(Exception exception)
-        {
-            var userId = int.Parse(Context.User.FindFirst(ClaimTypes.NameIdentifier).Value);
-            UserConnections.Remove(userId);
-
-            await base.OnDisconnectedAsync(exception);
-        }
-
         // ================= SEND MESSAGE =================
-        public async Task SendMessage(int conversationId, string message)
+        public async Task SendMessage(int conversationId, string content)
         {
-            var senderId = int.Parse(Context.User.FindFirst(ClaimTypes.NameIdentifier).Value);
+            var senderId = int.Parse(Context.User.FindFirstValue(ClaimTypes.NameIdentifier));
 
             var conversation = await _context.Conversations
                 .FirstOrDefaultAsync(c => c.Id == conversationId);
 
             if (conversation == null) return;
 
-            // Lưu message DB
-            var msg = new Message
+            var message = new Message
             {
                 ConversationId = conversationId,
                 SenderId = senderId,
-                Content = message,
+                Content = content,
+                Status = "sent",
                 SentAt = DateTime.Now
             };
 
-            _context.Messages.Add(msg);
-
-            // Update last message
-            conversation.LastMessageAt = DateTime.Now;
-            conversation.LastMessageText = message;
-
+            _context.Messages.Add(message);
             await _context.SaveChangesAsync();
 
-            // Xác định người nhận
+            // Update conversation
+            conversation.LastMessageId = message.Id;
+            conversation.LastMessageAt = message.SentAt;
+
+            // xác định receiver
             int receiverId = senderId == conversation.BuyerId
                 ? conversation.SellerId
                 : conversation.BuyerId;
 
-            // Gửi realtime
-            if (UserConnections.ContainsKey(receiverId))
-            {
-                await Clients.Client(UserConnections[receiverId])
-                    .SendAsync("ReceiveMessage", senderId, message);
-            }
+            if (senderId == conversation.BuyerId)
+                conversation.SellerUnreadCount++;
+            else
+                conversation.BuyerUnreadCount++;
 
-            // Echo lại cho người gửi
-            await Clients.Caller.SendAsync("ReceiveMessage", senderId, message);
+            await _context.SaveChangesAsync();
+
+            // gửi realtime cho cả 2
+            await Clients.Group($"user-{receiverId}")
+                .SendAsync("ReceiveMessage",
+                    conversationId, senderId, content);
+
+            await Clients.Group($"user-{senderId}")
+                .SendAsync("ReceiveMessage",
+                    conversationId, senderId, content);
         }
     }
 }

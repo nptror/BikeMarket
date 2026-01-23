@@ -33,7 +33,9 @@ public partial class VehicleMarketContext : DbContext
 
     public virtual DbSet<Wishlist> Wishlists { get; set; }
 
-    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder) { }
+    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+#warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see https://go.microsoft.com/fwlink/?LinkId=723263.
+        => optionsBuilder.UseSqlServer("Server=localhost;Database=VehicleMarket;User Id=sa;Password=12345;TrustServerCertificate=True;");
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -67,18 +69,21 @@ public partial class VehicleMarketContext : DbContext
 
         modelBuilder.Entity<Conversation>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("PK__conversa__3213E83F4CFB6A9D");
+            entity.HasKey(e => e.Id).HasName("PK__conversa__3213E83F6FB7AB41");
 
             entity.ToTable("conversations");
 
-            entity.HasIndex(e => new { e.BuyerId, e.LastMessageAt }, "IX_conversations_buyer");
+            entity.HasIndex(e => new { e.BuyerId, e.LastMessageAt }, "IX_conversations_buyer_last").IsDescending(false, true);
 
-            entity.HasIndex(e => new { e.SellerId, e.LastMessageAt }, "IX_conversations_seller");
+            entity.HasIndex(e => new { e.SellerId, e.LastMessageAt }, "IX_conversations_seller_last").IsDescending(false, true);
 
             entity.HasIndex(e => e.VehicleId, "IX_conversations_vehicle");
 
+            entity.HasIndex(e => new { e.BuyerId, e.SellerId, e.VehicleId }, "UX_conversations_unique").IsUnique();
+
             entity.Property(e => e.Id).HasColumnName("id");
             entity.Property(e => e.BuyerId).HasColumnName("buyer_id");
+            entity.Property(e => e.BuyerUnreadCount).HasColumnName("buyer_unread_count");
             entity.Property(e => e.CreatedAt)
                 .HasDefaultValueSql("(getdate())")
                 .HasColumnType("datetime")
@@ -86,14 +91,19 @@ public partial class VehicleMarketContext : DbContext
             entity.Property(e => e.LastMessageAt)
                 .HasColumnType("datetime")
                 .HasColumnName("last_message_at");
-            entity.Property(e => e.LastMessageText).HasColumnName("last_message_text");
+            entity.Property(e => e.LastMessageId).HasColumnName("last_message_id");
             entity.Property(e => e.SellerId).HasColumnName("seller_id");
+            entity.Property(e => e.SellerUnreadCount).HasColumnName("seller_unread_count");
             entity.Property(e => e.VehicleId).HasColumnName("vehicle_id");
 
             entity.HasOne(d => d.Buyer).WithMany(p => p.ConversationBuyers)
                 .HasForeignKey(d => d.BuyerId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK_conversations_buyer");
+
+            entity.HasOne(d => d.LastMessage).WithMany(p => p.Conversations)
+                .HasForeignKey(d => d.LastMessageId)
+                .HasConstraintName("FK_conversations_last_message");
 
             entity.HasOne(d => d.Seller).WithMany(p => p.ConversationSellers)
                 .HasForeignKey(d => d.SellerId)
@@ -108,32 +118,47 @@ public partial class VehicleMarketContext : DbContext
 
         modelBuilder.Entity<Message>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("PK__messages__3213E83F867E877B");
+            entity.HasKey(e => e.Id).HasName("PK__messages__3213E83F4F7109B0");
 
             entity.ToTable("messages");
 
-            entity.HasIndex(e => new { e.ConversationId, e.SentAt }, "IX_messages_conversation");
+            entity.HasIndex(e => new { e.ConversationId, e.SentAt }, "IX_messages_conversation_sent");
 
             entity.HasIndex(e => e.SenderId, "IX_messages_sender");
 
             entity.Property(e => e.Id).HasColumnName("id");
+            entity.Property(e => e.AttachmentName)
+                .HasMaxLength(255)
+                .HasColumnName("attachment_name");
+            entity.Property(e => e.AttachmentSize).HasColumnName("attachment_size");
+            entity.Property(e => e.AttachmentUrl)
+                .HasMaxLength(500)
+                .HasColumnName("attachment_url");
             entity.Property(e => e.Content).HasColumnName("content");
             entity.Property(e => e.ConversationId).HasColumnName("conversation_id");
-            entity.Property(e => e.IsRead)
-                .HasDefaultValue(false)
-                .HasColumnName("is_read");
+            entity.Property(e => e.DeletedAt)
+                .HasColumnType("datetime")
+                .HasColumnName("deleted_at");
+            entity.Property(e => e.DeliveredAt)
+                .HasColumnType("datetime")
+                .HasColumnName("delivered_at");
+            entity.Property(e => e.IsDeleted).HasColumnName("is_deleted");
             entity.Property(e => e.MessageType)
                 .HasMaxLength(50)
                 .HasDefaultValue("text")
                 .HasColumnName("message_type");
-            entity.Property(e => e.ReadAt)
+            entity.Property(e => e.SeenAt)
                 .HasColumnType("datetime")
-                .HasColumnName("read_at");
+                .HasColumnName("seen_at");
             entity.Property(e => e.SenderId).HasColumnName("sender_id");
             entity.Property(e => e.SentAt)
                 .HasDefaultValueSql("(getdate())")
                 .HasColumnType("datetime")
                 .HasColumnName("sent_at");
+            entity.Property(e => e.Status)
+                .HasMaxLength(20)
+                .HasDefaultValue("sent")
+                .HasColumnName("status");
 
             entity.HasOne(d => d.Conversation).WithMany(p => p.Messages)
                 .HasForeignKey(d => d.ConversationId)

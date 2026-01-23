@@ -11,17 +11,31 @@ public partial class Message
 
     public int SenderId { get; set; }
 
-    public string Content { get; set; } = null!;
+    public string? Content { get; set; }
 
-    public string? MessageType { get; set; }
+    public string MessageType { get; set; } = null!;
 
-    public bool? IsRead { get; set; }
+    public string Status { get; set; } = null!;
 
-    public DateTime? ReadAt { get; set; }
+    public DateTime? DeliveredAt { get; set; }
 
-    public DateTime? SentAt { get; set; }
+    public DateTime? SeenAt { get; set; }
+
+    public string? AttachmentUrl { get; set; }
+
+    public string? AttachmentName { get; set; }
+
+    public long? AttachmentSize { get; set; }
+
+    public bool IsDeleted { get; set; }
+
+    public DateTime? DeletedAt { get; set; }
+
+    public DateTime SentAt { get; set; }
 
     public virtual Conversation Conversation { get; set; } = null!;
+
+    public virtual ICollection<Conversation> Conversations { get; set; } = new List<Conversation>();
 
     public virtual User Sender { get; set; } = null!;
 }
