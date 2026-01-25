@@ -1,8 +1,63 @@
-﻿@{
-    ViewData["Title"] = "Home Page";
+﻿@using BikeMarket.DTO.Vehicle
+
+@model List<VehicleListDTO>
+
+@{
+    ViewData["Title"] = "Home";
 }
 
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
+<h2>Bike Marketplace</h2>
+
+<div class="row">
+    @foreach (var item in Model)
+    {
+        <div class="col-md-3 mb-4">
+            <div class="card h-100 shadow-sm">
+
+                @if (!string.IsNullOrEmpty(item.ThumbnailUrl))
+                {
+                    <img src="@item.ThumbnailUrl" class="card-img-top" style="height:180px; object-fit:cover;" />
+                }
+                else
+                {
+                    <div style="height:180px; background:#eee; display:flex; align-items:center; justify-content:center;">
+                        <span>No Image</span>
+                    </div>
+                }
+
+                <div class="card-body">
+                    <h5 class="card-title">@item.Title</h5>
+
+                    <p class="card-text mb-1">
+                        <b>Brand:</b> @item.BrandName
+                    </p>
+
+                    <p class="card-text mb-1">
+                        <b>Category:</b> @item.CategoryName
+                    </p>
+
+                    <p class="card-text mb-1">
+                        <b>Price:</b> @item.Price.ToString("N0") ₫
+                    </p>
+
+                    <p class="card-text mb-1">
+                        <b>Location:</b> @item.Location
+                    </p>
+
+                    <p class="card-text text-muted" style="font-size: 13px;">
+                        Posted: @(item.CreatedAt?.ToString("dd/MM/yyyy") ?? "N/A")
+                    </p>
+                </div>
+
+                <div class="card-footer bg-white">
+                    <a class="btn btn-primary w-100"
+                       asp-controller="Vehicles"
+                       asp-action="Details"
+                       asp-route-id="@item.VehicleId">
+                        View Details
+                    </a>
+                </div>
+            </div>
+        </div>
+    }
 </div>
