@@ -140,6 +140,9 @@ namespace BikeMarket.Controllers
                 return View(loginDto);
             }
 
+            // ✅ THÊM DÒNG NÀY: Lưu UserId vào Session
+            HttpContext.Session.SetString("UserId", user.Id.ToString());
+
             // Tạo authentication cookie
             var claims = new List<Claim>
         {
@@ -168,7 +171,7 @@ namespace BikeMarket.Controllers
             }
 
             //chuyển qua trang view Index
-            return RedirectToAction("Index", "Chat");
+            return RedirectToAction("Index", "Home");
         }
 
         // GET: Users/Edit/5
@@ -262,6 +265,9 @@ namespace BikeMarket.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Logout()
         {
+            // ✅ THÊM DÒNG NÀY: Xóa session khi logout
+            HttpContext.Session.Remove("UserId");
+            
             await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
             return RedirectToAction("Index", "Home");
         }

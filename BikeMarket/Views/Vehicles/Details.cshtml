@@ -1,10 +1,36 @@
 ﻿@model BikeMarket.Dtos.Vehicle.VehicleDetailDTO
+@Html.AntiForgeryToken()
 
 @{
     ViewData["Title"] = "Vehicle Details";
 }
 
 <h1>@Model.Title</h1>
+<div class="d-flex gap-2 mb-3">
+
+    <!-- ❤️ Add to Wishlist -->
+    <button id="btnWishlist"
+            type="button"
+            class="btn @(Model.IsWishlisted ? "btn-danger" : "btn-outline-danger")"
+            onclick="toggleWishlist(@Model.VehicleId)">
+        <i id="iconWishlist" class="bi @(Model.IsWishlisted ? "bi-heart-fill" : "bi-heart")"></i>
+        <span id="textWishlist">@(Model.IsWishlisted ? "Wishlisted" : "Wishlists")</span>
+    </button>
+
+
+
+    <!-- 💬 Chat với seller -->
+    <form asp-controller="Chat" asp-action="Index" method="post">
+        @Html.AntiForgeryToken()
+        <input type="hidden" name="vehicleId" value="@Model.VehicleId" />
+        <input type="hidden" name="sellerId" value="@Model.SellerId" />
+
+        <button type="submit" class="btn btn-primary">
+            <i class="bi bi-chat-dots"></i> Chat with Seller
+        </button>
+    </form>
+
+</div>
 
 <div class="container mt-4">
     <div class="row">
@@ -112,4 +138,65 @@
 
 @section Scripts {
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        async function toggleWishlist(vehicleId) {
+            // Get AntiForgery token from hidden input
+            const token = document.querySelector('input[name="__RequestVerificationToken"]').value;
+
+            try {
+                const res = await fetch('/Wishlists/ToggleAjax', {
+                    method: 'POST',
+                    credentials: 'same-origin',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'RequestVerificationToken': token
+                    },
+                    body: JSON.stringify({ vehicleId: vehicleId })
+                });
+
+                if (!res.ok) {
+                    console.error('Server error:', res.status);
+                    alert("Lỗi máy chủ: " + res.status);
+                    return;
+                }
+
+                const data = await res.json();
+
+                if (!data.success) {
+                    if (data.message === "NOT_LOGIN") {
+                        alert("Bạn cần đăng nhập để thêm wishlist!");
+                        window.location.href = "/Users/Login";
+                        return;
+                    }
+                    alert("Lỗi: " + (data.message || "Có lỗi xảy ra!"));
+                    return;
+                }
+
+                const btn = document.getElementById("btnWishlist");
+                const icon = document.getElementById("iconWishlist");
+                const text = document.getElementById("textWishlist");
+
+                if (data.isWishlisted) {
+                    btn.classList.remove("btn-outline-danger");
+                    btn.classList.add("btn-danger");
+
+                    icon.classList.remove("bi-heart");
+                    icon.classList.add("bi-heart-fill");
+
+                    text.textContent = "Wishlisted";
+                } else {
+                    btn.classList.remove("btn-danger");
+                    btn.classList.add("btn-outline-danger");
+
+                    icon.classList.remove("bi-heart-fill");
+                    icon.classList.add("bi-heart");
+
+                    text.textContent = "Wishlist";
+                }
+            } catch (error) {
+                console.error('Request error:', error);
+                alert("Có lỗi lồn xảy ra!");
+            }
+        }
+    </script>
 }

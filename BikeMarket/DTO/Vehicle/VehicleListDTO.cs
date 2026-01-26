@@ -30,6 +30,8 @@ namespace BikeMarket.DTO.Vehicle
 
         [Display(Name = "Location")]
         public string? Location { get; set; }
+        public bool IsWishlisted { get; set; }
+
 
         // Ảnh đại diện
         public string? ThumbnailUrl { get; set; }

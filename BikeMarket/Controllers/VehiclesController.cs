@@ -35,7 +35,10 @@ namespace BikeMarket.Controllers
         {
             if (id == null)
                 return NotFound();
+            var userIdStr = HttpContext.Session.GetString("UserId");
+            int? currentUserId = string.IsNullOrEmpty(userIdStr) ? null : int.Parse(userIdStr);
 
+            // Fetch vehicle first
             var vehicle = await _context.Vehicles
                 .Include(v => v.Brand)
                 .Include(v => v.Category)
@@ -45,6 +48,14 @@ namespace BikeMarket.Controllers
 
             if (vehicle == null)
                 return NotFound();
+
+            bool isWishlisted = false;
+            if (currentUserId != null)
+            {
+                isWishlisted = await _context.Wishlists
+                    .AnyAsync(w => w.BuyerId == currentUserId && w.VehicleId == vehicle.Id);
+            }
+
 
             var dto = new VehicleDetailDTO
             {
@@ -66,6 +77,7 @@ namespace BikeMarket.Controllers
                 Color = vehicle.Color,
                 Location = vehicle.Location,
                 Status = vehicle.Status,
+                IsWishlisted = isWishlisted,
 
                 SellerId = vehicle.SellerId,
                 SellerName = vehicle.Seller?.Name ?? "Unknown",
@@ -104,16 +116,11 @@ namespace BikeMarket.Controllers
             Vehicle vehicle,
             List<IFormFile>? images)
         {
-            Console.WriteLine("🚀 [POST] Create() - Form submission received");
-            Console.WriteLine($"📝 Vehicle Data: Title={vehicle.Title}, Price={vehicle.Price}, BrandId={vehicle.BrandId}, CategoryId={vehicle.CategoryId}");
-            
             // ✅ Remove non-bindable navigation properties from ModelState
             ModelState.Remove("Brand");
             ModelState.Remove("Category");
             ModelState.Remove("Seller");
-            
-            Console.WriteLine($"📊 ModelState Valid: {ModelState.IsValid}");
-            
+                        
             if (!ModelState.IsValid)
             {
                 Console.WriteLine("❌ [POST] Create() - ModelState Invalid");
@@ -130,7 +137,6 @@ namespace BikeMarket.Controllers
                 return View(vehicle);
             }
 
-            Console.WriteLine("✅ [POST] Create() - ModelState is valid");
 
             // ✅ Get UserId from Claims (Cookie Authentication)
             var userIdClaim = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier);
@@ -144,8 +150,6 @@ namespace BikeMarket.Controllers
                 return View(vehicle);
             }
 
-            Console.WriteLine($"✅ [POST] Create() - User ID parsed from claims: {sellerId}");
-
             vehicle.SellerId = sellerId;
             vehicle.CreatedAt = DateTime.Now;
             vehicle.Status = string.IsNullOrEmpty(vehicle.Status) ? "available" : vehicle.Status;
@@ -155,12 +159,8 @@ namespace BikeMarket.Controllers
             _context.Vehicles.Add(vehicle);
             await _context.SaveChangesAsync();
 
-            Console.WriteLine($"💾 Vehicle saved to database with ID: {vehicle.Id}");
-
             if (images != null && images.Count > 0)
-            {
-                Console.WriteLine($"🖼️ [POST] Create() - Processing {images.Count} image(s)");
-                
+            {                
                 int imageCount = 0;
                 foreach (var file in images)
                 {
@@ -176,11 +176,9 @@ namespace BikeMarket.Controllers
                     };
 
                     _context.VehicleImages.Add(vehicleImage);
-                    Console.WriteLine($"   📝 VehicleImage record created for VehicleId={vehicle.Id}");
                 }
 
                 await _context.SaveChangesAsync();
-                Console.WriteLine($"✅ [POST] Create() - All {imageCount} images saved to database");
             }
             else
             {

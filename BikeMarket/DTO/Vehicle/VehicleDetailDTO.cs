@@ -60,5 +60,7 @@ namespace BikeMarket.Dtos.Vehicle
 
         // ===== Images =====
         public List<string> ImageUrls { get; set; } = new();
+        public bool IsWishlisted { get; set; }
+
     }
 }
