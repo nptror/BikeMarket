@@ -22,7 +22,7 @@ namespace BikeMarket.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Index(int vehicleId, int sellerId)
+        public async Task<IActionResult> Index(int sellerId)
         {
             var buyerIdStr = User.FindFirstValue(ClaimTypes.NameIdentifier);
             if (string.IsNullOrEmpty(buyerIdStr))
@@ -33,7 +33,7 @@ namespace BikeMarket.Controllers
             var buyerId = int.Parse(buyerIdStr);
 
             var conversation = await _context.Conversations
-                .FirstOrDefaultAsync(c => c.BuyerId == buyerId && c.SellerId == sellerId && c.VehicleId == vehicleId);
+                .FirstOrDefaultAsync(c => c.BuyerId == buyerId && c.SellerId == sellerId);
 
             if (conversation == null)
             {
@@ -41,7 +41,6 @@ namespace BikeMarket.Controllers
                 {
                     BuyerId = buyerId,
                     SellerId = sellerId,
-                    VehicleId = vehicleId,
                     CreatedAt = DateTime.Now,
                     BuyerUnreadCount = 0,
                     SellerUnreadCount = 0

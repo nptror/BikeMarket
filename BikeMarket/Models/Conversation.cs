@@ -11,8 +11,6 @@ public partial class Conversation
 
     public int SellerId { get; set; }
 
-    public int VehicleId { get; set; }
-
     public int? LastMessageId { get; set; }
 
     public DateTime? LastMessageAt { get; set; }

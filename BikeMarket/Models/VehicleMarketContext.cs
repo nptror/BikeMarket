@@ -77,8 +77,6 @@ public partial class VehicleMarketContext : DbContext
 
             entity.HasIndex(e => new { e.SellerId, e.LastMessageAt }, "IX_conversations_seller_last").IsDescending(false, true);
 
-            entity.HasIndex(e => new { e.BuyerId, e.SellerId, e.VehicleId }, "UX_conversations_unique").IsUnique();
-
             entity.Property(e => e.Id).HasColumnName("id");
             entity.Property(e => e.BuyerId).HasColumnName("buyer_id");
             entity.Property(e => e.BuyerUnreadCount).HasColumnName("buyer_unread_count");
@@ -92,7 +90,6 @@ public partial class VehicleMarketContext : DbContext
             entity.Property(e => e.LastMessageId).HasColumnName("last_message_id");
             entity.Property(e => e.SellerId).HasColumnName("seller_id");
             entity.Property(e => e.SellerUnreadCount).HasColumnName("seller_unread_count");
-            entity.Property(e => e.VehicleId).HasColumnName("vehicle_id");
 
             entity.HasOne(d => d.Buyer).WithMany(p => p.ConversationBuyers)
                 .HasForeignKey(d => d.BuyerId)

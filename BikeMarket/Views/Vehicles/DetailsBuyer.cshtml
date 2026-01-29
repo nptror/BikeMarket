@@ -533,7 +533,6 @@
 
                         <form id="chatForm" asp-controller="Chat" asp-action="Index" method="post" style="margin: 0;">
                             @Html.AntiForgeryToken()
-                            <input type="hidden" name="vehicleId" value="@Model.VehicleId" />
                             <input type="hidden" name="sellerId" value="@Model.SellerId" />
                             <button type="submit" class="btn-chat" style="width: 100%; cursor: pointer;" hidden="@isOwner">
                                 <i class="bi bi-chat-dots" style="margin-right: 6px;"></i>Chat ngay
@@ -750,4 +749,4 @@
             }
         });
     </script>
-}
+}}

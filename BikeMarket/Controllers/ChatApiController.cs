@@ -24,7 +24,6 @@ public class ChatApiController : ControllerBase
             .OrderByDescending(c => c.LastMessageAt)
             .Select(c => new {
                 c.Id,
-                c.VehicleId,
                 c.LastMessageAt
             })
             .ToListAsync();
