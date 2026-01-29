@@ -4,6 +4,7 @@
     ViewData["Title"] = "Chi tiết xe đạp";
     var userIdStr = Context.Session.GetString("UserId");
     var isOwner = int.TryParse(userIdStr, out var userId) && userId == Model.SellerId;
+    var isLoggedIn = !string.IsNullOrEmpty(userIdStr);
 }
 
 <style>
@@ -530,7 +531,7 @@
                             <span id="textWishlist">@(Model.IsWishlisted ? "Đã lưu" : "Lưu tin")</span>
                         </button>
 
-                        <form asp-controller="Chat" asp-action="Index" method="post" style="margin: 0;">
+                        <form id="chatForm" asp-controller="Chat" asp-action="Index" method="post" style="margin: 0;">
                             @Html.AntiForgeryToken()
                             <input type="hidden" name="vehicleId" value="@Model.VehicleId" />
                             <input type="hidden" name="sellerId" value="@Model.SellerId" />
@@ -547,7 +548,7 @@
                         }
                         else
                         {
-                            <form asp-controller="Orders" asp-action="BuyNow" method="post">
+                            <form id="buyNowForm" asp-controller="Orders" asp-action="BuyNow" method="post">
                                 @Html.AntiForgeryToken()
                                 <input type="hidden" name="vehicleId" value="@Model.VehicleId" />
                                 <button type="submit" class="btn-buy w-100">Mua ngay</button>
@@ -648,6 +649,7 @@
     <script>
         let currentImageIndex = 0;
         const images = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.ImageUrls ?? new List<string>()));
+        const isLoggedIn = @isLoggedIn.ToString().ToLowerInvariant();
 
         function changeImage(index) {
             if (images.length === 0) return;
@@ -685,20 +687,7 @@
 
                 if (!data.success) {
                     if (data.message === "NOT_LOGIN") {
-                        Swal.fire({
-                            icon: 'warning',
-                            title: 'Yêu cầu đăng nhập',
-                            text: 'Bạn cần đăng nhập để lưu tin!',
-                            confirmButtonText: 'Đăng nhập ngay',
-                            showCancelButton: true,
-                            cancelButtonText: 'Để sau',
-                            confirmButtonColor: '#3085d6',
-                            cancelButtonColor: '#d33'
-                        }).then((result) => {
-                            if (result.isConfirmed) {
-                                window.location.href = '/Users/Login';
-                            }
-                        });
+                        showLoginAlert();
                         return;
                      }
                      alert("Lỗi: " + (data.message || "Có lỗi xảy ra!"));
@@ -720,5 +709,45 @@
                 alert("Có lỗi xảy ra!");
             }
         }
+
+        function showLoginAlert() {
+            Swal.fire({
+                icon: 'warning',
+                title: 'Yêu cầu đăng nhập',
+                text: 'Bạn cần đăng nhập để tiếp tục!',
+                confirmButtonText: 'Đăng nhập ngay',
+                showCancelButton: true,
+                cancelButtonText: 'Để sau',
+                confirmButtonColor: '#3085d6',
+                cancelButtonColor: '#d33'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    window.location.href = '/Users/Login';
+                }
+            });
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const chatForm = document.getElementById('chatForm');
+            const buyNowForm = document.getElementById('buyNowForm');
+
+            if (chatForm) {
+                chatForm.addEventListener('submit', (e) => {
+                    if (!isLoggedIn) {
+                        e.preventDefault();
+                        showLoginAlert();
+                    }
+                });
+            }
+
+            if (buyNowForm) {
+                buyNowForm.addEventListener('submit', (e) => {
+                    if (!isLoggedIn) {
+                        e.preventDefault();
+                        showLoginAlert();
+                    }
+                });
+            }
+        });
     </script>
 }
