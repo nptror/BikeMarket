@@ -2,6 +2,8 @@
                 
 @{
     ViewData["Title"] = "Chi tiết xe đạp";
+    var userIdStr = Context.Session.GetString("UserId");
+    var isOwner = int.TryParse(userIdStr, out var userId) && userId == Model.SellerId;
 }
 
 <style>
@@ -235,6 +237,22 @@
     .btn-buy:hover {
         background: #e0a500;
         color: #222;
+    }
+
+    .btn-edit {
+        background: #198754;
+        color: #fff;
+        font-weight: 600;
+        border-radius: 4px;
+        padding: 12px 16px;
+        text-decoration: none;
+        display: inline-block;
+        text-align: center;
+    }
+
+    .btn-edit:hover {
+        background: #157347;
+        color: #fff;
     }
 
     /* Location & Status */
@@ -506,7 +524,8 @@
                         <button id="btnWishlist"
                                 type="button"
                                 class="btn-wishlist @(Model.IsWishlisted ? "active" : "")"
-                                onclick="toggleWishlist(@Model.VehicleId)">
+                                onclick="toggleWishlist(@Model.VehicleId)"
+                                hidden="@isOwner">
                             <i class="bi @(Model.IsWishlisted ? "bi-heart-fill" : "bi-heart")" style="margin-right: 6px;"></i>
                             <span id="textWishlist">@(Model.IsWishlisted ? "Đã lưu" : "Lưu tin")</span>
                         </button>
@@ -515,18 +534,25 @@
                             @Html.AntiForgeryToken()
                             <input type="hidden" name="vehicleId" value="@Model.VehicleId" />
                             <input type="hidden" name="sellerId" value="@Model.SellerId" />
-                            <button type="submit" class="btn-chat" style="width: 100%; cursor: pointer;">
+                            <button type="submit" class="btn-chat" style="width: 100%; cursor: pointer;" hidden="@isOwner">
                                 <i class="bi bi-chat-dots" style="margin-right: 6px;"></i>Chat ngay
                             </button>
                         </form>
                     </div>
 
                     <div class="mt-2">
-                        <form asp-controller="Orders" asp-action="BuyNow" method="post">
-                            @Html.AntiForgeryToken()
-                            <input type="hidden" name="vehicleId" value="@Model.VehicleId" />
-                            <button type="submit" class="btn-buy w-100">Mua ngay</button>
-                        </form>
+                        @if (isOwner)
+                        {
+                            <a asp-action="Edit" asp-route-id="@Model.VehicleId" class="btn-edit w-100">Sửa</a>
+                        }
+                        else
+                        {
+                            <form asp-controller="Orders" asp-action="BuyNow" method="post">
+                                @Html.AntiForgeryToken()
+                                <input type="hidden" name="vehicleId" value="@Model.VehicleId" />
+                                <button type="submit" class="btn-buy w-100">Mua ngay</button>
+                            </form>
+                        }
                     </div>
 
                     <!-- Location & Status -->

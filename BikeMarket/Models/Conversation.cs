@@ -30,6 +30,4 @@ public partial class Conversation
     public virtual ICollection<Message> Messages { get; set; } = new List<Message>();
 
     public virtual User Seller { get; set; } = null!;
-
-    public virtual Vehicle Vehicle { get; set; } = null!;
 }

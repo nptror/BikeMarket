@@ -37,8 +37,6 @@ public partial class Vehicle
 
     public virtual Category Category { get; set; } = null!;
 
-    public virtual ICollection<Conversation> Conversations { get; set; } = new List<Conversation>();
-
     public virtual ICollection<Order> Orders { get; set; } = new List<Order>();
 
     public virtual User Seller { get; set; } = null!;
