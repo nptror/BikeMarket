@@ -73,6 +73,10 @@
     </dl>
 </div>
 <div>
-    <a asp-action="Edit" asp-route-id="@Model?.Id">Edit</a> |
-    <a asp-action="Index">Back to List</a>
+    <form asp-action="Pay" method="post" style="display:inline-block;">
+        @Html.AntiForgeryToken()
+        <input type="hidden" name="id" value="@Model?.Id" />
+        <button type="submit" class="btn btn-success">Thanh toán</button>
+    </form>
+    <a asp-action="Index" class="btn btn-secondary ms-2">Quay lại</a>
 </div>

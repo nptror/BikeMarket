@@ -31,14 +31,57 @@ namespace BikeMarket.Controllers
         }
 
         // GET: Vehicles/Details/5
-        public async Task<IActionResult> Details(int? id)
+
+        // GET: Vehicles/DetailsAdmin/5
+        public async Task<IActionResult> DetailsAdmin(int? id)
         {
             if (id == null)
                 return NotFound();
+
+            var vehicle = await _context.Vehicles
+                .Include(v => v.Brand)
+                .Include(v => v.Category)
+                .Include(v => v.Seller)
+                .Include(v => v.VehicleImages)
+                .FirstOrDefaultAsync(v => v.Id == id.Value);
+
+            if (vehicle == null)
+                return NotFound();
+
+            var dto = new VehicleDetailDTO
+            {
+                VehicleId = vehicle.Id,
+                Title = vehicle.Title,
+                Description = vehicle.Description,
+                BrandId = vehicle.BrandId,
+                BrandName = vehicle.Brand?.Name ?? "Unknown",
+                CategoryId = vehicle.CategoryId,
+                CategoryName = vehicle.Category?.Name ?? "Unknown",
+                Price = vehicle.Price,
+                FrameSize = vehicle.FrameSize,
+                Condition = vehicle.Condition,
+                YearManufactured = vehicle.YearManufactured,
+                Color = vehicle.Color,
+                Location = vehicle.Location,
+                Status = vehicle.Status,
+                SellerId = vehicle.SellerId,
+                SellerName = vehicle.Seller?.Name ?? "Unknown",
+                CreatedAt = vehicle.CreatedAt,
+                ImageUrls = vehicle.VehicleImages.Select(img => img.ImageUrl).ToList()
+            };
+
+            return View(dto);
+        }
+
+        // GET: Vehicles/DetailsBuyer/5
+        public async Task<IActionResult> DetailsBuyer(int? id)
+        {
+            if (id == null)
+                return NotFound();
+
             var userIdStr = HttpContext.Session.GetString("UserId");
             int? currentUserId = string.IsNullOrEmpty(userIdStr) ? null : int.Parse(userIdStr);
 
-            // Fetch vehicle first
             var vehicle = await _context.Vehicles
                 .Include(v => v.Brand)
                 .Include(v => v.Category)
@@ -56,21 +99,16 @@ namespace BikeMarket.Controllers
                     .AnyAsync(w => w.BuyerId == currentUserId && w.VehicleId == vehicle.Id);
             }
 
-
             var dto = new VehicleDetailDTO
             {
                 VehicleId = vehicle.Id,
                 Title = vehicle.Title,
                 Description = vehicle.Description,
-
                 BrandId = vehicle.BrandId,
                 BrandName = vehicle.Brand?.Name ?? "Unknown",
-
                 CategoryId = vehicle.CategoryId,
                 CategoryName = vehicle.Category?.Name ?? "Unknown",
-
                 Price = vehicle.Price,
-
                 FrameSize = vehicle.FrameSize,
                 Condition = vehicle.Condition,
                 YearManufactured = vehicle.YearManufactured,
@@ -78,15 +116,10 @@ namespace BikeMarket.Controllers
                 Location = vehicle.Location,
                 Status = vehicle.Status,
                 IsWishlisted = isWishlisted,
-
                 SellerId = vehicle.SellerId,
                 SellerName = vehicle.Seller?.Name ?? "Unknown",
-
                 CreatedAt = vehicle.CreatedAt,
-
-                ImageUrls = vehicle.VehicleImages
-                    .Select(img => img.ImageUrl)
-                    .ToList()
+                ImageUrls = vehicle.VehicleImages.Select(img => img.ImageUrl).ToList()
             };
 
             return View(dto);

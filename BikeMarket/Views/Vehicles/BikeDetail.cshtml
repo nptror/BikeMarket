@@ -1,0 +1,27 @@
+@model BikeMarket.Dtos.Vehicle.VehicleDetailDTO
+
+@{
+    ViewData["Title"] = "Bike Details";
+}
+
+<h1>@Model.Title</h1>
+
+<div class="mb-3">
+    <strong>Price:</strong> @Model.Price.ToString("C")
+</div>
+
+<div class="mb-3">
+    <strong>Brand:</strong> @Model.BrandName
+</div>
+
+<div class="mb-3">
+    <strong>Category:</strong> @Model.CategoryName
+</div>
+
+<div class="mb-3">
+    <strong>Location:</strong> @Model.Location
+</div>
+
+<p>@Model.Description</p>
+
+<a asp-action="Index" class="btn btn-secondary">Back to List</a>

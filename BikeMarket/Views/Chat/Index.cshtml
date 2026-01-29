@@ -1,5 +1,9 @@
 ﻿<h2>SignalR Chat</h2>
 
+@{
+    var conversationId = ViewData["ConversationId"] as int?;
+}
+
 <div style="display:flex; height:500px">
 
     <!-- ===== LEFT: CONVERSATIONS ===== -->
@@ -34,24 +38,29 @@
         document.getElementById("messagesList").appendChild(li);
     });
 
-    connection.start().then(loadConversations);
+    connection.start().then(() => loadConversations());
 
     function loadConversations() {
-        fetch("/api/chat/conversations")
-            .then(res => res.json())
-            .then(data => {
-                const ul = document.getElementById("conversationList");
-                ul.innerHTML = "";
+        return fetch("/api/chat/conversations")
+             .then(res => res.json())
+             .then(data => {
+                 const ul = document.getElementById("conversationList");
+                 ul.innerHTML = "";
 
-                data.forEach(c => {
+                 data.forEach(c => {
                     const li = document.createElement("li");
                     li.textContent = `Vehicle ${c.vehicleId}`;
                     li.style.cursor = "pointer";
                     li.onclick = () => openConversation(c.id);
                     ul.appendChild(li);
-                });
-            });
-    }
+                 });
+
+                const initialConversationId = @(conversationId?.ToString() ?? "null");
+                if (initialConversationId) {
+                    openConversation(initialConversationId);
+                }
+             });
+     }
 
     function openConversation(conversationId) {
         currentConversationId = conversationId;
@@ -74,4 +83,3 @@
         document.getElementById("messageInput").value = "";
     }
 </script>
-    

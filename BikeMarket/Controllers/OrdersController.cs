@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using BikeMarket.Models;
+using System.Security.Claims;
 
 namespace BikeMarket.Controllers
 {
@@ -16,6 +17,62 @@ namespace BikeMarket.Controllers
         public OrdersController(VehicleMarketContext context)
         {
             _context = context;
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> BuyNow(int vehicleId)
+        {
+            var buyerIdStr = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (string.IsNullOrEmpty(buyerIdStr))
+            {
+                return RedirectToAction("Login", "Users");
+            }
+
+            var buyerId = int.Parse(buyerIdStr);
+
+            var vehicle = await _context.Vehicles
+                .AsNoTracking()
+                .FirstOrDefaultAsync(v => v.Id == vehicleId);
+
+            if (vehicle == null)
+            {
+                return NotFound();
+            }
+
+            var order = new Order
+            {
+                BuyerId = buyerId,
+                SellerId = vehicle.SellerId,
+                VehicleId = vehicle.Id,
+                TotalAmount = vehicle.Price,
+                Status = "pending",
+                PaymentStatus = "unpaid",
+                CreatedAt = DateTime.Now
+            };
+
+            _context.Orders.Add(order);
+            await _context.SaveChangesAsync();
+
+            return RedirectToAction(nameof(Details), new { id = order.Id });
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Pay(int id)
+        {
+            var order = await _context.Orders.FirstOrDefaultAsync(o => o.Id == id);
+            if (order == null)
+            {
+                return NotFound();
+            }
+
+            order.PaymentStatus = "paid";
+            order.Status = "paid";
+            order.UpdatedAt = DateTime.Now;
+
+            await _context.SaveChangesAsync();
+            return RedirectToAction(nameof(Details), new { id });
         }
 
         // GET: Orders
