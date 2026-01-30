@@ -1,4 +1,4 @@
-﻿using BikeMarket.DTO.Service;
+﻿using DTO.Service;
 using CloudinaryDotNet;
 using CloudinaryDotNet.Actions;
 using Microsoft.Extensions.Options;

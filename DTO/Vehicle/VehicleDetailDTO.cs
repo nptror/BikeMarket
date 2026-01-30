@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 
-namespace BikeMarket.Dtos.Vehicle
+namespace DTO.Vehicle
 {
     public class VehicleDetailDTO
     {

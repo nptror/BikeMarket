@@ -6,7 +6,7 @@
     using Microsoft.AspNetCore.Identity;
     using Microsoft.EntityFrameworkCore;
     using BikeMarket.Controllers.Service;
-    using BikeMarket.DTO.Service;
+    using DTO.Service;
 
     public class Program
     {

@@ -1,4 +1,4 @@
-﻿namespace BikeMarket.DTO.Vehicle
+﻿namespace DTO.Vehicle
 {
     public class WishlistRequest
     {

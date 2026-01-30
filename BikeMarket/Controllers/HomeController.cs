@@ -1,4 +1,4 @@
-using BikeMarket.DTO.Vehicle;
+using DTO.Vehicle;
 using BikeMarket.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;

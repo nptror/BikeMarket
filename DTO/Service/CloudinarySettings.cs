@@ -1,4 +1,4 @@
-﻿namespace BikeMarket.DTO.Service
+﻿namespace DTO.Service
 {
     
         public class CloudinarySettings

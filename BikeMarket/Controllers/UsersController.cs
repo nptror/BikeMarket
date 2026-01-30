@@ -1,4 +1,4 @@
-﻿using BikeMarket.DTO.User;
+﻿using DTO.User;
 using BikeMarket.Models;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;

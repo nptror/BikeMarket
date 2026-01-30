@@ -1,7 +1,7 @@
 ﻿using System;
 using System.ComponentModel.DataAnnotations;
 
-namespace BikeMarket.DTO.Vehicle
+namespace DTO.Vehicle
 {
     public class VehicleListDTO
     {
