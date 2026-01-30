@@ -10,6 +10,7 @@
     <link rel="stylesheet" href="~/BikeMarket.styles.css" asp-append-version="true" />
 </head>
 <body>
+@using Microsoft.AspNetCore.Http
     <header>
         <nav class="navbar navbar-expand-sm navbar-light bg-white border-bottom box-shadow mb-3">
             <div class="container-fluid">
@@ -30,6 +31,33 @@
                             <a class="nav-link" asp-controller="Brands" asp-action="Create">Create Brand</a>
                         </li>
 
+                    </ul>
+                    <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
+                        @if (string.IsNullOrEmpty(Context.Session.GetString("UserId")))
+                        {
+
+
+                            <li class="nav-item">
+                                <a class="nav-link" asp-controller="Users" asp-action="Login">Login</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" asp-controller="Users" asp-action="Create">Register</a>
+                            </li>
+                        }
+                        else
+                        {
+
+                            <li class="nav-item">
+                                <a class="nav-link" asp-controller="Chat" asp-action="Index">Chat</a>
+                            </li>
+                           
+                                <li class="nav-item">
+                                <form asp-controller="Users" asp-action="Logout" method="post" class="d-inline">
+                                    @Html.AntiForgeryToken()
+                                    <button type="submit" class="nav-link btn btn-link text-danger p-0">Logout</button>
+                                </form>
+                            </li>
+                        }
                     </ul>
                 </div>
             </div>

@@ -1,5 +1,4 @@
-﻿
-namespace BikeMarket.DTO.User
+﻿namespace DTO.User
 {
     public class UserProfileDTO
     {

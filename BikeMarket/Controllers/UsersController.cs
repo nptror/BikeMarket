@@ -1,4 +1,4 @@
-﻿using BikeMarket.DTO.User;
+﻿using DTO.User;
 using BikeMarket.Models;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
@@ -6,7 +6,6 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.VisualStudio.Web.CodeGenerators.Mvc.Templates.BlazorIdentity.Pages;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -140,6 +139,9 @@ namespace BikeMarket.Controllers
                 return View(loginDto);
             }
 
+            // ✅ THÊM DÒNG NÀY: Lưu UserId vào Session
+            HttpContext.Session.SetString("UserId", user.Id.ToString());
+
             // Tạo authentication cookie
             var claims = new List<Claim>
         {
@@ -168,7 +170,7 @@ namespace BikeMarket.Controllers
             }
 
             //chuyển qua trang view Index
-            return RedirectToAction(nameof(Index));
+            return RedirectToAction("Index", "Home");
         }
 
         // GET: Users/Edit/5
@@ -262,6 +264,9 @@ namespace BikeMarket.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Logout()
         {
+            // ✅ THÊM DÒNG NÀY: Xóa session khi logout
+            HttpContext.Session.Remove("UserId");
+            
             await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
             return RedirectToAction("Index", "Home");
         }

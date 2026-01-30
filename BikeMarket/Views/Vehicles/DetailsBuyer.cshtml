@@ -1,0 +1,752 @@
+﻿@model DTO.Vehicle.VehicleDetailDTO
+                
+@{
+    ViewData["Title"] = "Chi tiết xe đạp";
+    var userIdStr = Context.Session.GetString("UserId");
+    var isOwner = int.TryParse(userIdStr, out var userId) && userId == Model.SellerId;
+    var isLoggedIn = !string.IsNullOrEmpty(userIdStr);
+}
+
+<style>
+    :root {
+        --primary: #222;
+        --secondary: #595959;
+        --border: #e0e0e0;
+        --bg-light: #f5f5f5;
+        --success: #10a050;
+        --warning: #ffba00;
+    }
+
+    body {
+        background-color: #fafafa;
+        color: var(--primary);
+    }
+
+    .product-container {
+        background: white;
+        border-radius: 8px;
+        margin-bottom: 20px;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    }
+
+    /* Gallery Section */
+    .gallery-section {
+        position: relative;
+        background: white;
+        border-radius: 8px;
+        overflow: hidden;
+        margin-bottom: 20px;
+    }
+
+    .main-image {
+        position: relative;
+        width: 100%;
+        height: 500px;
+        background: var(--bg-light);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        overflow: hidden;
+    }
+
+    .main-image img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+    .image-counter {
+        position: absolute;
+        top: 12px;
+        right: 12px;
+        background: rgba(34, 34, 34, 0.8);
+        color: white;
+        padding: 8px 12px;
+        border-radius: 4px;
+        font-size: 14px;
+        font-weight: 500;
+    }
+
+    .carousel-nav {
+        display: flex;
+        gap: 6px;
+        padding: 12px;
+        background: var(--bg-light);
+        overflow-x: auto;
+        border-top: 1px solid var(--border);
+    }
+
+    .carousel-nav .thumb {
+        width: 60px;
+        height: 60px;
+        border: 2px solid transparent;
+        border-radius: 4px;
+        overflow: hidden;
+        cursor: pointer;
+        flex-shrink: 0;
+        transition: all 0.2s;
+    }
+
+    .carousel-nav .thumb:hover {
+        border-color: var(--primary);
+    }
+
+    .carousel-nav .thumb img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+    .carousel-nav .thumb.active {
+        border-color: var(--primary);
+    }
+
+    /* Product Info Section */
+    .product-info {
+        padding: 24px;
+    }
+
+    .product-header {
+        margin-bottom: 20px;
+    }
+
+    .product-title {
+        font-size: 24px;
+        font-weight: 600;
+        margin-bottom: 12px;
+        line-height: 1.3;
+    }
+
+    .product-meta {
+        display: flex;
+        gap: 12px;
+        flex-wrap: wrap;
+        font-size: 14px;
+        color: var(--secondary);
+        margin-bottom: 16px;
+    }
+
+    .meta-item {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    .meta-divider {
+        width: 1px;
+        height: 16px;
+        background: var(--border);
+    }
+
+    /* Price Section */
+    .price-section {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        padding: 16px 0;
+        border-top: 1px solid var(--border);
+        border-bottom: 1px solid var(--border);
+        margin-bottom: 20px;
+    }
+
+    .price-main {
+        font-size: 32px;
+        font-weight: 700;
+        color: var(--primary);
+    }
+
+    .price-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        padding: 4px 8px;
+        background: #d9f4e4;
+        color: var(--success);
+        border-radius: 4px;
+        font-size: 12px;
+        font-weight: 500;
+    }
+
+    .price-badges {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+    }
+
+    .price-badge.secondary {
+        background: var(--bg-light);
+        color: var(--secondary);
+    }
+
+    /* Action Buttons */
+    .action-buttons {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 12px;
+        margin-bottom: 24px;
+    }
+
+    .action-buttons button,
+    .action-buttons a {
+        padding: 12px 16px;
+        border-radius: 4px;
+        border: none;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s;
+        text-decoration: none;
+        text-align: center;
+        font-size: 15px;
+    }
+
+    .btn-wishlist {
+        background: white;
+        color: #d32f2f;
+        border: 2px solid #d32f2f;
+    }
+
+    .btn-wishlist:hover {
+        background: #d32f2f;
+        color: white;
+    }
+
+    .btn-wishlist.active {
+        background: #d32f2f;
+        color: white;
+    }
+
+    .btn-chat {
+        background: #0066cc;
+        color: white;
+    }
+
+    .btn-chat:hover {
+        background: #0052a3;
+    }
+
+    .btn-buy {
+        background: #ffba00;
+        color: #222;
+        font-weight: 600;
+        border-radius: 4px;
+        padding: 12px 16px;
+        text-decoration: none;
+        display: inline-block;
+        text-align: center;
+    }
+
+    .btn-buy:hover {
+        background: #e0a500;
+        color: #222;
+    }
+
+    .btn-edit {
+        background: #198754;
+        color: #fff;
+        font-weight: 600;
+        border-radius: 4px;
+        padding: 12px 16px;
+        text-decoration: none;
+        display: inline-block;
+        text-align: center;
+    }
+
+    .btn-edit:hover {
+        background: #157347;
+        color: #fff;
+    }
+
+    /* Location & Status */
+    .location-status {
+        display: flex;
+        gap: 20px;
+        padding: 16px 0;
+        border-bottom: 1px solid var(--border);
+        margin-bottom: 20px;
+    }
+
+    .location-status-item {
+        display: flex;
+        gap: 8px;
+    }
+
+    .location-status-item .icon {
+        font-size: 20px;
+        flex-shrink: 0;
+    }
+
+    .location-status-item .content {
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+    }
+
+    .location-status-item .label {
+        font-size: 13px;
+        color: var(--secondary);
+    }
+
+    .location-status-item .value {
+        font-size: 15px;
+        font-weight: 500;
+    }
+
+    .status-badge {
+        display: inline-block;
+        padding: 4px 8px;
+        border-radius: 4px;
+        font-size: 12px;
+        font-weight: 600;
+    }
+
+    .status-available {
+        background: #d9f4e4;
+        color: var(--success);
+    }
+
+    .status-sold {
+        background: #ffebee;
+        color: #d32f2f;
+    }
+
+    /* Specifications */
+    .specs-section {
+        padding: 20px 0;
+        border-bottom: 1px solid var(--border);
+        margin-bottom: 20px;
+    }
+
+    .specs-section h3 {
+        font-size: 18px;
+        font-weight: 600;
+        margin-bottom: 16px;
+    }
+
+    .specs-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 16px;
+    }
+
+    .spec-item {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+    }
+
+    .spec-label {
+        font-size: 13px;
+        color: var(--secondary);
+    }
+
+    .spec-value {
+        font-size: 15px;
+        font-weight: 500;
+    }
+
+    /* Description */
+    .description-section {
+        padding: 20px 0;
+        border-bottom: 1px solid var(--border);
+        margin-bottom: 20px;
+    }
+
+    .description-section h3 {
+        font-size: 18px;
+        font-weight: 600;
+        margin-bottom: 12px;
+    }
+
+    .description-text {
+        font-size: 15px;
+        line-height: 1.6;
+        color: var(--primary);
+    }
+
+    /* Seller Info */
+    .seller-section {
+        background: var(--bg-light);
+        padding: 20px;
+        border-radius: 8px;
+        margin-top: 20px;
+    }
+
+    .seller-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-bottom: 12px;
+    }
+
+    .seller-avatar {
+        width: 48px;
+        height: 48px;
+        border-radius: 50%;
+        background: #ddd;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 600;
+        font-size: 18px;
+        color: white;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    }
+
+    .seller-info {
+        flex: 1;
+    }
+
+    .seller-name {
+        font-size: 16px;
+        font-weight: 600;
+        margin-bottom: 4px;
+    }
+
+    .seller-stats {
+        display: flex;
+        gap: 20px;
+        margin-top: 8px;
+        font-size: 13px;
+        color: var(--secondary);
+    }
+
+    .seller-stat {
+        display: flex;
+        align-items: center;
+        gap: 4px;
+    }
+
+    .seller-stat .value {
+        font-weight: 600;
+        color: var(--primary);
+    }
+
+    /* Responsive */
+    @@media (max-width: 992px) {
+        .specs-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .action-buttons {
+            grid-template-columns: 1fr;
+        }
+
+        .main-image {
+            height: 350px;
+        }
+    }
+
+    @@media (max-width: 576px) {
+        .product-title {
+            font-size: 20px;
+        }
+
+        .price-main {
+            font-size: 24px;
+        }
+
+        .location-status {
+            flex-direction: column;
+            gap: 12px;
+        }
+    }
+</style>
+
+<div class="container-lg py-4">
+    <!-- Main Product Container -->
+    <div class="row">
+        <!-- Left: Gallery -->
+        <div class="col-lg-6 mb-4">
+            <div class="gallery-section">
+                <!-- Main Image -->
+                <div class="main-image" id="mainImageContainer">
+                    @if (Model.ImageUrls != null && Model.ImageUrls.Count > 0)
+                    {
+                        <img id="mainImage" src="@Model.ImageUrls[0]" alt="@Model.Title">
+                    }
+                    else
+                    {
+                        <img id="mainImage" src="https://via.placeholder.com/500?text=No+Image" alt="No Image">
+                    }
+                    @if (Model.ImageUrls != null && Model.ImageUrls.Count > 0)
+                    {
+                        <div class="image-counter">
+                            <span id="currentImageIndex">1</span>/<span id="totalImages">@Model.ImageUrls.Count</span>
+                        </div>
+                    }
+                </div>
+
+                <!-- Thumbnails -->
+                @if (Model.ImageUrls != null && Model.ImageUrls.Count > 0)
+                {
+                    <div class="carousel-nav">
+                        @for (int i = 0; i < Model.ImageUrls.Count; i++)
+                        {
+                            <div class="thumb @(i == 0 ? "active" : "")" onclick="changeImage(@i)">
+                                <img src="@Model.ImageUrls[i]" alt="Thumb @i">
+                            </div>
+                        }
+                    </div>
+                }
+            </div>
+        </div>
+
+        <!-- Right: Product Info -->
+        <div class="col-lg-6">
+            <div class="product-container">
+                <div class="product-info">
+                    <!-- Title & Meta -->
+                    <div class="product-header">
+                        <h1 class="product-title">@Model.Title</h1>
+                        <div class="product-meta">
+                            <div class="meta-item">
+                                <strong>@Model.CategoryName</strong>
+                            </div>
+                            <div class="meta-divider"></div>
+                            <div class="meta-item">
+                                Năm: @Model.YearManufactured
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Price Section -->
+                    <div class="price-section">
+                        <div>
+                            <div class="price-main">@Model.Price.ToString("C0")</div>
+                            <div class="price-badges" style="margin-top: 8px;">
+                                <span class="price-badge">✓ Giá tốt</span>
+                                <span class="price-badge secondary">Còn hàng</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Action Buttons -->
+                    <div class="action-buttons">
+                        <button id="btnWishlist"
+                                type="button"
+                                class="btn-wishlist @(Model.IsWishlisted ? "active" : "")"
+                                onclick="toggleWishlist(@Model.VehicleId)"
+                                hidden="@isOwner">
+                            <i class="bi @(Model.IsWishlisted ? "bi-heart-fill" : "bi-heart")" style="margin-right: 6px;"></i>
+                            <span id="textWishlist">@(Model.IsWishlisted ? "Đã lưu" : "Lưu tin")</span>
+                        </button>
+
+                        <form id="chatForm" asp-controller="Chat" asp-action="Index" method="post" style="margin: 0;">
+                            @Html.AntiForgeryToken()
+                            <input type="hidden" name="sellerId" value="@Model.SellerId" />
+                            <button type="submit" class="btn-chat" style="width: 100%; cursor: pointer;" hidden="@isOwner">
+                                <i class="bi bi-chat-dots" style="margin-right: 6px;"></i>Chat ngay
+                            </button>
+                        </form>
+                    </div>
+
+                    <div class="mt-2">
+                        @if (isOwner)
+                        {
+                            <a asp-action="Edit" asp-route-id="@Model.VehicleId" class="btn-edit w-100">Sửa</a>
+                        }
+                        else
+                        {
+                            <form id="buyNowForm" asp-controller="Orders" asp-action="BuyNow" method="post">
+                                @Html.AntiForgeryToken()
+                                <input type="hidden" name="vehicleId" value="@Model.VehicleId" />
+                                <button type="submit" class="btn-buy w-100">Mua ngay</button>
+                            </form>
+                        }
+                    </div>
+
+                    <!-- Location & Status -->
+                    <div class="location-status">
+                        <div class="location-status-item">
+                            <div class="icon">📍</div>
+                            <div class="content">
+                                <span class="label">Địa điểm</span>
+                                <span class="value">@Model.Location</span>
+                            </div>
+                        </div>
+                        <div class="location-status-item">
+                            <div class="icon">📦</div>
+                            <div class="content">
+                                <span class="label">Trạng thái</span>
+                                <span class="value">
+                                    @if (Model.Status == "available")
+                                    {
+                                        <span class="status-badge status-available">Còn hàng</span>
+                                    }
+                                    else if (Model.Status == "sold")
+                                    {
+                                        <span class="status-badge status-sold">Đã bán</span>
+                                    }
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Specifications -->
+                    <div class="specs-section">
+                        <h3>Thông tin chi tiết</h3>
+                        <div class="specs-grid">
+                            <div class="spec-item">
+                                <span class="spec-label">Hãng</span>
+                                <span class="spec-value">@Model.BrandName</span>
+                            </div>
+                            <div class="spec-item">
+                                <span class="spec-label">Điều kiện</span>
+                                <span class="spec-value">@Model.Condition</span>
+                            </div>
+                            <div class="spec-item">
+                                <span class="spec-label">Kích thước khung</span>
+                                <span class="spec-value">@Model.FrameSize</span>
+                            </div>
+                            <div class="spec-item">
+                                <span class="spec-label">Màu sắc</span>
+                                <span class="spec-value">@Model.Color</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Description -->
+                    <div class="description-section">
+                        <h3>Mô tả</h3>
+                        <p class="description-text">@Model.Description</p>
+                    </div>
+
+                    <!-- Seller Info -->
+                    <div class="seller-section">
+                        <div class="seller-header">
+                            <div style="display: flex; gap: 12px; align-items: center; flex: 1;">
+                                <div class="seller-avatar">
+                                    @Model.SellerName[0]
+                                </div>
+                                <div>
+                                    <div class="seller-name">@Model.SellerName</div>
+                                    <div style="font-size: 13px; color: var(--secondary);">
+                                        Cập nhật @(Model.CreatedAt?.ToString("dd/MM/yyyy") ?? "N/A")
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Back Button -->
+    <div style="margin-top: 24px;">
+        <a asp-action="Index" class="btn" style="background: white; border: 1px solid var(--border); color: var(--primary); padding: 10px 24px; border-radius: 4px; text-decoration: none; font-weight: 500;">
+            ← Quay lại danh sách
+        </a>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <script>
+        let currentImageIndex = 0;
+        const images = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.ImageUrls ?? new List<string>()));
+        const isLoggedIn = @isLoggedIn.ToString().ToLowerInvariant();
+
+        function changeImage(index) {
+            if (images.length === 0) return;
+            
+            currentImageIndex = index;
+            document.getElementById('mainImage').src = images[index];
+            document.getElementById('currentImageIndex').textContent = index + 1;
+
+            // Update active thumbnail
+            document.querySelectorAll('.carousel-nav .thumb').forEach((thumb, i) => {
+                thumb.classList.toggle('active', i === index);
+            });
+        }
+
+        async function toggleWishlist(vehicleId) {
+            const token = document.querySelector('input[name="__RequestVerificationToken"]')?.value;
+
+            try {
+                const res = await fetch('/Wishlists/ToggleAjax', {
+                    method: 'POST',
+                    credentials: 'same-origin',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'RequestVerificationToken': token
+                    },
+                    body: JSON.stringify({ vehicleId: vehicleId })
+                });
+
+                if (!res.ok) {
+                    alert("Lỗi máy chủ: " + res.status);
+                    return;
+                }
+
+                const data = await res.json();
+
+                if (!data.success) {
+                    if (data.message === "NOT_LOGIN") {
+                        showLoginAlert();
+                        return;
+                     }
+                     alert("Lỗi: " + (data.message || "Có lỗi xảy ra!"));
+                     return;
+                 }
+
+                const btn = document.getElementById("btnWishlist");
+                const text = document.getElementById("textWishlist");
+
+                if (data.isWishlisted) {
+                    btn.classList.add("active");
+                    text.textContent = "Đã lưu";
+                } else {
+                    btn.classList.remove("active");
+                    text.textContent = "Lưu tin";
+                }
+            } catch (error) {
+                console.error('Request error:', error);
+                alert("Có lỗi xảy ra!");
+            }
+        }
+
+        function showLoginAlert() {
+            Swal.fire({
+                icon: 'warning',
+                title: 'Yêu cầu đăng nhập',
+                text: 'Bạn cần đăng nhập để tiếp tục!',
+                confirmButtonText: 'Đăng nhập ngay',
+                showCancelButton: true,
+                cancelButtonText: 'Để sau',
+                confirmButtonColor: '#3085d6',
+                cancelButtonColor: '#d33'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    window.location.href = '/Users/Login';
+                }
+            });
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const chatForm = document.getElementById('chatForm');
+            const buyNowForm = document.getElementById('buyNowForm');
+
+            if (chatForm) {
+                chatForm.addEventListener('submit', (e) => {
+                    if (!isLoggedIn) {
+                        e.preventDefault();
+                        showLoginAlert();
+                    }
+                });
+            }
+
+            if (buyNowForm) {
+                buyNowForm.addEventListener('submit', (e) => {
+                    if (!isLoggedIn) {
+                        e.preventDefault();
+                        showLoginAlert();
+                    }
+                });
+            }
+        });
+    </script>
+}}
