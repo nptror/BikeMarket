@@ -1,8 +1,8 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using Microsoft.EntityFrameworkCore;
 
-namespace BikeMarket.Models;
+namespace DataAccess.Models;
 
 public partial class VehicleMarketContext : DbContext
 {

@@ -1,9 +1,10 @@
-﻿using DTO.Service;
+using DTO.Service;
 using CloudinaryDotNet;
 using CloudinaryDotNet.Actions;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Options;
 
-namespace BikeMarket.Controllers.Service
+namespace Business.Service
 {
     public class PhotoService
     {
@@ -30,7 +31,7 @@ namespace BikeMarket.Controllers.Service
             var uploadParams = new ImageUploadParams
             {
                 File = new FileDescription(file.FileName, stream),
-                Folder = "bike-market" // đổi folder
+                Folder = "bike-market" // ??i folder
             };
 
             var result = await _cloudinary.UploadAsync(uploadParams);

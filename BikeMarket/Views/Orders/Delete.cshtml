@@ -1,4 +1,4 @@
-﻿@model BikeMarket.Models.Order
+﻿@model DataAccess.Models.Order
 
 @{
     ViewData["Title"] = "Delete";
@@ -52,24 +52,6 @@
         </dt>
         <dd class = "col-sm-10">
             @Html.DisplayFor(model => model.UpdatedAt)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Buyer)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Buyer.Id)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Seller)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Seller.Id)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Vehicle)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Vehicle.Id)
         </dd>
     </dl>
     

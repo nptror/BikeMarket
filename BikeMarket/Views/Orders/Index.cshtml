@@ -1,4 +1,4 @@
-﻿@model IEnumerable<BikeMarket.Models.Order>
+﻿@model IEnumerable<DataAccess.Models.Order>
 
 @{
     ViewData["Title"] = "Index";
@@ -33,15 +33,6 @@
             <th>
                 @Html.DisplayNameFor(model => model.UpdatedAt)
             </th>
-            <th>
-                @Html.DisplayNameFor(model => model.Buyer)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.Seller)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.Vehicle)
-            </th>
             <th></th>
         </tr>
     </thead>
@@ -68,15 +59,6 @@
             </td>
             <td>
                 @Html.DisplayFor(modelItem => item.UpdatedAt)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.Buyer.Id)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.Seller.Id)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.Vehicle.Id)
             </td>
             <td>
                 <a asp-action="Edit" asp-route-id="@item.Id">Edit</a> |

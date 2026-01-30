@@ -1,4 +1,4 @@
-﻿@model BikeMarket.Models.Order
+﻿@model DataAccess.Models.Order
 
 @{
     ViewData["Title"] = "Edit";
@@ -15,17 +15,17 @@
             <input type="hidden" asp-for="Id" />
             <div class="form-group">
                 <label asp-for="BuyerId" class="control-label"></label>
-                <select asp-for="BuyerId" class="form-control" asp-items="ViewBag.BuyerId"></select>
+                <select asp-for="BuyerId" class ="form-control" asp-items="ViewBag.BuyerId"></select>
                 <span asp-validation-for="BuyerId" class="text-danger"></span>
             </div>
             <div class="form-group">
                 <label asp-for="SellerId" class="control-label"></label>
-                <select asp-for="SellerId" class="form-control" asp-items="ViewBag.SellerId"></select>
+                <select asp-for="SellerId" class ="form-control" asp-items="ViewBag.SellerId"></select>
                 <span asp-validation-for="SellerId" class="text-danger"></span>
             </div>
             <div class="form-group">
                 <label asp-for="VehicleId" class="control-label"></label>
-                <select asp-for="VehicleId" class="form-control" asp-items="ViewBag.VehicleId"></select>
+                <select asp-for="VehicleId" class ="form-control" asp-items="ViewBag.VehicleId"></select>
                 <span asp-validation-for="VehicleId" class="text-danger"></span>
             </div>
             <div class="form-group">

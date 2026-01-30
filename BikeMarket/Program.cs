@@ -1,11 +1,11 @@
 ﻿namespace BikeMarket
 {
     using BikeMarket.Hubs;
-    using BikeMarket.Models;
+    using DataAccess.Models;
     using Microsoft.AspNetCore.Authentication.Cookies;
     using Microsoft.AspNetCore.Identity;
     using Microsoft.EntityFrameworkCore;
-    using BikeMarket.Controllers.Service;
+    using Business.Service;
     using DTO.Service;
 
     public class Program

@@ -1,4 +1,4 @@
-﻿using BikeMarket.Models;
+﻿using DataAccess.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.Security.Claims;
