@@ -1,5 +1,6 @@
 using DTO.Vehicle;
 using BikeMarket.Models;
+using DataAccess.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.Diagnostics;

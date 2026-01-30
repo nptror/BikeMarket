@@ -1,7 +1,7 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 
-namespace BikeMarket.Models;
+namespace DataAccess.Models;
 
 public partial class Category
 {

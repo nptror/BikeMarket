@@ -1,6 +1,6 @@
-﻿using BikeMarket.Controllers.Service;
+﻿using Business.Service;
 
-using BikeMarket.Models;
+using DataAccess.Models;
 using DTO.Vehicle;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;

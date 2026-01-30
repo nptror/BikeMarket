@@ -7,8 +7,15 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="CloudinaryDotNet" Version="1.28.0" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Folder Include="Interface\" />
-    <Folder Include="Service\" />
   </ItemGroup>
 
   <ItemGroup>
