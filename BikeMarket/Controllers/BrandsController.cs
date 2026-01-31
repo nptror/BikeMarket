@@ -2,10 +2,11 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Business.Interface;
+using DataAccess.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
-using DataAccess.Models;
 
 namespace BikeMarket.Controllers
 {
@@ -15,17 +16,17 @@ namespace BikeMarket.Controllers
 
     public class BrandsController : Controller
     {
-        private readonly VehicleMarketContext _context;
+        private readonly IBrandService _brandService;
 
-        public BrandsController(VehicleMarketContext context)
+        public BrandsController(IBrandService brandService)
         {
-            _context = context;
+            _brandService = brandService;
         }
 
         // GET: Brands
         public async Task<IActionResult> Index()
         {
-            return View(await _context.Brands.ToListAsync());
+            return View(await _brandService.GetAllAsync());
         }
 
         // GET: Brands/Details/5
@@ -36,8 +37,7 @@ namespace BikeMarket.Controllers
                 return NotFound();
             }
 
-            var brand = await _context.Brands
-                .FirstOrDefaultAsync(m => m.Id == id);
+            var brand = await _brandService.GetByIdAsync(id.Value);
             if (brand == null)
             {
                 return NotFound();
@@ -61,8 +61,7 @@ namespace BikeMarket.Controllers
         {
             if (ModelState.IsValid)
             {
-                _context.Add(brand);
-                await _context.SaveChangesAsync();
+                await _brandService.CreateAsync(brand);
                 return RedirectToAction(nameof(Index));
             }
             return View(brand);
@@ -76,7 +75,7 @@ namespace BikeMarket.Controllers
                 return NotFound();
             }
 
-            var brand = await _context.Brands.FindAsync(id);
+            var brand = await _brandService.GetByIdAsync(id.Value);
             if (brand == null)
             {
                 return NotFound();
@@ -100,12 +99,11 @@ namespace BikeMarket.Controllers
             {
                 try
                 {
-                    _context.Update(brand);
-                    await _context.SaveChangesAsync();
+                    await _brandService.UpdateAsync(brand);
                 }
                 catch (DbUpdateConcurrencyException)
                 {
-                    if (!BrandExists(brand.Id))
+                    if (!await BrandExists(brand.Id))
                     {
                         return NotFound();
                     }
@@ -127,8 +125,7 @@ namespace BikeMarket.Controllers
                 return NotFound();
             }
 
-            var brand = await _context.Brands
-                .FirstOrDefaultAsync(m => m.Id == id);
+            var brand = await _brandService.GetByIdAsync(id.Value);
             if (brand == null)
             {
                 return NotFound();
@@ -142,19 +139,13 @@ namespace BikeMarket.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
-            var brand = await _context.Brands.FindAsync(id);
-            if (brand != null)
-            {
-                _context.Brands.Remove(brand);
-            }
-
-            await _context.SaveChangesAsync();
+            await _brandService.DeleteAsync(id);
             return RedirectToAction(nameof(Index));
         }
 
-        private bool BrandExists(int id)
+        private Task<bool> BrandExists(int id)
         {
-            return _context.Brands.Any(e => e.Id == id);
+            return _brandService.ExistsAsync(id);
         }
     }
 }

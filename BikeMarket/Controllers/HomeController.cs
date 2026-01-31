@@ -1,5 +1,6 @@
 using DTO.Vehicle;
 using BikeMarket.Models;
+using Business.Interface;
 using DataAccess.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -10,46 +11,17 @@ namespace BikeMarket.Controllers
     public class HomeController : Controller
     {
         private readonly ILogger<HomeController> _logger;
-        private readonly VehicleMarketContext _context = new VehicleMarketContext();
+        private readonly IVehicleService _vehicleService;
 
-        public HomeController(ILogger<HomeController> logger, VehicleMarketContext context)
+        public HomeController(ILogger<HomeController> logger, IVehicleService vehicleService)
         {
             _logger = logger;
-            _context = context;
+            _vehicleService = vehicleService;
         }
 
         public async Task<IActionResult> Index()
         {
-            var vehicles = await _context.Vehicles
-                .Include(v => v.Brand)
-                .Include(v => v.Category)
-                .Include(v => v.VehicleImages)
-                .Where(v => v.Status == null || v.Status == "available") // ch? hi?n xe ?ang bán
-                .OrderByDescending(v => v.CreatedAt)
-                .Select(v => new VehicleListDTO
-                {
-                    VehicleId = v.Id,
-                    Title = v.Title,
-
-                    BrandName = v.Brand.Name,
-                    CategoryName = v.Category.Name,
-
-                    Price = v.Price,
-                    FrameSize = v.FrameSize,
-                    Condition = v.Condition,
-                    Color = v.Color,
-                    Location = v.Location,
-
-                    Status = v.Status,
-                    CreatedAt = v.CreatedAt,
-
-                    ThumbnailUrl = v.VehicleImages
-                        .OrderBy(img => img.Id)
-                        .Select(img => img.ImageUrl)
-                        .FirstOrDefault()
-                })
-                .ToListAsync();
-
+            var vehicles = await _vehicleService.GetAvailableListAsync();
             return View(vehicles);
         }
         public IActionResult Privacy()

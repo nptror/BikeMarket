@@ -1,4 +1,6 @@
 ﻿using DTO.User;
+using Business.Interface;
+using Business.Models;
 using DataAccess.Models;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
@@ -16,20 +18,17 @@ namespace BikeMarket.Controllers
 {
     public class UsersController : Controller
     {
-        private readonly VehicleMarketContext _context;
-        private readonly IPasswordHasher<User> _passwordHasher;
+        private readonly IUserService _userService;
 
-
-        public UsersController(VehicleMarketContext context, IPasswordHasher<User> passwordHasher)
+        public UsersController(IUserService userService)
         {
-            _context = context;
-            _passwordHasher = passwordHasher;
+            _userService = userService;
         }
 
         // GET: Users
         public async Task<IActionResult> Index()
         {
-            return View(await _context.Users.ToListAsync());
+            return View(await _userService.GetAllAsync());
         }
 
         // GET: Users/Details/5
@@ -40,8 +39,7 @@ namespace BikeMarket.Controllers
                 return NotFound();
             }
 
-            var user = await _context.Users
-                .FirstOrDefaultAsync(m => m.Id == id);
+            var user = await _userService.GetByIdAsync(id.Value);
             if (user == null)
             {
                 return NotFound();
@@ -65,31 +63,12 @@ namespace BikeMarket.Controllers
         {
             if (ModelState.IsValid)
             {
-                // Kiểm tra email đã tồn tại
-                if (await _context.Users.AnyAsync(u => u.Email == registerDto.Email))
+                var result = await _userService.RegisterAsync(registerDto);
+                if (!result.Success)
                 {
-                    ModelState.AddModelError("Email", "Email đã được sử dụng");
+                    ModelState.AddModelError("Email", result.ErrorMessage ?? "Đăng ký thất bại");
                     return View(registerDto);
                 }
-
-                // Tạo user entity từ DTO
-                var user = new User
-                {
-                    Name = registerDto.Name,
-                    Email = registerDto.Email,
-                    Phone = registerDto.Phone,
-                    Role =  "buyer", // default role
-                    EmailVerified = true,
-                    Status = "active",
-                    RatingAvg = 0.00m,
-                    CreatedAt = DateTime.Now
-                };
-
-                // Hash password - QUAN TRỌNG
-                user.PasswordHash = _passwordHasher.HashPassword(user, registerDto.Password);
-
-                _context.Add(user);
-                await _context.SaveChangesAsync();
 
                 return RedirectToAction(nameof(Index));
             }
@@ -111,33 +90,14 @@ namespace BikeMarket.Controllers
                 return View(loginDto);
             }
 
-            // Tìm user theo email
-            var user = await _context.Users
-                .FirstOrDefaultAsync(u => u.Email == loginDto.Email);
-
-             Console.WriteLine("User found: " + (user != null ? user.Email : "null"));
-
-            if (user == null)
+            var result = await _userService.AuthenticateAsync(loginDto);
+            if (!result.Success || result.User == null)
             {
-                ModelState.AddModelError(string.Empty, "Email hoặc mật khẩu không đúng");
+                ModelState.AddModelError(string.Empty, result.ErrorMessage ?? "Email hoặc mật khẩu không đúng");
                 return View(loginDto);
             }
 
-            // Verify password hash
-            var verifyResult = _passwordHasher.VerifyHashedPassword(user, user.PasswordHash, loginDto.Password);
-
-            if (verifyResult == PasswordVerificationResult.Failed)
-            {
-                ModelState.AddModelError(string.Empty, "Email hoặc mật khẩu không đúng");
-                return View(loginDto);
-            }
-
-            // Kiểm tra trạng thái tài khoản
-            if (user.Status != "active")
-            {
-                ModelState.AddModelError(string.Empty, "Tài khoản đã bị khóa");
-                return View(loginDto);
-            }
+            var user = result.User;
 
             // ✅ THÊM DÒNG NÀY: Lưu UserId vào Session
             HttpContext.Session.SetString("UserId", user.Id.ToString());
@@ -181,7 +141,7 @@ namespace BikeMarket.Controllers
                 return NotFound();
             }
 
-            var user = await _context.Users.FindAsync(id);
+            var user = await _userService.GetByIdAsync(id.Value);
             if (user == null)
             {
                 return NotFound();
@@ -205,12 +165,11 @@ namespace BikeMarket.Controllers
             {
                 try
                 {
-                    _context.Update(user);
-                    await _context.SaveChangesAsync();
+                    await _userService.UpdateAsync(user);
                 }
                 catch (DbUpdateConcurrencyException)
                 {
-                    if (!UserExists(user.Id))
+                    if (!await UserExists(user.Id))
                     {
                         return NotFound();
                     }
@@ -232,8 +191,7 @@ namespace BikeMarket.Controllers
                 return NotFound();
             }
 
-            var user = await _context.Users
-                .FirstOrDefaultAsync(m => m.Id == id);
+            var user = await _userService.GetByIdAsync(id.Value);
             if (user == null)
             {
                 return NotFound();
@@ -247,13 +205,7 @@ namespace BikeMarket.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
-            var user = await _context.Users.FindAsync(id);
-            if (user != null)
-            {
-                _context.Users.Remove(user);
-            }
-
-            await _context.SaveChangesAsync();
+            await _userService.DeleteAsync(id);
             return RedirectToAction(nameof(Index));
         }
 
@@ -272,9 +224,9 @@ namespace BikeMarket.Controllers
         }
 
 
-        private bool UserExists(int id)
+        private Task<bool> UserExists(int id)
         {
-            return _context.Users.Any(e => e.Id == id);
+            return _userService.ExistsAsync(id);
         }
 
 

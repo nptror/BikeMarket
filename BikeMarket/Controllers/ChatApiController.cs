@@ -1,17 +1,16 @@
-﻿using DataAccess.Models;
+﻿using Business.Interface;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 using System.Security.Claims;
 
 [ApiController]
 [Route("api/chat")]
 public class ChatApiController : ControllerBase
 {
-    private readonly VehicleMarketContext _context;
+    private readonly IChatService _chatService;
 
-    public ChatApiController(VehicleMarketContext context)
+    public ChatApiController(IChatService chatService)
     {
-        _context = context;
+        _chatService = chatService;
     }
 
     [HttpGet("conversations")]
@@ -19,32 +18,24 @@ public class ChatApiController : ControllerBase
     {
         var userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
 
-        var data = await _context.Conversations
-            .Where(c => c.BuyerId == userId || c.SellerId == userId)
-            .OrderByDescending(c => c.LastMessageAt)
-            .Select(c => new {
-                c.Id,
-                c.LastMessageAt
-            })
-            .ToListAsync();
+        var data = await _chatService.GetConversationsAsync(userId);
 
-        return Ok(data);
+        return Ok(data.Select(c => new {
+            c.Id,
+            c.LastMessageAt
+        }));
     }
 
     [HttpGet("messages/{conversationId}")]
     public async Task<IActionResult> GetMessages(int conversationId)
     {
-        var data = await _context.Messages
-            .Where(m => m.ConversationId == conversationId)
-            .OrderBy(m => m.SentAt)
-            .Select(m => new {
-                m.Id,
-                m.SenderId,
-                m.Content,
-                m.SentAt
-            })
-            .ToListAsync();
+        var data = await _chatService.GetMessagesAsync(conversationId);
 
-        return Ok(data);
+        return Ok(data.Select(m => new {
+            m.Id,
+            m.SenderId,
+            m.Content,
+            m.SentAt
+        }));
     }
 }

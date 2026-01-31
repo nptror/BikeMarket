@@ -1,17 +1,16 @@
-﻿using DataAccess.Models;
+﻿using Business.Interface;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 using System.Security.Claims;
 
 namespace BikeMarket.Controllers
 {
     public class ChatController : Controller
     {
-        private readonly VehicleMarketContext _context;
+        private readonly IChatService _chatService;
 
-        public ChatController(VehicleMarketContext context)
+        public ChatController(IChatService chatService)
         {
-            _context = context;
+            _chatService = chatService;
         }
 
         public IActionResult Index(int? conversationId = null)
@@ -32,25 +31,8 @@ namespace BikeMarket.Controllers
 
             var buyerId = int.Parse(buyerIdStr);
 
-            var conversation = await _context.Conversations
-                .FirstOrDefaultAsync(c => c.BuyerId == buyerId && c.SellerId == sellerId);
-
-            if (conversation == null)
-            {
-                conversation = new Conversation
-                {
-                    BuyerId = buyerId,
-                    SellerId = sellerId,
-                    CreatedAt = DateTime.Now,
-                    BuyerUnreadCount = 0,
-                    SellerUnreadCount = 0
-                };
-
-                _context.Conversations.Add(conversation);
-                await _context.SaveChangesAsync();
-            }
-
-            return RedirectToAction(nameof(Index), new { conversationId = conversation.Id });
+            var conversationId = await _chatService.GetOrCreateConversationIdAsync(buyerId, sellerId);
+            return RedirectToAction(nameof(Index), new { conversationId });
         }
     }
 }
