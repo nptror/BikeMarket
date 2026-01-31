@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Business.Interface;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
@@ -12,18 +13,17 @@ namespace BikeMarket.Controllers
 {
     public class WishlistsController : Controller
     {
-        private readonly VehicleMarketContext _context;
+        private readonly IWishlistService _wishlistService;
 
-        public WishlistsController(VehicleMarketContext context)
+        public WishlistsController(IWishlistService wishlistService)
         {
-            _context = context;
+            _wishlistService = wishlistService;
         }
 
         // GET: Wishlists
         public async Task<IActionResult> Index()
         {
-            var vehicleMarketContext = _context.Wishlists.Include(w => w.Buyer).Include(w => w.Vehicle);
-            return View(await vehicleMarketContext.ToListAsync());
+            return View(await _wishlistService.GetAllAsync());
         }
 
         [HttpPost]
@@ -51,44 +51,16 @@ namespace BikeMarket.Controllers
             int userId = int.Parse(userIdStr);
             System.Diagnostics.Debug.WriteLine($"[ToggleAjax] UserId parsed: {userId}");
 
-            // ✅ Kiểm tra vehicle tồn tại
-            var vehicleExists = await _context.Vehicles.AnyAsync(v => v.Id == request.VehicleId);
-            System.Diagnostics.Debug.WriteLine($"[ToggleAjax] Vehicle exists: {vehicleExists}");
-
-            if (!vehicleExists)
+            var result = await _wishlistService.ToggleAsync(userId, request.VehicleId);
+            if (!result.Success)
             {
-                System.Diagnostics.Debug.WriteLine($"[ToggleAjax] Vehicle not found with ID: {request.VehicleId}");
-                return Json(new { success = false, message = "VEHICLE_NOT_FOUND" });
+                System.Diagnostics.Debug.WriteLine($"[ToggleAjax] Toggle failed: {result.ErrorMessage}");
+                return Json(new { success = false, message = result.ErrorMessage ?? "ERROR" });
             }
 
-            var existed = await _context.Wishlists
-                .FirstOrDefaultAsync(w => w.BuyerId == userId && w.VehicleId == request.VehicleId);
-            System.Diagnostics.Debug.WriteLine($"[ToggleAjax] Existing wishlist found: {existed != null}");
+            System.Diagnostics.Debug.WriteLine($"[ToggleAjax] Changes saved. IsWishlisted: {result.IsWishlisted}");
 
-            bool isWishlisted;
-
-            if (existed != null)
-            {
-                System.Diagnostics.Debug.WriteLine($"[ToggleAjax] Removing wishlist entry with ID: {existed.Id}");
-                _context.Wishlists.Remove(existed);
-                isWishlisted = false;
-            }
-            else
-            {
-                System.Diagnostics.Debug.WriteLine($"[ToggleAjax] Adding new wishlist for UserId: {userId}, VehicleId: {request.VehicleId}");
-                _context.Wishlists.Add(new Wishlist
-                {
-                    BuyerId = userId,
-                    VehicleId = request.VehicleId,
-                    CreatedAt = DateTime.Now
-                });
-                isWishlisted = true;
-            }
-
-            await _context.SaveChangesAsync();
-            System.Diagnostics.Debug.WriteLine($"[ToggleAjax] Changes saved. IsWishlisted: {isWishlisted}");
-
-            return Json(new { success = true, isWishlisted });
+            return Json(new { success = true, isWishlisted = result.IsWishlisted });
         }
         // GET: Wishlists/Details/5
         public async Task<IActionResult> Details(int? id)
@@ -98,10 +70,7 @@ namespace BikeMarket.Controllers
                 return NotFound();
             }
 
-            var wishlist = await _context.Wishlists
-                .Include(w => w.Buyer)
-                .Include(w => w.Vehicle)
-                .FirstOrDefaultAsync(m => m.Id == id);
+            var wishlist = await _wishlistService.GetByIdAsync(id.Value);
             if (wishlist == null)
             {
                 return NotFound();
@@ -111,10 +80,10 @@ namespace BikeMarket.Controllers
         }
 
         // GET: Wishlists/Create
-        public IActionResult Create()
+        public async Task<IActionResult> Create()
         {
-            ViewData["BuyerId"] = new SelectList(_context.Users, "Id", "Id");
-            ViewData["VehicleId"] = new SelectList(_context.Vehicles, "Id", "Id");
+            ViewData["BuyerId"] = new SelectList(await _wishlistService.GetUsersAsync(), "Id", "Id");
+            ViewData["VehicleId"] = new SelectList(await _wishlistService.GetVehiclesAsync(), "Id", "Id");
             return View();
         }
 
@@ -127,12 +96,11 @@ namespace BikeMarket.Controllers
         {
             if (ModelState.IsValid)
             {
-                _context.Add(wishlist);
-                await _context.SaveChangesAsync();
+                await _wishlistService.CreateAsync(wishlist);
                 return RedirectToAction(nameof(Index));
             }
-            ViewData["BuyerId"] = new SelectList(_context.Users, "Id", "Id", wishlist.BuyerId);
-            ViewData["VehicleId"] = new SelectList(_context.Vehicles, "Id", "Id", wishlist.VehicleId);
+            ViewData["BuyerId"] = new SelectList(await _wishlistService.GetUsersAsync(), "Id", "Id", wishlist.BuyerId);
+            ViewData["VehicleId"] = new SelectList(await _wishlistService.GetVehiclesAsync(), "Id", "Id", wishlist.VehicleId);
             return View(wishlist);
         }
 
@@ -144,13 +112,13 @@ namespace BikeMarket.Controllers
                 return NotFound();
             }
 
-            var wishlist = await _context.Wishlists.FindAsync(id);
+            var wishlist = await _wishlistService.GetByIdAsync(id.Value);
             if (wishlist == null)
             {
                 return NotFound();
             }
-            ViewData["BuyerId"] = new SelectList(_context.Users, "Id", "Id", wishlist.BuyerId);
-            ViewData["VehicleId"] = new SelectList(_context.Vehicles, "Id", "Id", wishlist.VehicleId);
+            ViewData["BuyerId"] = new SelectList(await _wishlistService.GetUsersAsync(), "Id", "Id", wishlist.BuyerId);
+            ViewData["VehicleId"] = new SelectList(await _wishlistService.GetVehiclesAsync(), "Id", "Id", wishlist.VehicleId);
             return View(wishlist);
         }
 
@@ -170,12 +138,11 @@ namespace BikeMarket.Controllers
             {
                 try
                 {
-                    _context.Update(wishlist);
-                    await _context.SaveChangesAsync();
+                    await _wishlistService.UpdateAsync(wishlist);
                 }
                 catch (DbUpdateConcurrencyException)
                 {
-                    if (!WishlistExists(wishlist.Id))
+                    if (!await WishlistExists(wishlist.Id))
                     {
                         return NotFound();
                     }
@@ -186,8 +153,8 @@ namespace BikeMarket.Controllers
                 }
                 return RedirectToAction(nameof(Index));
             }
-            ViewData["BuyerId"] = new SelectList(_context.Users, "Id", "Id", wishlist.BuyerId);
-            ViewData["VehicleId"] = new SelectList(_context.Vehicles, "Id", "Id", wishlist.VehicleId);
+            ViewData["BuyerId"] = new SelectList(await _wishlistService.GetUsersAsync(), "Id", "Id", wishlist.BuyerId);
+            ViewData["VehicleId"] = new SelectList(await _wishlistService.GetVehiclesAsync(), "Id", "Id", wishlist.VehicleId);
             return View(wishlist);
         }
 
@@ -199,10 +166,7 @@ namespace BikeMarket.Controllers
                 return NotFound();
             }
 
-            var wishlist = await _context.Wishlists
-                .Include(w => w.Buyer)
-                .Include(w => w.Vehicle)
-                .FirstOrDefaultAsync(m => m.Id == id);
+            var wishlist = await _wishlistService.GetByIdAsync(id.Value);
             if (wishlist == null)
             {
                 return NotFound();
@@ -216,19 +180,13 @@ namespace BikeMarket.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
-            var wishlist = await _context.Wishlists.FindAsync(id);
-            if (wishlist != null)
-            {
-                _context.Wishlists.Remove(wishlist);
-            }
-
-            await _context.SaveChangesAsync();
+            await _wishlistService.DeleteAsync(id);
             return RedirectToAction(nameof(Index));
         }
 
-        private bool WishlistExists(int id)
+        private Task<bool> WishlistExists(int id)
         {
-            return _context.Wishlists.Any(e => e.Id == id);
+            return _wishlistService.ExistsAsync(id);
         }
     }
 }

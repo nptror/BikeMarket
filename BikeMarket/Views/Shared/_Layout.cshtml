@@ -46,16 +46,38 @@
                         }
                         else
                         {
+                            var userIdStr = Context.Session.GetString("UserId");
+                            var userName = User.Identity?.Name;
+                            var avatarInitial = !string.IsNullOrEmpty(userName) ? userName[0].ToString().ToUpperInvariant() : "U";
 
                             <li class="nav-item">
                                 <a class="nav-link" asp-controller="Chat" asp-action="Index">Chat</a>
                             </li>
-                           
-                                <li class="nav-item">
-                                <form asp-controller="Users" asp-action="Logout" method="post" class="d-inline">
-                                    @Html.AntiForgeryToken()
-                                    <button type="submit" class="nav-link btn btn-link text-danger p-0">Logout</button>
-                                </form>
+                            <li class="nav-item dropdown">
+                                <a class="nav-link dropdown-toggle p-0" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                    <div class="seller-avatar">@avatarInitial</div>
+                                </a>
+                                <ul class="dropdown-menu dropdown-menu-end">
+                                    <li>
+                                        <a class="dropdown-item" asp-controller="Users" asp-action="Details" asp-route-id="@userIdStr">Tài khoản</a>
+                                    </li>
+                                    <li>
+                                        <a class="dropdown-item" asp-controller="Wishlists" asp-action="Index">Tin đăng đã lưu</a>
+                                    </li>
+                                    <li>
+                                        <a class="dropdown-item" asp-controller="Vehicles" asp-action="Index">Cửa hàng</a>
+                                    </li>
+                                    <li>
+                                        <a class="dropdown-item" asp-controller="Home" asp-action="Privacy">Hỗ trợ</a>
+                                    </li>
+                                    <li><hr class="dropdown-divider" /></li>
+                                    <li>
+                                        <form asp-controller="Users" asp-action="Logout" method="post">
+                                            @Html.AntiForgeryToken()
+                                            <button type="submit" class="dropdown-item text-danger">Logout</button>
+                                        </form>
+                                    </li>
+                                </ul>
                             </li>
                         }
                     </ul>

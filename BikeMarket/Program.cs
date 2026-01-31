@@ -1,12 +1,15 @@
 ﻿namespace BikeMarket
 {
     using BikeMarket.Hubs;
+    using Business.Interface;
+    using Business.Service;
+    using DataAccess.Interface;
     using DataAccess.Models;
+    using DataAccess.Repository;
+    using DTO.Service;
     using Microsoft.AspNetCore.Authentication.Cookies;
     using Microsoft.AspNetCore.Identity;
     using Microsoft.EntityFrameworkCore;
-    using Business.Service;
-    using DTO.Service;
 
     public class Program
     {
@@ -17,8 +20,22 @@
             // Add services to the container.
             builder.Services.AddControllersWithViews();
             builder.Services.AddSignalR();
-            builder.Services.AddScoped<PhotoService>();
 
+            builder.Services.AddScoped<IPhotoService, PhotoService>();
+            builder.Services.AddScoped<IBrandRepository, BrandRepository>();
+            builder.Services.AddScoped<ICategoryRepository, CategoryRepository>();
+            builder.Services.AddScoped<IUserRepository, UserRepository>();
+            builder.Services.AddScoped<IVehicleRepository, VehicleRepository>();
+            builder.Services.AddScoped<IOrderRepository, OrderRepository>();
+            builder.Services.AddScoped<IWishlistRepository, WishlistRepository>();
+            builder.Services.AddScoped<IChatRepository, ChatRepository>();
+
+            builder.Services.AddScoped<IBrandService, BrandService>();
+            builder.Services.AddScoped<IUserService, UserService>();
+            builder.Services.AddScoped<IVehicleService, VehicleService>();
+            builder.Services.AddScoped<IOrderService, OrderService>();
+            builder.Services.AddScoped<IWishlistService, WishlistService>();
+            builder.Services.AddScoped<IChatService, ChatService>();
 
             builder.Services.Configure<CloudinarySettings>(
                 builder.Configuration.GetSection("CloudinarySettings")

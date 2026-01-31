@@ -2,21 +2,22 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Business.Interface;
+using DataAccess.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
-using DataAccess.Models;
 using System.Security.Claims;
 
 namespace BikeMarket.Controllers
 {
     public class OrdersController : Controller
     {
-        private readonly VehicleMarketContext _context;
+        private readonly IOrderService _orderService;
 
-        public OrdersController(VehicleMarketContext context)
+        public OrdersController(IOrderService orderService)
         {
-            _context = context;
+            _orderService = orderService;
         }
 
         [HttpPost]
@@ -31,28 +32,11 @@ namespace BikeMarket.Controllers
 
             var buyerId = int.Parse(buyerIdStr);
 
-            var vehicle = await _context.Vehicles
-                .AsNoTracking()
-                .FirstOrDefaultAsync(v => v.Id == vehicleId);
-
-            if (vehicle == null)
+            var order = await _orderService.BuyNowAsync(buyerId, vehicleId);
+            if (order == null)
             {
                 return NotFound();
             }
-
-            var order = new Order
-            {
-                BuyerId = buyerId,
-                SellerId = vehicle.SellerId,
-                VehicleId = vehicle.Id,
-                TotalAmount = vehicle.Price,
-                Status = "pending",
-                PaymentStatus = "unpaid",
-                CreatedAt = DateTime.Now
-            };
-
-            _context.Orders.Add(order);
-            await _context.SaveChangesAsync();
 
             return RedirectToAction(nameof(Details), new { id = order.Id });
         }
@@ -61,25 +45,18 @@ namespace BikeMarket.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Pay(int id)
         {
-            var order = await _context.Orders.FirstOrDefaultAsync(o => o.Id == id);
-            if (order == null)
+            if (!await _orderService.PayAsync(id))
             {
                 return NotFound();
             }
 
-            order.PaymentStatus = "paid";
-            order.Status = "paid";
-            order.UpdatedAt = DateTime.Now;
-
-            await _context.SaveChangesAsync();
             return RedirectToAction(nameof(Details), new { id });
         }
 
         // GET: Orders
         public async Task<IActionResult> Index()
         {
-            var vehicleMarketContext = _context.Orders.Include(o => o.Buyer).Include(o => o.Seller).Include(o => o.Vehicle);
-            return View(await vehicleMarketContext.ToListAsync());
+            return View(await _orderService.GetAllAsync());
         }
 
         // GET: Orders/Details/5
@@ -90,11 +67,7 @@ namespace BikeMarket.Controllers
                 return NotFound();
             }
 
-            var order = await _context.Orders
-                .Include(o => o.Buyer)
-                .Include(o => o.Seller)
-                .Include(o => o.Vehicle)
-                .FirstOrDefaultAsync(m => m.Id == id);
+            var order = await _orderService.GetByIdAsync(id.Value);
             if (order == null)
             {
                 return NotFound();
@@ -104,11 +77,11 @@ namespace BikeMarket.Controllers
         }
 
         // GET: Orders/Create
-        public IActionResult Create()
+        public async Task<IActionResult> Create()
         {
-            ViewData["BuyerId"] = new SelectList(_context.Users, "Id", "Id");
-            ViewData["SellerId"] = new SelectList(_context.Users, "Id", "Id");
-            ViewData["VehicleId"] = new SelectList(_context.Vehicles, "Id", "Id");
+            ViewData["BuyerId"] = new SelectList(await _orderService.GetUsersAsync(), "Id", "Id");
+            ViewData["SellerId"] = new SelectList(await _orderService.GetUsersAsync(), "Id", "Id");
+            ViewData["VehicleId"] = new SelectList(await _orderService.GetVehiclesAsync(), "Id", "Id");
             return View();
         }
 
@@ -121,13 +94,12 @@ namespace BikeMarket.Controllers
         {
             if (ModelState.IsValid)
             {
-                _context.Add(order);
-                await _context.SaveChangesAsync();
+                await _orderService.CreateAsync(order);
                 return RedirectToAction(nameof(Index));
             }
-            ViewData["BuyerId"] = new SelectList(_context.Users, "Id", "Id", order.BuyerId);
-            ViewData["SellerId"] = new SelectList(_context.Users, "Id", "Id", order.SellerId);
-            ViewData["VehicleId"] = new SelectList(_context.Vehicles, "Id", "Id", order.VehicleId);
+            ViewData["BuyerId"] = new SelectList(await _orderService.GetUsersAsync(), "Id", "Id", order.BuyerId);
+            ViewData["SellerId"] = new SelectList(await _orderService.GetUsersAsync(), "Id", "Id", order.SellerId);
+            ViewData["VehicleId"] = new SelectList(await _orderService.GetVehiclesAsync(), "Id", "Id", order.VehicleId);
             return View(order);
         }
 
@@ -139,14 +111,14 @@ namespace BikeMarket.Controllers
                 return NotFound();
             }
 
-            var order = await _context.Orders.FindAsync(id);
+            var order = await _orderService.GetByIdAsync(id.Value);
             if (order == null)
             {
                 return NotFound();
             }
-            ViewData["BuyerId"] = new SelectList(_context.Users, "Id", "Id", order.BuyerId);
-            ViewData["SellerId"] = new SelectList(_context.Users, "Id", "Id", order.SellerId);
-            ViewData["VehicleId"] = new SelectList(_context.Vehicles, "Id", "Id", order.VehicleId);
+            ViewData["BuyerId"] = new SelectList(await _orderService.GetUsersAsync(), "Id", "Id", order.BuyerId);
+            ViewData["SellerId"] = new SelectList(await _orderService.GetUsersAsync(), "Id", "Id", order.SellerId);
+            ViewData["VehicleId"] = new SelectList(await _orderService.GetVehiclesAsync(), "Id", "Id", order.VehicleId);
             return View(order);
         }
 
@@ -166,12 +138,11 @@ namespace BikeMarket.Controllers
             {
                 try
                 {
-                    _context.Update(order);
-                    await _context.SaveChangesAsync();
+                    await _orderService.UpdateAsync(order);
                 }
                 catch (DbUpdateConcurrencyException)
                 {
-                    if (!OrderExists(order.Id))
+                    if (!await OrderExists(order.Id))
                     {
                         return NotFound();
                     }
@@ -182,9 +153,9 @@ namespace BikeMarket.Controllers
                 }
                 return RedirectToAction(nameof(Index));
             }
-            ViewData["BuyerId"] = new SelectList(_context.Users, "Id", "Id", order.BuyerId);
-            ViewData["SellerId"] = new SelectList(_context.Users, "Id", "Id", order.SellerId);
-            ViewData["VehicleId"] = new SelectList(_context.Vehicles, "Id", "Id", order.VehicleId);
+            ViewData["BuyerId"] = new SelectList(await _orderService.GetUsersAsync(), "Id", "Id", order.BuyerId);
+            ViewData["SellerId"] = new SelectList(await _orderService.GetUsersAsync(), "Id", "Id", order.SellerId);
+            ViewData["VehicleId"] = new SelectList(await _orderService.GetVehiclesAsync(), "Id", "Id", order.VehicleId);
             return View(order);
         }
 
@@ -196,11 +167,7 @@ namespace BikeMarket.Controllers
                 return NotFound();
             }
 
-            var order = await _context.Orders
-                .Include(o => o.Buyer)
-                .Include(o => o.Seller)
-                .Include(o => o.Vehicle)
-                .FirstOrDefaultAsync(m => m.Id == id);
+            var order = await _orderService.GetByIdAsync(id.Value);
             if (order == null)
             {
                 return NotFound();
@@ -214,19 +181,13 @@ namespace BikeMarket.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
-            var order = await _context.Orders.FindAsync(id);
-            if (order != null)
-            {
-                _context.Orders.Remove(order);
-            }
-
-            await _context.SaveChangesAsync();
+            await _orderService.DeleteAsync(id);
             return RedirectToAction(nameof(Index));
         }
 
-        private bool OrderExists(int id)
+        private Task<bool> OrderExists(int id)
         {
-            return _context.Orders.Any(e => e.Id == id);
+            return _orderService.ExistsAsync(id);
         }
     }
 }

@@ -1,5 +1,4 @@
-﻿using Business.Service;
-
+﻿using Business.Interface;
 using DataAccess.Models;
 using DTO.Vehicle;
 using Microsoft.AspNetCore.Mvc;
@@ -14,23 +13,18 @@ namespace BikeMarket.Controllers
 {
     public class VehiclesController : Controller
     {
-        private readonly VehicleMarketContext _context;
-        private readonly PhotoService _photoService;
+        private readonly IVehicleService _vehicleService;
 
-        public VehiclesController(VehicleMarketContext context, PhotoService photoService)
+        public VehiclesController(IVehicleService vehicleService)
         {
-            _context = context;
-            _photoService = photoService;
+            _vehicleService = vehicleService;
         }
 
         // GET: Vehicles
         public async Task<IActionResult> Index()
         {
-            var vehicleMarketContext = _context.Vehicles.Include(v => v.Brand).Include(v => v.Category).Include(v => v.Seller);
-            return View(await vehicleMarketContext.ToListAsync());
+            return View(await _vehicleService.GetAllAsync());
         }
-
-        // GET: Vehicles/Details/5
 
         // GET: Vehicles/DetailsAdmin/5
         public async Task<IActionResult> DetailsAdmin(int? id)
@@ -38,37 +32,9 @@ namespace BikeMarket.Controllers
             if (id == null)
                 return NotFound();
 
-            var vehicle = await _context.Vehicles
-                .Include(v => v.Brand)
-                .Include(v => v.Category)
-                .Include(v => v.Seller)
-                .Include(v => v.VehicleImages)
-                .FirstOrDefaultAsync(v => v.Id == id.Value);
-
-            if (vehicle == null)
+            var dto = await _vehicleService.GetDetailAdminAsync(id.Value);
+            if (dto == null)
                 return NotFound();
-
-            var dto = new VehicleDetailDTO
-            {
-                VehicleId = vehicle.Id,
-                Title = vehicle.Title,
-                Description = vehicle.Description,
-                BrandId = vehicle.BrandId,
-                BrandName = vehicle.Brand?.Name ?? "Unknown",
-                CategoryId = vehicle.CategoryId,
-                CategoryName = vehicle.Category?.Name ?? "Unknown",
-                Price = vehicle.Price,
-                FrameSize = vehicle.FrameSize,
-                Condition = vehicle.Condition,
-                YearManufactured = vehicle.YearManufactured,
-                Color = vehicle.Color,
-                Location = vehicle.Location,
-                Status = vehicle.Status,
-                SellerId = vehicle.SellerId,
-                SellerName = vehicle.Seller?.Name ?? "Unknown",
-                CreatedAt = vehicle.CreatedAt,
-                ImageUrls = vehicle.VehicleImages.Select(img => img.ImageUrl).ToList()
-            };
 
             return View(dto);
         }
@@ -82,58 +48,21 @@ namespace BikeMarket.Controllers
             var userIdStr = HttpContext.Session.GetString("UserId");
             int? currentUserId = string.IsNullOrEmpty(userIdStr) ? null : int.Parse(userIdStr);
 
-            var vehicle = await _context.Vehicles
-                .Include(v => v.Brand)
-                .Include(v => v.Category)
-                .Include(v => v.Seller)
-                .Include(v => v.VehicleImages)
-                .FirstOrDefaultAsync(v => v.Id == id.Value);
-
-            if (vehicle == null)
+            var dto = await _vehicleService.GetDetailBuyerAsync(id.Value, currentUserId);
+            if (dto == null)
                 return NotFound();
-
-            bool isWishlisted = false;
-            if (currentUserId != null)
-            {
-                isWishlisted = await _context.Wishlists
-                    .AnyAsync(w => w.BuyerId == currentUserId && w.VehicleId == vehicle.Id);
-            }
-
-            var dto = new VehicleDetailDTO
-            {
-                VehicleId = vehicle.Id,
-                Title = vehicle.Title,
-                Description = vehicle.Description,
-                BrandId = vehicle.BrandId,
-                BrandName = vehicle.Brand?.Name ?? "Unknown",
-                CategoryId = vehicle.CategoryId,
-                CategoryName = vehicle.Category?.Name ?? "Unknown",
-                Price = vehicle.Price,
-                FrameSize = vehicle.FrameSize,
-                Condition = vehicle.Condition,
-                YearManufactured = vehicle.YearManufactured,
-                Color = vehicle.Color,
-                Location = vehicle.Location,
-                Status = vehicle.Status,
-                IsWishlisted = isWishlisted,
-                SellerId = vehicle.SellerId,
-                SellerName = vehicle.Seller?.Name ?? "Unknown",
-                CreatedAt = vehicle.CreatedAt,
-                ImageUrls = vehicle.VehicleImages.Select(img => img.ImageUrl).ToList()
-            };
 
             return View(dto);
         }
 
-
         // GET: Vehicles/Create
-        public IActionResult Create()
+        public async Task<IActionResult> Create()
         {
             Console.WriteLine("📋 [GET] Create() - Loading create form");
-            
-            ViewData["BrandId"] = new SelectList(_context.Brands, "Id", "Name");
-            ViewData["CategoryId"] = new SelectList(_context.Categories, "Id", "Name");
-            ViewData["SellerId"] = new SelectList(_context.Users, "Id", "Id");
+
+            ViewData["BrandId"] = new SelectList(await _vehicleService.GetBrandsAsync(), "Id", "Name");
+            ViewData["CategoryId"] = new SelectList(await _vehicleService.GetCategoriesAsync(), "Id", "Name");
+            ViewData["SellerId"] = new SelectList(await _vehicleService.GetSellersAsync(), "Id", "Id");
 
             Console.WriteLine("✅ [GET] Create() - Form loaded successfully");
             return View();
@@ -153,7 +82,7 @@ namespace BikeMarket.Controllers
             ModelState.Remove("Brand");
             ModelState.Remove("Category");
             ModelState.Remove("Seller");
-                        
+
             if (!ModelState.IsValid)
             {
                 Console.WriteLine("❌ [POST] Create() - ModelState Invalid");
@@ -164,59 +93,28 @@ namespace BikeMarket.Controllers
                         Console.WriteLine($"   Error: {error.ErrorMessage}");
                     }
                 }
-                
-                ViewData["BrandId"] = new SelectList(_context.Brands, "Id", "Name", vehicle.BrandId);
-                ViewData["CategoryId"] = new SelectList(_context.Categories, "Id", "Name", vehicle.CategoryId);
+
+                ViewData["BrandId"] = new SelectList(await _vehicleService.GetBrandsAsync(), "Id", "Name", vehicle.BrandId);
+                ViewData["CategoryId"] = new SelectList(await _vehicleService.GetCategoriesAsync(), "Id", "Name", vehicle.CategoryId);
                 return View(vehicle);
             }
 
 
             // ✅ Get UserId from Claims (Cookie Authentication)
             var userIdClaim = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier);
-            
+
             if (userIdClaim == null || !int.TryParse(userIdClaim.Value, out var sellerId))
             {
                 Console.WriteLine("❌ [POST] Create() - Invalid or missing user claim");
                 ModelState.AddModelError("", "User not authenticated. Please log in again.");
-                ViewData["BrandId"] = new SelectList(_context.Brands, "Id", "Name", vehicle.BrandId);
-                ViewData["CategoryId"] = new SelectList(_context.Categories, "Id", "Name", vehicle.CategoryId);
+                ViewData["BrandId"] = new SelectList(await _vehicleService.GetBrandsAsync(), "Id", "Name", vehicle.BrandId);
+                ViewData["CategoryId"] = new SelectList(await _vehicleService.GetCategoriesAsync(), "Id", "Name", vehicle.CategoryId);
                 return View(vehicle);
             }
 
-            vehicle.SellerId = sellerId;
-            vehicle.CreatedAt = DateTime.Now;
-            vehicle.Status = string.IsNullOrEmpty(vehicle.Status) ? "available" : vehicle.Status;
+            Console.WriteLine($"📍 Vehicle prepared: SellerId={sellerId}");
 
-            Console.WriteLine($"📍 Vehicle prepared: SellerId={vehicle.SellerId}, Status={vehicle.Status}, CreatedAt={vehicle.CreatedAt}");
-
-            _context.Vehicles.Add(vehicle);
-            await _context.SaveChangesAsync();
-
-            if (images != null && images.Count > 0)
-            {                
-                int imageCount = 0;
-                foreach (var file in images)
-                {
-                    Console.WriteLine($"   📤 Uploading image {++imageCount}: {file.FileName} (Size: {file.Length} bytes)");
-                    
-                    var imageUrl = await _photoService.UploadImageAsync(file);
-                    Console.WriteLine($"   ✅ Image uploaded: {imageUrl}");
-
-                    var vehicleImage = new VehicleImage
-                    {
-                        VehicleId = vehicle.Id,
-                        ImageUrl = imageUrl
-                    };
-
-                    _context.VehicleImages.Add(vehicleImage);
-                }
-
-                await _context.SaveChangesAsync();
-            }
-            else
-            {
-                Console.WriteLine("⚠️ [POST] Create() - No images provided");
-            }
+            await _vehicleService.CreateAsync(vehicle, images, sellerId);
 
             Console.WriteLine($"🎉 [POST] Create() - Vehicle created successfully! Redirecting to Index...");
             return RedirectToAction(nameof(Index));
@@ -226,14 +124,11 @@ namespace BikeMarket.Controllers
         {
             if (id == null) return NotFound();
 
-            var vehicle = await _context.Vehicles
-                .Include(v => v.VehicleImages)
-                .FirstOrDefaultAsync(v => v.Id == id.Value);
-
+            var vehicle = await _vehicleService.GetForEditAsync(id.Value);
             if (vehicle == null) return NotFound();
 
-            ViewData["BrandId"] = new SelectList(_context.Brands, "Id", "Name", vehicle.BrandId);
-            ViewData["CategoryId"] = new SelectList(_context.Categories, "Id", "Name", vehicle.CategoryId);
+            ViewData["BrandId"] = new SelectList(await _vehicleService.GetBrandsAsync(), "Id", "Name", vehicle.BrandId);
+            ViewData["CategoryId"] = new SelectList(await _vehicleService.GetCategoriesAsync(), "Id", "Name", vehicle.CategoryId);
 
             return View(vehicle);
         }
@@ -255,12 +150,11 @@ namespace BikeMarket.Controllers
             {
                 try
                 {
-                    _context.Update(vehicle);
-                    await _context.SaveChangesAsync();
+                    await _vehicleService.UpdateAsync(vehicle);
                 }
                 catch (DbUpdateConcurrencyException)
                 {
-                    if (!VehicleExists(vehicle.Id))
+                    if (!await VehicleExists(vehicle.Id))
                     {
                         return NotFound();
                     }
@@ -271,9 +165,9 @@ namespace BikeMarket.Controllers
                 }
                 return RedirectToAction(nameof(Index));
             }
-            ViewData["BrandId"] = new SelectList(_context.Brands, "Id", "Id", vehicle.BrandId);
-            ViewData["CategoryId"] = new SelectList(_context.Categories, "Id", "Id", vehicle.CategoryId);
-            ViewData["SellerId"] = new SelectList(_context.Users, "Id", "Id", vehicle.SellerId);
+            ViewData["BrandId"] = new SelectList(await _vehicleService.GetBrandsAsync(), "Id", "Id", vehicle.BrandId);
+            ViewData["CategoryId"] = new SelectList(await _vehicleService.GetCategoriesAsync(), "Id", "Id", vehicle.CategoryId);
+            ViewData["SellerId"] = new SelectList(await _vehicleService.GetSellersAsync(), "Id", "Id", vehicle.SellerId);
             return View(vehicle);
         }
 
@@ -285,11 +179,7 @@ namespace BikeMarket.Controllers
                 return NotFound();
             }
 
-            var vehicle = await _context.Vehicles
-                .Include(v => v.Brand)
-                .Include(v => v.Category)
-                .Include(v => v.Seller)
-                .FirstOrDefaultAsync(m => m.Id == id);
+            var vehicle = await _vehicleService.GetForDeleteAsync(id.Value);
             if (vehicle == null)
             {
                 return NotFound();
@@ -303,19 +193,13 @@ namespace BikeMarket.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
-            var vehicle = await _context.Vehicles.FindAsync(id);
-            if (vehicle != null)
-            {
-                _context.Vehicles.Remove(vehicle);
-            }
-
-            await _context.SaveChangesAsync();
+            await _vehicleService.DeleteAsync(id);
             return RedirectToAction(nameof(Index));
         }
 
-        private bool VehicleExists(int id)
+        private Task<bool> VehicleExists(int id)
         {
-            return _context.Vehicles.Any(e => e.Id == id);
+            return _vehicleService.ExistsAsync(id);
         }
     }
 }

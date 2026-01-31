@@ -1,3 +1,4 @@
+using Business.Interface;
 using DTO.Service;
 using CloudinaryDotNet;
 using CloudinaryDotNet.Actions;
@@ -6,7 +7,7 @@ using Microsoft.Extensions.Options;
 
 namespace Business.Service
 {
-    public class PhotoService
+    public class PhotoService : IPhotoService
     {
         private readonly Cloudinary _cloudinary;
 
