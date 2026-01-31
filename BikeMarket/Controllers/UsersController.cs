@@ -123,6 +123,11 @@ namespace BikeMarket.Controllers
                 new ClaimsPrincipal(claimsIdentity),
                 authProperties);
 
+            if (string.Equals(user.Role, "admin", StringComparison.OrdinalIgnoreCase))
+            {
+                return RedirectToAction("Index", "HomeAdmin");
+            }
+
             // Redirect về trang ban đầu hoặc Home
             if (!string.IsNullOrEmpty(returnUrl) && Url.IsLocalUrl(returnUrl))
             {
