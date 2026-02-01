@@ -13,9 +13,54 @@ public class UserRepository : IUserRepository
         _context = context;
     }
 
-    public Task<List<User>> GetAllAsync()
+    public async Task<List<User>> GetAllAsync(
+        string? search = null,
+        decimal RatingAvg = 0,
+        string? role = null,
+        string? sortBy = "email",
+        string? sortOrder = "asc")
     {
-        return _context.Users.ToListAsync();
+        var query = _context.Users.AsQueryable();
+
+        //Apply search filter
+        if (!string.IsNullOrWhiteSpace(search))
+        {
+            var searchLower = search.ToLower();
+            query = query.Where(u =>
+           (u.Name != null && u.Name.ToLower().Contains(searchLower)) ||
+           (u.Email != null && u.Email.ToLower().Contains(searchLower)));
+        }
+
+        //Apply rating filter
+        if (RatingAvg > 0)
+        {
+            query = query.Where(u => u.RatingAvg >= RatingAvg);
+        }
+
+        //Apply role filter
+        if (!string.IsNullOrWhiteSpace(role) && role != "all")
+        {
+            query = query.Where(u => u.Role == role);
+        }
+
+        //Apply sorting
+        query = sortBy?.ToLower() switch
+        {
+            "name" => sortOrder?.ToLower() == "desc"
+                ? query.OrderByDescending(u => u.Name)
+                : query.OrderBy(u => u.Name),
+            "email" => sortOrder?.ToLower() == "desc"
+                ? query.OrderByDescending(u => u.Email)
+                : query.OrderBy(u => u.Email),
+            "ratingavg" => sortOrder?.ToLower() == "desc"
+                ? query.OrderByDescending(u => u.RatingAvg)
+                : query.OrderBy(u => u.RatingAvg),
+            _ => sortOrder?.ToLower() == "desc"
+                ? query.OrderByDescending(u => u.Email)
+                : query.OrderBy(u => u.Email)
+        };
+
+        return await query.ToListAsync();
     }
 
     public Task<User?> GetByIdAsync(int id)

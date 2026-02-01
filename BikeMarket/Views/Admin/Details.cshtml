@@ -1,0 +1,140 @@
+﻿@using DTO.User
+@model UserProfileDTO
+@{
+    ViewData["Title"] = "Chi tiết User";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="container-fluid py-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <!-- Header -->
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h2 class="mb-1">
+                        <i class="fas fa-user-circle text-primary"></i>
+                        @Model.Name
+                    </h2>
+                    <p class="text-muted mb-0">
+                        ID: <strong>#@Model.Id</strong> |
+                        @Model.Email |
+                        @Model.Phone
+                    </p>
+                </div>
+                <div class="btn-group">
+                    <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-warning">
+                        <i class="fas fa-edit"></i> Sửa
+                    </a>
+                    <a asp-action="Index" class="btn btn-secondary">Danh sách</a>
+                </div>
+            </div>
+
+            <!-- Main Info Card -->
+            <div class="row mb-4">
+                <div class="col-md-6">
+                    <div class="card shadow-sm border-primary">
+                        <div class="card-header bg-primary text-white">
+                            <h6 class="mb-0"><i class="fas fa-info-circle"></i> Thông tin cơ bản</h6>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-4 fw-bold text-muted">Tên:</div>
+                                <div class="col-8">@Model.Name</div>
+
+                                <div class="col-4 fw-bold text-muted">Email:</div>
+                                <div class="col-8">
+                                    <a href="mailto:@Model.Email">@Model.Email</a>
+                                </div>
+
+                                <div class="col-4 fw-bold text-muted">SĐT:</div>
+                                <div class="col-8">@(Model.Phone ?? "Chưa cập nhật")</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-6">
+                    <div class="card shadow-sm @(Model.Role == "Seller" ? "border-warning" : "border-success")">
+                        <div class="card-header @(Model.Role == "Seller" ? "bg-warning text-dark" : "bg-success text-white")">
+                            <h6 class="mb-0">
+                                <i class="fas @(Model.Role == "Seller" ? "fa-store" : "fa-shopping-cart")"></i>
+                                @Model.Role
+                            </h6>
+                        </div>
+                        <div class="card-body">
+                            <div class="row text-center">
+                                <div class="col-6 border-end">
+                                    <div class="fs-5 fw-bold text-warning">@(Model.RatingAvg.ToString("N1") ?? "0.0")</div>
+                                    <small class="text-muted">⭐ Rating</small>
+                                </div>
+                                <div class="col-6">
+                                    <div class="fs-5 fw-bold text-primary">@(Model.Role == "Seller" ? "🏪" : "🛒")</div>
+                                    <small class="text-muted">@(Model.Role == "Seller" ? "Người bán" : "Người mua")</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Activity Timeline -->
+            <div class="card shadow-sm">
+                <div class="card-header bg-light">
+                    <h6 class="mb-0"><i class="fas fa-clock"></i> Hoạt động gần đây</h6>
+                </div>
+                <div class="card-body">
+                    <div class="timeline">
+                        <div class="timeline-item">
+                            <div class="timeline-icon bg-primary">👤</div>
+                            <div class="timeline-content">
+                                <strong>Tạo tài khoản</strong><br>
+                                <small class="text-muted">
+                                    Tham gia @(Model.CreatedAt?.ToString("dd/MM/yyyy HH:mm") ?? "Chưa biết")
+                                </small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>  
+
+<style>
+    .timeline {
+        position: relative;
+        padding-left: 30px;
+    }
+    .timeline:before {
+        content: '';
+        position: absolute;
+        left: 15px;
+        top: 0;
+        bottom: 0;
+        width: 2px;
+        background: #e9ecef;
+    }
+    .timeline-item {
+        position: relative;
+        margin-bottom: 1.5rem;
+    }
+    .timeline-icon {
+        position: absolute;
+        left: -40px;
+        top: 5px;
+        width: 30px;
+        height: 30px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 14px;
+        color: white;
+    }
+    .timeline-content {
+        background: #f8f9fa;
+        padding: 12px 15px;
+        border-radius: 8px;
+        border-left: 4px solid #007bff;
+    }
+</style>

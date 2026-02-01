@@ -1,0 +1,156 @@
+﻿@using DTO.User
+@model List<UserProfileDTO>
+@{
+    ViewData["Title"] = "Quản lý User - Admin";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="container-fluid py-4">
+    <div class="row mb-4">
+        <div class="col">
+            <h2 class="mb-2"><i class="fas fa-users"></i> Quản lý User</h2>
+            <p class="text-muted">Tổng: @Model.Count() users</p>
+        </div>
+    </div>
+
+    <!-- Filter Form -->
+    <form asp-action="Index" method="get" class="card mb-4">
+        <div class="card-body">
+            <div class="row g-3">
+                <!-- Search -->
+                <div class="col-md-3">
+                    <label class="form-label">Tìm kiếm</label>
+                    <input name="search" value="@Context.Request.Query["search"]"
+                           class="form-control" placeholder="Tên hoặc email..." />
+                </div>
+
+                <!-- RatingAvg Filter - MỚI THÊM -->
+                <div class="col-md-2">
+                    <label class="form-label">Rating tối thiểu ⭐</label>
+                    <input type="number" name="ratingAvg" 
+                           value="@Context.Request.Query["ratingAvg"]" 
+                           class="form-control" 
+                           placeholder="0.0"
+                           min="0" 
+                           max="5" 
+                           step="0.1" />
+                </div>
+
+                <!-- Role -->
+                <div class="col-md-2">
+                    <label class="form-label">Role</label>
+                    <select name="role" class="form-select">
+                        <option value="">Tất cả</option>
+                        <option value="Buyer" selected="@(Context.Request.Query["role"] == "Buyer")">Buyer</option>
+                        <option value="Seller" selected="@(Context.Request.Query["role"] == "Seller")">Seller</option>
+                    </select>
+                </div>
+
+                <!-- Sort By - MỚI THÊM -->
+                <div class="col-md-2">
+                    <label class="form-label">Sắp xếp theo</label>
+                    <select name="sortBy" class="form-select">
+                        <option value="email" selected="@(Context.Request.Query["sortBy"] == "email" || string.IsNullOrEmpty(Context.Request.Query["sortBy"]))">Email</option>
+                        <option value="name" selected="@(Context.Request.Query["sortBy"] == "name")">Tên</option>
+                        <option value="ratingavg" selected="@(Context.Request.Query["sortBy"] == "ratingavg")">Rating</option>
+                    </select>
+                </div>
+
+                <!-- Sort Order - MỚI THÊM -->
+                <div class="col-md-1">
+                    <label class="form-label">Thứ tự</label>
+                    <select name="sortOrder" class="form-select">
+                        <option value="asc" selected="@(Context.Request.Query["sortOrder"] == "asc" || string.IsNullOrEmpty(Context.Request.Query["sortOrder"]))">
+                            <i class="fas fa-arrow-up"></i> A-Z
+                        </option>
+                        <option value="desc" selected="@(Context.Request.Query["sortOrder"] == "desc")">
+                            <i class="fas fa-arrow-down"></i> Z-A
+                        </option>
+                    </select>
+                </div>
+
+                <!-- Buttons -->
+                <div class="col-md-2 d-flex align-items-end">
+                    <div class="w-100">
+                        <button type="submit" class="btn btn-primary w-100 mb-2">
+                            <i class="fas fa-search"></i> Tìm
+                        </button>
+                        <a asp-action="Index" class="btn btn-outline-secondary w-100">
+                            <i class="fas fa-times"></i> Xóa
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </form>
+
+    <!-- Users Table -->
+    <div class="card shadow">
+        <div class="table-responsive">
+            <table class="table table-hover mb-0">
+                <thead class="table-dark">
+                    <tr>
+                        <th>ID</th>
+                        <th>Tên</th>
+                        <th>Email</th>
+                        <th>SĐT</th>
+                        <th>Role</th>
+                        <th>Rating</th>
+                        <th>Thao tác</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (Model.Any())
+                    {
+                        @foreach (var user in Model)
+                        {
+                            <tr>
+                                <td><strong>@user.Id</strong></td>
+                                <td>@user.Name</td>
+                                <td>
+                                    <a href="mailto:@user.Email">@user.Email</a>
+                                </td>
+                                <td>@(user.Phone ?? "N/A")</td>
+                                <td>
+                                    <span class="badge @(user.Role == "Admin" ? "bg-danger" : user.Role == "Seller" ? "bg-warning" : "bg-primary")">
+                                        @user.Role
+                                    </span>
+                                </td>
+                                <td>
+                                    <span class="text-warning fw-bold">
+                                        @user.RatingAvg.ToString("N1") ⭐
+                                    </span>
+                                </td>
+                                <td>
+                                    <div class="btn-group btn-group-sm">
+                                        <a asp-action="Details" asp-route-id="@user.Id"
+                                           class="btn btn-info" title="Chi tiết">
+                                            <i class="fas fa-eye"></i>
+                                        </a>
+                                        <a asp-action="Edit" asp-route-id="@user.Id"
+                                           class="btn btn-warning" title="Sửa">
+                                            <i class="fas fa-edit"></i>
+                                        </a>
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    }
+                    else
+                    {
+                        <tr>
+                            <td colspan="7" class="text-center py-5">
+                                <i class="fas fa-users fa-3x text-muted mb-3 d-block"></i>
+                                <p class="text-muted">Không tìm thấy user nào</p>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

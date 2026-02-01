@@ -8,6 +8,7 @@
         public string Phone { get; set; }
         public string Role { get; set; }
         public decimal RatingAvg { get; set; }
+        public DateTime? CreatedAt { get; set; }
 
     }
 }

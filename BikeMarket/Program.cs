@@ -36,6 +36,8 @@
             builder.Services.AddScoped<IOrderService, OrderService>();
             builder.Services.AddScoped<IWishlistService, WishlistService>();
             builder.Services.AddScoped<IChatService, ChatService>();
+            builder.Services.AddScoped<IAdminService, AdminService>();
+
 
             builder.Services.Configure<CloudinarySettings>(
                 builder.Configuration.GetSection("CloudinarySettings")
