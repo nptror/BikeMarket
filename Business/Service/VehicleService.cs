@@ -267,6 +267,7 @@ public class VehicleService : IVehicleService
             DeniedCount = deniedCount,
             Vehicles = list
         };
+    }
     public async Task<List<VehicleModerationDTO>> GetPendingVehiclesAsync()
     {
         var vehicles = await _vehicleRepository.GetAllWithIncludesAsync();
