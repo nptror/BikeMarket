@@ -7,7 +7,9 @@ using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Claims;
 using System.Threading.Tasks;
+using BikeMarket.Models;
 
 namespace BikeMarket.Controllers
 {
@@ -24,6 +26,54 @@ namespace BikeMarket.Controllers
         public async Task<IActionResult> Index()
         {
             return View(await _vehicleService.GetAllAsync());
+        }
+
+        // GET: Vehicles/MyPost
+        public async Task<IActionResult> MyPost(string? tab)
+        {
+            var sellerIdStr = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (string.IsNullOrEmpty(sellerIdStr) || !int.TryParse(sellerIdStr, out var sellerId))
+            {
+                return RedirectToAction("Login", "Users");
+            }
+
+            var summary = await _vehicleService.GetMyPostSummaryAsync(sellerId);
+            var activeTab = string.IsNullOrWhiteSpace(tab) ? "display" : tab.Trim().ToLowerInvariant();
+
+            IEnumerable<VehicleListDTO> filteredVehicles = summary.Vehicles;
+            if (activeTab == "draft")
+            {
+                filteredVehicles = summary.Vehicles
+                    .Where(v => !string.IsNullOrEmpty(v.Status) && v.Status.Equals("draft", StringComparison.OrdinalIgnoreCase));
+            }
+            else if (activeTab == "pending")
+            {
+                filteredVehicles = summary.Vehicles
+                    .Where(v => !string.IsNullOrEmpty(v.Status) && v.Status.Equals("pending", StringComparison.OrdinalIgnoreCase));
+            }
+            else if (activeTab == "denied")
+            {
+                filteredVehicles = summary.Vehicles
+                    .Where(v => !string.IsNullOrEmpty(v.Status) && v.Status.Equals("denied", StringComparison.OrdinalIgnoreCase));
+            }
+            else
+            {
+                filteredVehicles = summary.Vehicles
+                    .Where(v => string.IsNullOrEmpty(v.Status) || v.Status.Equals("available", StringComparison.OrdinalIgnoreCase));
+                activeTab = "display";
+            }
+
+            var viewModel = new VehicleMyPostViewModel
+            {
+                DisplayCount = summary.DisplayCount,
+                DraftCount = summary.DraftCount,
+                PendingCount = summary.PendingCount,
+                DeniedCount = summary.DeniedCount,
+                ActiveTab = activeTab,
+                Vehicles = filteredVehicles.ToList()
+            };
+
+            return View(viewModel);
         }
 
         // GET: Vehicles/DetailsAdmin/5
@@ -139,7 +189,7 @@ namespace BikeMarket.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("Id,SellerId,BrandId,CategoryId,Title,Description,Price,FrameSize,Condition,YearManufactured,Location,Status,Color,CreatedAt")] Vehicle vehicle)
+        public async Task<IActionResult> Edit(int id, [Bind("Id,SellerId,BrandId,CategoryId,Title,Description,Price,FrameSize,Condition,YearManufactured,Location,Status,Color,CreatedAt")] Vehicle vehicle, List<IFormFile>? newImages)
         {
             if (id != vehicle.Id)
             {
@@ -151,6 +201,7 @@ namespace BikeMarket.Controllers
                 try
                 {
                     await _vehicleService.UpdateAsync(vehicle);
+                    await _vehicleService.AddImagesAsync(vehicle.Id, newImages);
                 }
                 catch (DbUpdateConcurrencyException)
                 {
@@ -195,6 +246,14 @@ namespace BikeMarket.Controllers
         {
             await _vehicleService.DeleteAsync(id);
             return RedirectToAction(nameof(Index));
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> DeleteImage(int imageId, int vehicleId)
+        {
+            await _vehicleService.DeleteImageAsync(imageId);
+            return RedirectToAction(nameof(Edit), new { id = vehicleId });
         }
 
         private Task<bool> VehicleExists(int id)

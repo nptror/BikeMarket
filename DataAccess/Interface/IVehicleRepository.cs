@@ -6,6 +6,7 @@ public interface IVehicleRepository
 {
     Task<List<Vehicle>> GetAllWithIncludesAsync();
     Task<List<Vehicle>> GetAvailableWithIncludesAsync();
+    Task<List<Vehicle>> GetBySellerWithIncludesAsync(int sellerId);
     Task<Vehicle?> GetByIdWithDetailsAsync(int id);
     Task<Vehicle?> GetByIdWithSummaryAsync(int id);
     Task<Vehicle?> GetByIdWithImagesAsync(int id);
@@ -14,5 +15,7 @@ public interface IVehicleRepository
     Task UpdateAsync(Vehicle vehicle);
     Task DeleteAsync(Vehicle vehicle);
     Task AddImagesAsync(IEnumerable<VehicleImage> images);
+    Task<VehicleImage?> GetImageByIdAsync(int id);
+    Task DeleteImageAsync(VehicleImage image);
     Task<bool> ExistsAsync(int id);
 }

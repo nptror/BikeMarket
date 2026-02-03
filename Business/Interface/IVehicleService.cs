@@ -13,12 +13,15 @@ public interface IVehicleService
     Task<Vehicle?> GetForDeleteAsync(int id);
     Task CreateAsync(Vehicle vehicle, List<IFormFile>? images, int sellerId);
     Task UpdateAsync(Vehicle vehicle);
+    Task AddImagesAsync(int vehicleId, List<IFormFile>? images);
+    Task<bool> DeleteImageAsync(int imageId);
     Task DeleteAsync(int id);
     Task<bool> ExistsAsync(int id);
     Task<List<Brand>> GetBrandsAsync();
     Task<List<Category>> GetCategoriesAsync();
     Task<List<User>> GetSellersAsync();
     Task<List<VehicleListDTO>> GetAvailableListAsync();
+    Task<MyPostSummaryDTO> GetMyPostSummaryAsync(int sellerId);
     
     // Moderation methods
     Task<List<VehicleModerationDTO>> GetPendingVehiclesAsync();

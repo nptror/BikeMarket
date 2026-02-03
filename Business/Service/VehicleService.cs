@@ -3,6 +3,7 @@ using DataAccess.Interface;
 using DataAccess.Models;
 using DTO.Vehicle;
 using Microsoft.AspNetCore.Http;
+using System;
 
 namespace Business.Service;
 
@@ -119,7 +120,7 @@ public class VehicleService : IVehicleService
     {
         vehicle.SellerId = sellerId;
         vehicle.CreatedAt = DateTime.Now;
-        // –?t status m?c ?nh l‡ "pending" ? c?n ki?m duy?t
+        // √ê?t status m?c √∞?nh l√† "pending" √∞? c?n ki?m duy?t
         vehicle.Status = string.IsNullOrEmpty(vehicle.Status) ? "pending" : vehicle.Status;
 
         await _vehicleRepository.AddAsync(vehicle);
@@ -144,6 +145,39 @@ public class VehicleService : IVehicleService
     public Task UpdateAsync(Vehicle vehicle)
     {
         return _vehicleRepository.UpdateAsync(vehicle);
+    }
+
+    public async Task AddImagesAsync(int vehicleId, List<IFormFile>? images)
+    {
+        if (images == null || images.Count == 0)
+        {
+            return;
+        }
+
+        var vehicleImages = new List<VehicleImage>();
+        foreach (var file in images)
+        {
+            var imageUrl = await _photoService.UploadImageAsync(file);
+            vehicleImages.Add(new VehicleImage
+            {
+                VehicleId = vehicleId,
+                ImageUrl = imageUrl
+            });
+        }
+
+        await _vehicleRepository.AddImagesAsync(vehicleImages);
+    }
+
+    public async Task<bool> DeleteImageAsync(int imageId)
+    {
+        var image = await _vehicleRepository.GetImageByIdAsync(imageId);
+        if (image == null)
+        {
+            return false;
+        }
+
+        await _vehicleRepository.DeleteImageAsync(image);
+        return true;
     }
 
     public async Task DeleteAsync(int id)
@@ -198,6 +232,41 @@ public class VehicleService : IVehicleService
         }).ToList();
     }
 
+    public async Task<MyPostSummaryDTO> GetMyPostSummaryAsync(int sellerId)
+    {
+        var vehicles = await _vehicleRepository.GetBySellerWithIncludesAsync(sellerId);
+        var list = vehicles.Select(v => new VehicleListDTO
+        {
+            VehicleId = v.Id,
+            Title = v.Title,
+            BrandName = v.Brand?.Name ?? "Unknown",
+            CategoryName = v.Category?.Name ?? "Unknown",
+            Price = v.Price,
+            FrameSize = v.FrameSize,
+            Condition = v.Condition,
+            Color = v.Color,
+            Location = v.Location,
+            Status = v.Status,
+            CreatedAt = v.CreatedAt,
+            ThumbnailUrl = v.VehicleImages
+                .OrderBy(img => img.Id)
+                .Select(img => img.ImageUrl)
+                .FirstOrDefault()
+        }).ToList();
+
+        var displayCount = vehicles.Count(v => string.IsNullOrEmpty(v.Status) || v.Status.Equals("available", StringComparison.OrdinalIgnoreCase));
+        var draftCount = vehicles.Count(v => v.Status != null && v.Status.Equals("draft", StringComparison.OrdinalIgnoreCase));
+        var pendingCount = vehicles.Count(v => v.Status != null && v.Status.Equals("pending", StringComparison.OrdinalIgnoreCase));
+        var deniedCount = vehicles.Count(v => v.Status != null && v.Status.Equals("denied", StringComparison.OrdinalIgnoreCase));
+
+        return new MyPostSummaryDTO
+        {
+            DisplayCount = displayCount,
+            DraftCount = draftCount,
+            PendingCount = pendingCount,
+            DeniedCount = deniedCount,
+            Vehicles = list
+        };
     public async Task<List<VehicleModerationDTO>> GetPendingVehiclesAsync()
     {
         var vehicles = await _vehicleRepository.GetAllWithIncludesAsync();
@@ -246,7 +315,7 @@ public class VehicleService : IVehicleService
             throw new Exception($"Vehicle with ID {id} not found");
 
         vehicle.Status = "rejected";
-        // CÛ th? l˝u l? do t? ch?i v‡o Description ho?c t?o thÍm b?ng riÍng
+        // C√≥ th? l√Ωu l? do t? ch?i v√†o Description ho?c t?o th√™m b?ng ri√™ng
         if (!string.IsNullOrEmpty(reason))
         {
             vehicle.Description = $"[REJECTED: {reason}]\n\n{vehicle.Description}";

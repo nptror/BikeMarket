@@ -4,116 +4,135 @@
     ViewData["Title"] = "Create";
 }
 
-<h1>Create</h1>
-
-<h4>Vehicle</h4>
-<hr />
-<div class="row">
-    <div class="col-md-4">
-        <form asp-action="Create" enctype="multipart/form-data">
-            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-            <div class="form-group mb-3">
-                <label asp-for="SellerId" class="control-label">Seller</label>
-             
-                <span asp-validation-for="SellerId" class="text-danger"></span>
-            </div>      
-            <input type="hidden" asp-for="SellerId" />
-            <div class="form-group mb-3">
-                <label asp-for="BrandId" class="control-label">Brand</label>
-                <select asp-for="BrandId" class="form-control" asp-items="ViewBag.BrandId">
-                    <option value="">-- Select Brand --</option>
-                </select>
-                <span asp-validation-for="BrandId" class="text-danger"></span>
-            </div>
-            <div class="form-group mb-3">
-                <label asp-for="CategoryId" class="control-label">Category</label>
-                <select asp-for="CategoryId" class="form-control" asp-items="ViewBag.CategoryId">
-                    <option value="">-- Select Category --</option>
-                </select>
-                <span asp-validation-for="CategoryId" class="text-danger"></span>
-            </div>
-            <div class="form-group mb-3">
-                <label asp-for="Title" class="control-label">Title</label>
-                <input asp-for="Title" class="form-control" />
-                <span asp-validation-for="Title" class="text-danger"></span>
-            </div>
-            <div class="form-group mb-3">
-                <label asp-for="Description" class="control-label">Description</label>
-                <input asp-for="Description" class="form-control" />
-                <span asp-validation-for="Description" class="text-danger"></span>
-            </div>
-            <div class="form-group mb-3">
-                <label asp-for="Price" class="control-label">Price</label>
-                <input asp-for="Price" class="form-control" />
-                <span asp-validation-for="Price" class="text-danger"></span>
-            </div>
-            <div class="form-group mb-3">
-                <label asp-for="FrameSize" class="control-label">Frame Size</label>
-                <input asp-for="FrameSize" class="form-control" />
-                <span asp-validation-for="FrameSize" class="text-danger"></span>
-            </div>
-            <div class="form-group mb-3">
-                <label asp-for="Condition" class="control-label">Condition</label>
-                <select asp-for="Condition" class="form-control">
-                    <option value="">-- Select Condition --</option>
-                    <option value="excellent">Excellent</option>
-                    <option value="good">Good</option>
-                    <option value="fair">Fair</option>
-                    <option value="poor">Poor</option>
-                </select>
-                <span asp-validation-for="Condition" class="text-danger"></span>
-            </div>
-            <div class="form-group mb-3">
-                <label asp-for="YearManufactured" class="control-label">Year Manufactured</label>
-                <input asp-for="YearManufactured" class="form-control" type="number" />
-                <span asp-validation-for="YearManufactured" class="text-danger"></span>
-            </div>
-            <div class="form-group mb-3">
-                <label asp-for="Location" class="control-label">Location</label>
-                <input asp-for="Location" class="form-control" />
-                <span asp-validation-for="Location" class="text-danger"></span>
-            </div>
-            <div class="form-group mb-3">
-                <label asp-for="Color" class="control-label">Color</label>
-                <input asp-for="Color" class="form-control" />
-                <span asp-validation-for="Color" class="text-danger"></span>
-            </div>
-
-            <!-- ✅ Mục Upload Ảnh -->
-            <div class="form-group mb-3">
-                <label for="images" class="control-label">Upload Images</label>
-                <input type="file" id="images" name="images" class="form-control" accept="image/*" multiple />
-                <small class="form-text text-muted">You can select multiple images at once</small>
-                <div id="imagePreview" class="mt-2"></div>
-            </div>
-
-            <div class="form-group">
-                <input type="submit" value="Create" class="btn btn-primary" />
-            </div>
-        </form>
+<div class="container-lg py-4">
+    <div class="d-flex align-items-center justify-content-between mb-3">
+        <h1 class="h3 mb-0">Đăng tin</h1>
+        <a asp-action="Index" class="btn btn-outline-secondary">Quay lại</a>
     </div>
-</div>
 
-<div>
-    <a asp-action="Index">Back to List</a>
+    <div class="card shadow-sm">
+        <div class="card-body">
+            <form asp-action="Create" enctype="multipart/form-data">
+                <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+                <input type="hidden" asp-for="SellerId" />
+
+                <div class="row g-3">
+                    <div class="col-lg-8">
+                        <div class="mb-3">
+                            <label asp-for="Title" class="form-label">Tiêu đề</label>
+                            <input asp-for="Title" class="form-control" />
+                            <span asp-validation-for="Title" class="text-danger"></span>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="Description" class="form-label">Mô tả</label>
+                            <textarea asp-for="Description" class="form-control" rows="4"></textarea>
+                            <span asp-validation-for="Description" class="text-danger"></span>
+                        </div>
+
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label asp-for="BrandId" class="form-label">Hãng</label>
+                                <select asp-for="BrandId" class="form-select" asp-items="ViewBag.BrandId">
+                                    <option value="">-- Select Brand --</option>
+                                </select>
+                                <span asp-validation-for="BrandId" class="text-danger"></span>
+                            </div>
+                            <div class="col-md-6">
+                                <label asp-for="CategoryId" class="form-label">Danh mục</label>
+                                <select asp-for="CategoryId" class="form-select" asp-items="ViewBag.CategoryId">
+                                    <option value="">-- Select Category --</option>
+                                </select>
+                                <span asp-validation-for="CategoryId" class="text-danger"></span>
+                            </div>
+                        </div>
+
+                        <div class="row g-3 mt-1">
+                            <div class="col-md-6">
+                                <label asp-for="Price" class="form-label">Giá</label>
+                                <input asp-for="Price" class="form-control" />
+                                <span asp-validation-for="Price" class="text-danger"></span>
+                            </div>
+                            <div class="col-md-6">
+                                <label asp-for="FrameSize" class="form-label">Kích thước khung</label>
+                                <input asp-for="FrameSize" class="form-control" />
+                                <span asp-validation-for="FrameSize" class="text-danger"></span>
+                            </div>
+                        </div>
+
+                        <div class="row g-3 mt-1">
+                            <div class="col-md-6">
+                                <label asp-for="Condition" class="form-label">Tình trạng</label>
+                                <select asp-for="Condition" class="form-select">
+                                    <option value="">-- Select Condition --</option>
+                                    <option value="excellent">Excellent</option>
+                                    <option value="good">Good</option>
+                                    <option value="fair">Fair</option>
+                                    <option value="poor">Poor</option>
+                                </select>
+                                <span asp-validation-for="Condition" class="text-danger"></span>
+                            </div>
+                            <div class="col-md-6">
+                                <label asp-for="YearManufactured" class="form-label">Năm sản xuất</label>
+                                <input asp-for="YearManufactured" class="form-control" type="number" />
+                                <span asp-validation-for="YearManufactured" class="text-danger"></span>
+                            </div>
+                        </div>
+
+                        <div class="row g-3 mt-1">
+                            <div class="col-md-6">
+                                <label asp-for="Location" class="form-label">Địa điểm</label>
+                                <input asp-for="Location" class="form-control" />
+                                <span asp-validation-for="Location" class="text-danger"></span>
+                            </div>
+                            <div class="col-md-6">
+                                <label asp-for="Color" class="form-label">Màu sắc</label>
+                                <input asp-for="Color" class="form-control" />
+                                <span asp-validation-for="Color" class="text-danger"></span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-lg-4">
+                        <div class="create-section">
+                            <div class="mb-2 fw-semibold">Hình ảnh</div>
+                            <input type="file" id="images" name="images" class="image-input-hidden" accept="image/*" multiple />
+                            <div class="image-preview-grid mt-3" id="imagePreview">
+                                <label for="images" class="image-upload-tile">+</label>
+                            </div>
+                            <small class="form-text text-muted">Bạn có thể chọn nhiều ảnh cùng lúc</small>
+                        </div>
+
+                        <div class="d-grid mt-4">
+                            <button type="submit" class="btn btn-primary btn-lg">Đăng tin</button>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
 </div>
 
 @section Scripts {
     @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
     <script>
-        document.getElementById('images').addEventListener('change', function(e) {
+        document.getElementById('images').addEventListener('change', function () {
             const preview = document.getElementById('imagePreview');
-            preview.innerHTML = '';
-            
+            const uploadTile = preview.querySelector('.image-upload-tile');
+            preview.querySelectorAll('.image-preview-wrapper').forEach(item => item.remove());
+
             Array.from(this.files).forEach(file => {
                 const reader = new FileReader();
-                reader.onload = function(event) {
+                reader.onload = function (event) {
+                    const wrapper = document.createElement('div');
+                    wrapper.classList.add('image-preview-wrapper');
+
                     const img = document.createElement('img');
                     img.src = event.target.result;
-                    img.style.maxWidth = '100px';
-                    img.style.marginRight = '10px';
-                    img.style.marginTop = '10px';
-                    preview.appendChild(img);
+                    img.classList.add('image-preview-item');
+
+                    wrapper.appendChild(img);
+                    preview.insertBefore(wrapper, uploadTile);
                 };
                 reader.readAsDataURL(file);
             });

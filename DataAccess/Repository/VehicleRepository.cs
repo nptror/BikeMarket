@@ -33,6 +33,17 @@ public class VehicleRepository : IVehicleRepository
             .ToListAsync();
     }
 
+    public Task<List<Vehicle>> GetBySellerWithIncludesAsync(int sellerId)
+    {
+        return _context.Vehicles
+            .Include(v => v.Brand)
+            .Include(v => v.Category)
+            .Include(v => v.VehicleImages)
+            .Where(v => v.SellerId == sellerId)
+            .OrderByDescending(v => v.CreatedAt)
+            .ToListAsync();
+    }
+
     public Task<Vehicle?> GetByIdWithDetailsAsync(int id)
     {
         return _context.Vehicles
@@ -85,6 +96,17 @@ public class VehicleRepository : IVehicleRepository
     public async Task AddImagesAsync(IEnumerable<VehicleImage> images)
     {
         _context.VehicleImages.AddRange(images);
+        await _context.SaveChangesAsync();
+    }
+
+    public Task<VehicleImage?> GetImageByIdAsync(int id)
+    {
+        return _context.VehicleImages.FirstOrDefaultAsync(img => img.Id == id);
+    }
+
+    public async Task DeleteImageAsync(VehicleImage image)
+    {
+        _context.VehicleImages.Remove(image);
         await _context.SaveChangesAsync();
     }
 
