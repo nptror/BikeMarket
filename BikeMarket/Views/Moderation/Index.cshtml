@@ -1,0 +1,137 @@
+@model IEnumerable<DTO.Vehicle.VehicleModerationDTO>
+
+@{
+    ViewData["Title"] = "Post Moderation";
+}
+
+<!-- Page Header -->
+<div class="page-header">
+    <h1><i class="bi bi-clipboard-check"></i> Post Moderation</h1>
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a asp-controller="HomeAdmin" asp-action="Index">Dashboard</a></li>
+            <li class="breadcrumb-item active">Post Moderation</li>
+        </ol>
+    </nav>
+</div>
+
+@if (TempData["SuccessMessage"] != null)
+{
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        <i class="bi bi-check-circle me-2"></i> @TempData["SuccessMessage"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
+@if (TempData["ErrorMessage"] != null)
+{
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        <i class="bi bi-exclamation-triangle me-2"></i> @TempData["ErrorMessage"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
+@if (!Model.Any())
+{
+    <div class="card shadow-sm text-center py-5">
+        <div class="card-body">
+            <i class="bi bi-inbox text-muted" style="font-size: 5rem;"></i>
+            <h4 class="mt-3">No Pending Posts</h4>
+            <p class="text-muted">All posts have been reviewed. Great job!</p>
+            <a asp-controller="HomeAdmin" asp-action="Index" class="btn btn-primary mt-3">
+                <i class="bi bi-arrow-left"></i> Back to Dashboard
+            </a>
+        </div>
+    </div>
+}
+else
+{
+    <!-- Summary Stats -->
+    <div class="row mb-4">
+        <div class="col-md-4">
+            <div class="stat-card">
+                <div class="stat-icon bg-warning bg-opacity-10 text-warning">
+                    <i class="bi bi-clock"></i>
+                </div>
+                <div class="stat-content">
+                    <h3>@Model.Count()</h3>
+                    <p class="mb-0">Pending Posts</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Posts Grid -->
+    <div class="row">
+        @foreach (var item in Model)
+        {
+            <div class="col-md-6 col-lg-4 mb-4">
+                <div class="card h-100 shadow-sm dashboard-card">
+                    @if (!string.IsNullOrEmpty(item.MainImageUrl))
+                    {
+                        <img src="@item.MainImageUrl" class="card-img-top" alt="@item.Title" style="height: 200px; object-fit: cover;">
+                    }
+                    else
+                    {
+                        <div class="bg-light d-flex align-items-center justify-content-center" style="height: 200px;">
+                            <i class="bi bi-image text-muted" style="font-size: 3rem;"></i>
+                        </div>
+                    }
+                    
+                    <div class="card-body">
+                        <h5 class="card-title">@item.Title</h5>
+                        
+                        <div class="mb-3">
+                            <div class="d-flex justify-content-between mb-2">
+                                <span class="text-muted small">Price:</span>
+                                <strong class="text-success">@item.Price.ToString("N0") VND</strong>
+                            </div>
+                            <div class="d-flex justify-content-between mb-2">
+                                <span class="text-muted small">Brand:</span>
+                                <span>@item.BrandName</span>
+                            </div>
+                            <div class="d-flex justify-content-between mb-2">
+                                <span class="text-muted small">Category:</span>
+                                <span>@item.CategoryName</span>
+                            </div>
+                            <div class="d-flex justify-content-between mb-2">
+                                <span class="text-muted small">Seller:</span>
+                                <span>@item.SellerName</span>
+                            </div>
+                            @if (!string.IsNullOrEmpty(item.Location))
+                            {
+                                <div class="d-flex justify-content-between mb-2">
+                                    <span class="text-muted small">Location:</span>
+                                    <span><i class="bi bi-geo-alt"></i> @item.Location</span>
+                                </div>
+                            }
+                            <div class="d-flex justify-content-between">
+                                <span class="text-muted small">Posted:</span>
+                                <span>@item.CreatedAt?.ToString("MMM dd, yyyy")</span>
+                            </div>
+                        </div>
+
+                        <span class="badge bg-warning text-dark">
+                            <i class="bi bi-clock"></i> Pending Review
+                        </span>
+                    </div>
+                    
+                    <div class="card-footer bg-transparent border-0">
+                        <a asp-action="Details" asp-route-id="@item.Id" class="btn btn-primary w-100">
+                            <i class="bi bi-eye"></i> Review Post
+                        </a>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+}
+
+@section Scripts {
+    <script>
+        // Auto-dismiss alerts after 5 seconds
+        setTimeout(function() {
+            $('.alert').fadeOut('slow');
+        }, 5000);
+    </script>
+}
