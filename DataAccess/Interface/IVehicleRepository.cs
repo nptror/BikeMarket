@@ -6,6 +6,7 @@ public interface IVehicleRepository
 {
     Task<List<Vehicle>> GetAllWithIncludesAsync();
     Task<List<Vehicle>> GetAvailableWithIncludesAsync();
+    Task<List<Vehicle>> GetBySellerWithIncludesAsync(int sellerId);
     Task<Vehicle?> GetByIdWithDetailsAsync(int id);
     Task<Vehicle?> GetByIdWithSummaryAsync(int id);
     Task<Vehicle?> GetByIdWithImagesAsync(int id);

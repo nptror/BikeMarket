@@ -1,4 +1,4 @@
-using Business.Interface;
+﻿using Business.Interface;
 using Business.Models;
 using DataAccess.Interface;
 using DataAccess.Models;
@@ -32,7 +32,7 @@ public class UserService : IUserService
     {
         if (await _userRepository.GetByEmailAsync(registerDto.Email) != null)
         {
-            return new AuthResult { Success = false, ErrorMessage = "Email ?� ???c s? d?ng" };
+            return new AuthResult { Success = false, ErrorMessage = "Email đã được sử dụng" };
         }
 
         var user = new User
@@ -59,18 +59,18 @@ public class UserService : IUserService
         var user = await _userRepository.GetByEmailAsync(loginDto.Email);
         if (user == null)
         {
-            return new AuthResult { Success = false, ErrorMessage = "Email ho?c m?t kh?u kh�ng ?�ng" };
+            return new AuthResult { Success = false, ErrorMessage = "Email hoặc mật khẩu không đúng" };
         }
 
         var verifyResult = _passwordHasher.VerifyHashedPassword(user, user.PasswordHash, loginDto.Password);
         if (verifyResult == PasswordVerificationResult.Failed)
         {
-            return new AuthResult { Success = false, ErrorMessage = "Email ho?c m?t kh?u kh�ng ?�ng" };
+            return new AuthResult { Success = false, ErrorMessage = "Email hoặc mật khẩu không đúng" };
         }
 
         if (user.Status != "active")
         {
-            return new AuthResult { Success = false, ErrorMessage = "T�i kho?n ?� b? kh�a" };
+            return new AuthResult { Success = false, ErrorMessage = "Tài khoản đã bị khóa" };
         }
 
         return new AuthResult { Success = true, User = user };

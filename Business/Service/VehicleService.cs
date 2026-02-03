@@ -3,6 +3,7 @@ using DataAccess.Interface;
 using DataAccess.Models;
 using DTO.Vehicle;
 using Microsoft.AspNetCore.Http;
+using System;
 
 namespace Business.Service;
 
@@ -195,5 +196,42 @@ public class VehicleService : IVehicleService
                 .Select(img => img.ImageUrl)
                 .FirstOrDefault()
         }).ToList();
+    }
+
+    public async Task<MyPostSummaryDTO> GetMyPostSummaryAsync(int sellerId)
+    {
+        var vehicles = await _vehicleRepository.GetBySellerWithIncludesAsync(sellerId);
+        var list = vehicles.Select(v => new VehicleListDTO
+        {
+            VehicleId = v.Id,
+            Title = v.Title,
+            BrandName = v.Brand?.Name ?? "Unknown",
+            CategoryName = v.Category?.Name ?? "Unknown",
+            Price = v.Price,
+            FrameSize = v.FrameSize,
+            Condition = v.Condition,
+            Color = v.Color,
+            Location = v.Location,
+            Status = v.Status,
+            CreatedAt = v.CreatedAt,
+            ThumbnailUrl = v.VehicleImages
+                .OrderBy(img => img.Id)
+                .Select(img => img.ImageUrl)
+                .FirstOrDefault()
+        }).ToList();
+
+        var displayCount = vehicles.Count(v => string.IsNullOrEmpty(v.Status) || v.Status.Equals("available", StringComparison.OrdinalIgnoreCase));
+        var draftCount = vehicles.Count(v => v.Status != null && v.Status.Equals("draft", StringComparison.OrdinalIgnoreCase));
+        var pendingCount = vehicles.Count(v => v.Status != null && v.Status.Equals("pending", StringComparison.OrdinalIgnoreCase));
+        var deniedCount = vehicles.Count(v => v.Status != null && v.Status.Equals("denied", StringComparison.OrdinalIgnoreCase));
+
+        return new MyPostSummaryDTO
+        {
+            DisplayCount = displayCount,
+            DraftCount = draftCount,
+            PendingCount = pendingCount,
+            DeniedCount = deniedCount,
+            Vehicles = list
+        };
     }
 }

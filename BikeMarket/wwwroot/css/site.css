@@ -20,3 +20,66 @@ html {
 body {
   margin-bottom: 60px;
 }
+
+.nav-post-button {
+  background-color: #ff6a00;
+  color: #fff;
+  padding: 6px 16px;
+  border-radius: 999px;
+  font-weight: 600;
+}
+
+.nav-post-button:hover {
+  color: #fff;
+  background-color: #e05f00;
+}
+
+.image-preview-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(90px, 1fr));
+  gap: 10px;
+}
+
+.image-preview-item {
+  width: 100%;
+  height: 90px;
+  object-fit: cover;
+  border-radius: 8px;
+  border: 1px solid #e5e5e5;
+}
+
+.create-section {
+  background: #f8f9fa;
+  border-radius: 12px;
+  padding: 16px;
+}
+
+.content-nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 24px;
+  align-items: center;
+  justify-content: center;
+  background: #fff;
+  border-bottom: 1px solid #e5e5e5;
+  padding: 12px 16px;
+}
+
+.content-nav-link {
+  text-decoration: none;
+  text-transform: uppercase;
+  font-weight: 600;
+  font-size: 14px;
+  color: #222;
+  padding-bottom: 6px;
+  border-bottom: 2px solid transparent;
+}
+
+.content-nav-link:hover {
+  color: #ff6a00;
+}
+
+.content-nav-link.active {
+  color: #ff6a00;
+  border-bottom-color: #ff6a00;
+}

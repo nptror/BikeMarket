@@ -19,4 +19,5 @@ public interface IVehicleService
     Task<List<Category>> GetCategoriesAsync();
     Task<List<User>> GetSellersAsync();
     Task<List<VehicleListDTO>> GetAvailableListAsync();
+    Task<MyPostSummaryDTO> GetMyPostSummaryAsync(int sellerId);
 }
