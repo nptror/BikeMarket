@@ -22,4 +22,10 @@ public interface IVehicleService
     Task<List<User>> GetSellersAsync();
     Task<List<VehicleListDTO>> GetAvailableListAsync();
     Task<MyPostSummaryDTO> GetMyPostSummaryAsync(int sellerId);
+    
+    // Moderation methods
+    Task<List<VehicleModerationDTO>> GetPendingVehiclesAsync();
+    Task<VehicleDetailDTO?> GetVehicleForModerationAsync(int id);
+    Task ApproveVehicleAsync(int id);
+    Task RejectVehicleAsync(int id, string? reason);
 }
