@@ -119,7 +119,8 @@ public class VehicleService : IVehicleService
     {
         vehicle.SellerId = sellerId;
         vehicle.CreatedAt = DateTime.Now;
-        vehicle.Status = string.IsNullOrEmpty(vehicle.Status) ? "available" : vehicle.Status;
+        // Ð?t status m?c ð?nh là "pending" ð? c?n ki?m duy?t
+        vehicle.Status = string.IsNullOrEmpty(vehicle.Status) ? "pending" : vehicle.Status;
 
         await _vehicleRepository.AddAsync(vehicle);
 
@@ -195,5 +196,61 @@ public class VehicleService : IVehicleService
                 .Select(img => img.ImageUrl)
                 .FirstOrDefault()
         }).ToList();
+    }
+
+    public async Task<List<VehicleModerationDTO>> GetPendingVehiclesAsync()
+    {
+        var vehicles = await _vehicleRepository.GetAllWithIncludesAsync();
+        
+        return vehicles
+            .Where(v => v.Status == "pending" || v.Status == "Pending")
+            .OrderByDescending(v => v.CreatedAt)
+            .Select(v => new VehicleModerationDTO
+            {
+                Id = v.Id,
+                Title = v.Title,
+                BrandName = v.Brand?.Name ?? "Unknown",
+                CategoryName = v.Category?.Name ?? "Unknown",
+                SellerName = v.Seller?.Name ?? "Unknown",
+                Price = v.Price,
+                Status = v.Status,
+                CreatedAt = v.CreatedAt,
+                Location = v.Location,
+                MainImageUrl = v.VehicleImages
+                    .OrderBy(img => img.Id)
+                    .Select(img => img.ImageUrl)
+                    .FirstOrDefault()
+            })
+            .ToList();
+    }
+
+    public async Task<VehicleDetailDTO?> GetVehicleForModerationAsync(int id)
+    {
+        return await GetDetailAdminAsync(id);
+    }
+
+    public async Task ApproveVehicleAsync(int id)
+    {
+        var vehicle = await _vehicleRepository.GetByIdAsync(id);
+        if (vehicle == null)
+            throw new Exception($"Vehicle with ID {id} not found");
+
+        vehicle.Status = "available";
+        await _vehicleRepository.UpdateAsync(vehicle);
+    }
+
+    public async Task RejectVehicleAsync(int id, string? reason)
+    {
+        var vehicle = await _vehicleRepository.GetByIdAsync(id);
+        if (vehicle == null)
+            throw new Exception($"Vehicle with ID {id} not found");
+
+        vehicle.Status = "rejected";
+        // Có th? lýu l? do t? ch?i vào Description ho?c t?o thêm b?ng riêng
+        if (!string.IsNullOrEmpty(reason))
+        {
+            vehicle.Description = $"[REJECTED: {reason}]\n\n{vehicle.Description}";
+        }
+        await _vehicleRepository.UpdateAsync(vehicle);
     }
 }
