@@ -18,7 +18,7 @@ namespace BikeMarket.Controllers
         public async Task<IActionResult> Index()
         {
             var pendingVehicles = await _vehicleService.GetPendingVehiclesAsync();
-            return View(pendingVehicles);
+            return View("~/Views/HomeAdmin/Moderation/Index.cshtml", pendingVehicles);
         }
 
         // GET: Moderation/Details/5
@@ -31,7 +31,7 @@ namespace BikeMarket.Controllers
             if (vehicle == null)
                 return NotFound();
 
-            return View(vehicle);
+            return View("~/Views/HomeAdmin/Moderation/Details.cshtml", vehicle);
         }
 
         // POST: Moderation/Approve/5
