@@ -189,7 +189,7 @@ namespace BikeMarket.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("Id,SellerId,BrandId,CategoryId,Title,Description,Price,FrameSize,Condition,YearManufactured,Location,Status,Color,CreatedAt")] Vehicle vehicle)
+        public async Task<IActionResult> Edit(int id, [Bind("Id,SellerId,BrandId,CategoryId,Title,Description,Price,FrameSize,Condition,YearManufactured,Location,Status,Color,CreatedAt")] Vehicle vehicle, List<IFormFile>? newImages)
         {
             if (id != vehicle.Id)
             {
@@ -201,6 +201,7 @@ namespace BikeMarket.Controllers
                 try
                 {
                     await _vehicleService.UpdateAsync(vehicle);
+                    await _vehicleService.AddImagesAsync(vehicle.Id, newImages);
                 }
                 catch (DbUpdateConcurrencyException)
                 {
@@ -245,6 +246,14 @@ namespace BikeMarket.Controllers
         {
             await _vehicleService.DeleteAsync(id);
             return RedirectToAction(nameof(Index));
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> DeleteImage(int imageId, int vehicleId)
+        {
+            await _vehicleService.DeleteImageAsync(imageId);
+            return RedirectToAction(nameof(Edit), new { id = vehicleId });
         }
 
         private Task<bool> VehicleExists(int id)

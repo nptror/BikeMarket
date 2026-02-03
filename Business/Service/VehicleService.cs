@@ -146,6 +146,39 @@ public class VehicleService : IVehicleService
         return _vehicleRepository.UpdateAsync(vehicle);
     }
 
+    public async Task AddImagesAsync(int vehicleId, List<IFormFile>? images)
+    {
+        if (images == null || images.Count == 0)
+        {
+            return;
+        }
+
+        var vehicleImages = new List<VehicleImage>();
+        foreach (var file in images)
+        {
+            var imageUrl = await _photoService.UploadImageAsync(file);
+            vehicleImages.Add(new VehicleImage
+            {
+                VehicleId = vehicleId,
+                ImageUrl = imageUrl
+            });
+        }
+
+        await _vehicleRepository.AddImagesAsync(vehicleImages);
+    }
+
+    public async Task<bool> DeleteImageAsync(int imageId)
+    {
+        var image = await _vehicleRepository.GetImageByIdAsync(imageId);
+        if (image == null)
+        {
+            return false;
+        }
+
+        await _vehicleRepository.DeleteImageAsync(image);
+        return true;
+    }
+
     public async Task DeleteAsync(int id)
     {
         var vehicle = await _vehicleRepository.GetByIdAsync(id);

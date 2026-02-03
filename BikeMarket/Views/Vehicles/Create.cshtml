@@ -96,10 +96,11 @@
                     <div class="col-lg-4">
                         <div class="create-section">
                             <div class="mb-2 fw-semibold">Hình ảnh</div>
-                            <label for="images" class="form-label">Upload Images</label>
-                            <input type="file" id="images" name="images" class="form-control" accept="image/*" multiple />
-                            <small class="form-text text-muted">You can select multiple images at once</small>
-                            <div id="imagePreview" class="image-preview-grid mt-3"></div>
+                            <input type="file" id="images" name="images" class="image-input-hidden" accept="image/*" multiple />
+                            <div class="image-preview-grid mt-3" id="imagePreview">
+                                <label for="images" class="image-upload-tile">+</label>
+                            </div>
+                            <small class="form-text text-muted">Bạn có thể chọn nhiều ảnh cùng lúc</small>
                         </div>
 
                         <div class="d-grid mt-4">
@@ -117,15 +118,21 @@
     <script>
         document.getElementById('images').addEventListener('change', function () {
             const preview = document.getElementById('imagePreview');
-            preview.innerHTML = '';
+            const uploadTile = preview.querySelector('.image-upload-tile');
+            preview.querySelectorAll('.image-preview-wrapper').forEach(item => item.remove());
 
             Array.from(this.files).forEach(file => {
                 const reader = new FileReader();
                 reader.onload = function (event) {
+                    const wrapper = document.createElement('div');
+                    wrapper.classList.add('image-preview-wrapper');
+
                     const img = document.createElement('img');
                     img.src = event.target.result;
                     img.classList.add('image-preview-item');
-                    preview.appendChild(img);
+
+                    wrapper.appendChild(img);
+                    preview.insertBefore(wrapper, uploadTile);
                 };
                 reader.readAsDataURL(file);
             });

@@ -15,5 +15,7 @@ public interface IVehicleRepository
     Task UpdateAsync(Vehicle vehicle);
     Task DeleteAsync(Vehicle vehicle);
     Task AddImagesAsync(IEnumerable<VehicleImage> images);
+    Task<VehicleImage?> GetImageByIdAsync(int id);
+    Task DeleteImageAsync(VehicleImage image);
     Task<bool> ExistsAsync(int id);
 }

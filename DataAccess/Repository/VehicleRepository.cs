@@ -99,6 +99,17 @@ public class VehicleRepository : IVehicleRepository
         await _context.SaveChangesAsync();
     }
 
+    public Task<VehicleImage?> GetImageByIdAsync(int id)
+    {
+        return _context.VehicleImages.FirstOrDefaultAsync(img => img.Id == id);
+    }
+
+    public async Task DeleteImageAsync(VehicleImage image)
+    {
+        _context.VehicleImages.Remove(image);
+        await _context.SaveChangesAsync();
+    }
+
     public Task<bool> ExistsAsync(int id)
     {
         return _context.Vehicles.AnyAsync(e => e.Id == id);
