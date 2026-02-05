@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using Microsoft.EntityFrameworkCore;
 
@@ -48,6 +48,9 @@ public partial class VehicleMarketContext : DbContext
             entity.HasIndex(e => e.Name, "UQ__brands__72E12F1B58589108").IsUnique();
 
             entity.Property(e => e.Id).HasColumnName("id");
+            entity.Property(e => e.ImageUrl)
+                .HasMaxLength(500)
+                .HasColumnName("image_url");
             entity.Property(e => e.Name)
                 .HasMaxLength(100)
                 .HasColumnName("name");

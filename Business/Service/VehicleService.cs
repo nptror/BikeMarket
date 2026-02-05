@@ -215,6 +215,7 @@ public class VehicleService : IVehicleService
         return vehicles.Select(v => new VehicleListDTO
         {
             VehicleId = v.Id,
+            BrandId = v.BrandId,
             Title = v.Title,
             BrandName = v.Brand.Name,
             CategoryName = v.Category.Name,
@@ -238,6 +239,7 @@ public class VehicleService : IVehicleService
         var list = vehicles.Select(v => new VehicleListDTO
         {
             VehicleId = v.Id,
+            BrandId = v.BrandId,
             Title = v.Title,
             BrandName = v.Brand?.Name ?? "Unknown",
             CategoryName = v.Category?.Name ?? "Unknown",
