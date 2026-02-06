@@ -316,5 +316,79 @@ namespace BikeMarket.Controllers
 
             return View(user);
         }
+
+        // GET: Users/EditProfile/5
+        public async Task<IActionResult> EditProfile(int? id)
+        {
+            var sessionUserId = HttpContext.Session.GetString("UserId");
+            if (string.IsNullOrEmpty(sessionUserId))
+            {
+                return RedirectToAction(nameof(Login));
+            }
+
+            var currentUserId = int.Parse(sessionUserId);
+            if (id == null)
+            {
+                id = currentUserId;
+            }
+
+            if (id.Value != currentUserId)
+            {
+                return Forbid();
+            }
+
+            var user = await _userService.GetByIdAsync(id.Value);
+            if (user == null)
+            {
+                return NotFound();
+            }
+
+            var viewModel = new UserEditProfileViewModel
+            {
+                Id = user.Id,
+                Name = user.Name ?? string.Empty,
+                Email = user.Email ?? string.Empty,
+                Phone = user.Phone
+            };
+
+            return View(viewModel);
+        }
+
+        // POST: Users/EditProfile/5
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> EditProfile(UserEditProfileViewModel model)
+        {
+            var sessionUserId = HttpContext.Session.GetString("UserId");
+            if (string.IsNullOrEmpty(sessionUserId))
+            {
+                return RedirectToAction(nameof(Login));
+            }
+
+            var currentUserId = int.Parse(sessionUserId);
+            if (model.Id != currentUserId)
+            {
+                return Forbid();
+            }
+
+            if (!ModelState.IsValid)
+            {
+                return View(model);
+            }
+
+            var user = await _userService.GetByIdAsync(model.Id);
+            if (user == null)
+            {
+                return NotFound();
+            }
+
+            user.Name = model.Name;
+            user.Phone = model.Phone;
+
+            await _userService.UpdateAsync(user);
+            TempData["SuccessMessage"] = "Cập nhật thông tin thành công!";
+
+            return RedirectToAction(nameof(Profile), new { id = model.Id });
+        }
     }
 }
