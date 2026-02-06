@@ -1,0 +1,143 @@
+@model BikeMarket.Models.OwnerProfileViewModel
+@using System.Linq
+
+@{
+    ViewData["Title"] = "Ng??i bán";
+    var ratingAvg = Model.RatingAvg ?? 0m;
+    var ratingAvgText = ratingAvg.ToString("0.0");
+}
+
+<div class="container-lg py-4">
+    <div class="card shadow-sm mb-4">
+        <div class="card-body d-flex align-items-center gap-3">
+            <div class="seller-avatar">
+                @(Model.Seller?.Name?.FirstOrDefault().ToString().ToUpperInvariant() ?? "U")
+            </div>
+            <div>
+                <h4 class="mb-1">@Model.Seller?.Name</h4>
+                <div class="text-muted" style="font-size: 14px;">
+                    Tham gia @(Model.Seller?.CreatedAt?.ToString("dd/MM/yyyy") ?? "N/A")
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card shadow-sm mb-4 owner-rating-card">
+        <div class="card-body">
+            <div class="row g-3 align-items-start">
+                <div class="col-md-4">
+                    <div class="rating-summary">
+                        <div class="rating-score">@ratingAvgText</div>
+                        <div class="rating-stars">
+                            @for (var i = 1; i <= 5; i++)
+                            {
+                                var starClass = i <= Math.Round(ratingAvg) ? "bi-star-fill" : "bi-star";
+                                <i class="bi @starClass"></i>
+                            }
+                        </div>
+                        <div class="text-muted" style="font-size: 14px;">
+                            (@Model.RatingCount ?ánh giá)
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-8">
+                    <div class="rating-tags">
+                        @if (Model.TagCounts.Any())
+                        {
+                            foreach (var tag in Model.TagCounts)
+                            {
+                                <span class="rating-tag">@tag.Key (@tag.Value)</span>
+                            }
+                        }
+                        else
+                        {
+                            <span class="text-muted">Ch?a có ?ánh giá.</span>
+                        }
+                    </div>
+                </div>
+            </div>
+
+            @if (Model.Ratings.Any())
+            {
+                <div class="row mt-4">
+                    @foreach (var rating in Model.Ratings.Take(6))
+                    {
+                        <div class="col-md-4 mb-3">
+                            <div class="card h-100 rating-item">
+                                <div class="card-body">
+                                    <div class="d-flex align-items-center gap-2 mb-2">
+                                        <div class="seller-avatar rating-avatar">
+                                            @rating.Rater?.Name?.FirstOrDefault().ToString().ToUpperInvariant()
+                                        </div>
+                                        <div>
+                                            <div class="fw-semibold">@rating.Rater?.Name</div>
+                                            <div class="rating-stars small">
+                                                @for (var i = 1; i <= 5; i++)
+                                                {
+                                                    var starClass = i <= rating.Rating ? "bi-star-fill" : "bi-star";
+                                                    <i class="bi @starClass"></i>
+                                                }
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    @if (!string.IsNullOrWhiteSpace(rating.Comment))
+                                    {
+                                        <div class="text-muted mb-2" style="font-size: 14px;">
+                                            @rating.Comment
+                                        </div>
+                                    }
+
+                                    @if (rating.Order?.Vehicle != null)
+                                    {
+                                        <div class="small text-muted">@rating.Order.Vehicle.Title</div>
+                                        <div class="fw-semibold text-danger">@rating.Order.TotalAmount.ToString("N0") ?</div>
+                                    }
+
+                                    <div class="text-muted small mt-2">
+                                        @rating.CreatedAt?.ToString("dd/MM/yyyy")
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                </div>
+            }
+        </div>
+    </div>
+
+    <h5 class="mb-3">Tin ?ang bán</h5>
+    <div class="row">
+        @foreach (var item in Model.Vehicles)
+        {
+            <div class="col-md-3 mb-4">
+                <div class="card h-100 shadow-sm">
+                    @if (!string.IsNullOrEmpty(item.ThumbnailUrl))
+                    {
+                        <img src="@item.ThumbnailUrl" class="card-img-top" style="height:180px; object-fit:cover;" />
+                    }
+                    else
+                    {
+                        <div style="height:180px; background:#eee; display:flex; align-items:center; justify-content:center;">
+                            <span>No Image</span>
+                        </div>
+                    }
+                    <div class="card-body">
+                        <h6 class="card-title">@item.Title</h6>
+                        <div class="text-muted" style="font-size: 13px;">
+                            @item.Price.ToString("N0") ? · @item.Location
+                        </div>
+                    </div>
+                    <div class="card-footer bg-white">
+                        <a class="btn btn-outline-primary w-100"
+                           asp-controller="Vehicles"
+                           asp-action="DetailsBuyer"
+                           asp-route-id="@item.VehicleId">
+                            Xem chi ti?t
+                        </a>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+</div>

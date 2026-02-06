@@ -17,10 +17,12 @@ namespace BikeMarket.Controllers
     public class BrandsController : Controller
     {
         private readonly IBrandService _brandService;
+        private readonly IPhotoService _photoService;
 
-        public BrandsController(IBrandService brandService)
+        public BrandsController(IBrandService brandService, IPhotoService photoService)
         {
             _brandService = brandService;
+            _photoService = photoService;
         }
 
         // GET: Brands
@@ -57,10 +59,24 @@ namespace BikeMarket.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Id,Name")] Brand brand)
+        public async Task<IActionResult> Create([Bind("Id,Name")] Brand brand, IFormFile? image)
         {
+            ModelState.Remove("ImageUrl");
+
+            if (image == null || image.Length == 0)
+            {
+                ModelState.AddModelError("ImageUrl", "Vui lòng chọn ảnh cho brand.");
+            }
+
+            var existing = await _brandService.GetAllAsync();
+            if (existing.Any(b => string.Equals(b.Name, brand.Name, StringComparison.OrdinalIgnoreCase)))
+            {
+                ModelState.AddModelError("Name", "Brand đã tồn tại.");
+            }
+
             if (ModelState.IsValid)
             {
+                brand.ImageUrl = await _photoService.UploadImageAsync(image!);
                 await _brandService.CreateAsync(brand);
                 return RedirectToAction(nameof(Index));
             }

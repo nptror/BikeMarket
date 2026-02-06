@@ -42,26 +42,48 @@
 
         @if (Model.Brands.Any())
         {
-            <div class="home-brand-cards">
-                @foreach (var brand in Model.Brands)
-                {
-                    var isActive = selectedBrandId.HasValue && brand.Id == selectedBrandId.Value;
-                    <a class="home-brand-card @(isActive ? "active" : string.Empty)"
-                       asp-controller="Home"
-                       asp-action="Index"
-                       asp-route-brandId="@brand.Id"
-                       asp-route-categoryId="@Model.CategoryId"
-                       asp-route-keyword="@Model.Keyword">
-                        <div class="home-brand-image">
-                            <img src="@brand.ImageUrl" alt="@brand.Name" />
-                        </div>
-                        <div class="home-brand-name">@brand.Name</div>
-                    </a>
-                }
+            <div class="home-brand-scroll">
+                <button type="button" class="home-brand-nav" data-direction="left" aria-label="Cuộn trái">
+                    <i class="bi bi-chevron-left"></i>
+                </button>
+                <div class="home-brand-cards" id="brandScroller">
+                    @foreach (var brand in Model.Brands)
+                    {
+                        var isActive = selectedBrandId.HasValue && brand.Id == selectedBrandId.Value;
+                        <a class="home-brand-card @(isActive ? "active" : string.Empty)"
+                           asp-controller="Home"
+                           asp-action="Index"
+                           asp-route-brandId="@brand.Id"
+                           asp-route-categoryId="@Model.CategoryId"
+                           asp-route-keyword="@Model.Keyword">
+                            <div class="home-brand-image">
+                                <img src="@brand.ImageUrl" alt="@brand.Name" />
+                            </div>
+                            <div class="home-brand-name">@brand.Name</div>
+                        </a>
+                    }
+                </div>
+                <button type="button" class="home-brand-nav" data-direction="right" aria-label="Cuộn phải">
+                    <i class="bi bi-chevron-right"></i>
+                </button>
             </div>
         }
     </div>
 </div>
+
+@section Scripts {
+    <script>
+        document.querySelectorAll('.home-brand-nav').forEach(button => {
+            button.addEventListener('click', () => {
+                const scroller = document.getElementById('brandScroller');
+                if (!scroller) return;
+                const direction = button.dataset.direction === 'left' ? -1 : 1;
+                const scrollAmount = scroller.clientWidth * 0.8 * direction;
+                scroller.scrollBy({ left: scrollAmount, behavior: 'smooth' });
+            });
+        });
+    </script>
+}
 
 <h2 class="mt-4">Bike Marketplace</h2>
 

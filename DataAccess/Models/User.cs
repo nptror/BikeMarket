@@ -35,6 +35,10 @@ public partial class User
 
     public virtual ICollection<Order> OrderSellers { get; set; } = new List<Order>();
 
+    public virtual ICollection<UserRating> UserRatingRatedUsers { get; set; } = new List<UserRating>();
+
+    public virtual ICollection<UserRating> UserRatingRaters { get; set; } = new List<UserRating>();
+
     public virtual ICollection<Vehicle> Vehicles { get; set; } = new List<Vehicle>();
 
     public virtual ICollection<Wishlist> Wishlists { get; set; } = new List<Wishlist>();

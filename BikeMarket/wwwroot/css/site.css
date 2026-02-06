@@ -225,11 +225,40 @@ body {
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.06);
 }
 
-.home-brand-cards {
+.home-brand-scroll {
   display: flex;
-  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+}
+
+.home-brand-nav {
+  border: none;
+  background: #fff;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1);
+  color: #333;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.home-brand-nav:hover {
+  background: #f8f9fa;
+}
+
+.home-brand-cards {
+  flex: 1;
+  display: grid;
+  grid-template-rows: repeat(2, auto);
+  grid-auto-flow: column;
+  grid-auto-columns: 140px;
   gap: 16px;
   margin-top: 18px;
+  overflow-x: auto;
+  padding-bottom: 6px;
+  scroll-snap-type: x mandatory;
 }
 
 .home-brand-card {
@@ -271,5 +300,66 @@ body {
 }
 
 .home-brand-name {
+  font-size: 14px;
+}
+
+.seller-avatar {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+  font-size: 18px;
+  color: #fff;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.owner-rating-card {
+  background: #fffaf0;
+}
+
+.rating-summary {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  align-items: flex-start;
+}
+
+.rating-score {
+  font-size: 36px;
+  font-weight: 700;
+  color: #f5a000;
+}
+
+.rating-stars {
+  display: inline-flex;
+  gap: 4px;
+  color: #f5a000;
+}
+
+.rating-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.rating-tag {
+  background: #fff;
+  border: 1px solid #e5e5e5;
+  border-radius: 999px;
+  padding: 6px 12px;
+  font-size: 13px;
+}
+
+.rating-item {
+  border: 1px solid #f0f0f0;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+}
+
+.rating-avatar {
+  width: 36px;
+  height: 36px;
   font-size: 14px;
 }

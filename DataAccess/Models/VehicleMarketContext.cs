@@ -27,6 +27,8 @@ public partial class VehicleMarketContext : DbContext
 
     public virtual DbSet<User> Users { get; set; }
 
+    public virtual DbSet<UserRating> UserRatings { get; set; }
+
     public virtual DbSet<Vehicle> Vehicles { get; set; }
 
     public virtual DbSet<VehicleImage> VehicleImages { get; set; }
@@ -262,6 +264,41 @@ public partial class VehicleMarketContext : DbContext
                 .HasMaxLength(50)
                 .HasDefaultValue("active")
                 .HasColumnName("status");
+        });
+
+        modelBuilder.Entity<UserRating>(entity =>
+        {
+            entity.HasKey(e => e.Id).HasName("PK__user_rat__3213E83FEA9F0E75");
+
+            entity.ToTable("user_ratings");
+
+            entity.HasIndex(e => new { e.RaterId, e.OrderId }, "UQ_user_ratings").IsUnique();
+
+            entity.Property(e => e.Id).HasColumnName("id");
+            entity.Property(e => e.Comment).HasColumnName("comment");
+            entity.Property(e => e.CreatedAt)
+                .HasDefaultValueSql("(getdate())")
+                .HasColumnType("datetime")
+                .HasColumnName("created_at");
+            entity.Property(e => e.OrderId).HasColumnName("order_id");
+            entity.Property(e => e.RatedUserId).HasColumnName("rated_user_id");
+            entity.Property(e => e.RaterId).HasColumnName("rater_id");
+            entity.Property(e => e.Rating).HasColumnName("rating");
+
+            entity.HasOne(d => d.Order).WithMany(p => p.UserRatings)
+                .HasForeignKey(d => d.OrderId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_user_ratings_order");
+
+            entity.HasOne(d => d.RatedUser).WithMany(p => p.UserRatingRatedUsers)
+                .HasForeignKey(d => d.RatedUserId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_user_ratings_rated_user");
+
+            entity.HasOne(d => d.Rater).WithMany(p => p.UserRatingRaters)
+                .HasForeignKey(d => d.RaterId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_user_ratings_rater");
         });
 
         modelBuilder.Entity<Vehicle>(entity =>
