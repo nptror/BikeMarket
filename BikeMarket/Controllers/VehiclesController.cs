@@ -133,6 +133,16 @@ namespace BikeMarket.Controllers
             ModelState.Remove("Category");
             ModelState.Remove("Seller");
 
+            // Debug: Log số lượng ảnh nhận được
+            Console.WriteLine($"📸 [POST] Create() - Received {images?.Count ?? 0} images");
+            if (images != null)
+            {
+                foreach (var img in images)
+                {
+                    Console.WriteLine($"   - Image: {img.FileName} ({img.Length} bytes)");
+                }
+            }
+
             if (!ModelState.IsValid)
             {
                 Console.WriteLine("❌ [POST] Create() - ModelState Invalid");
@@ -167,7 +177,7 @@ namespace BikeMarket.Controllers
             await _vehicleService.CreateAsync(vehicle, images, sellerId);
 
             Console.WriteLine($"🎉 [POST] Create() - Vehicle created successfully! Redirecting to Index...");
-            return RedirectToAction(nameof(Index));
+            return RedirectToAction(nameof(MyPost));
         }
 
         public async Task<IActionResult> Edit(int? id)
@@ -196,12 +206,34 @@ namespace BikeMarket.Controllers
                 return NotFound();
             }
 
+            // Remove navigation properties from ModelState
+            ModelState.Remove("Brand");
+            ModelState.Remove("Category");
+            ModelState.Remove("Seller");
+            ModelState.Remove("VehicleImages");
+
+            // Debug: Log số lượng ảnh nhận được
+            Console.WriteLine($"📸 [POST] Edit() - Received {newImages?.Count ?? 0} new images");
+            if (newImages != null)
+            {
+                foreach (var img in newImages)
+                {
+                    Console.WriteLine($"   - Image: {img.FileName} ({img.Length} bytes)");
+                }
+            }
+
             if (ModelState.IsValid)
             {
                 try
                 {
                     await _vehicleService.UpdateAsync(vehicle);
-                    await _vehicleService.AddImagesAsync(vehicle.Id, newImages);
+                    
+                    if (newImages != null && newImages.Count > 0)
+                    {
+                        Console.WriteLine($"📤 [POST] Edit() - Uploading {newImages.Count} images...");
+                        await _vehicleService.AddImagesAsync(vehicle.Id, newImages);
+                        Console.WriteLine($"✅ [POST] Edit() - Images uploaded successfully");
+                    }
                 }
                 catch (DbUpdateConcurrencyException)
                 {
@@ -214,11 +246,11 @@ namespace BikeMarket.Controllers
                         throw;
                     }
                 }
-                return RedirectToAction(nameof(Index));
+                return RedirectToAction(nameof(DetailsAdmin), new { id = vehicle.Id });
             }
-            ViewData["BrandId"] = new SelectList(await _vehicleService.GetBrandsAsync(), "Id", "Id", vehicle.BrandId);
-            ViewData["CategoryId"] = new SelectList(await _vehicleService.GetCategoriesAsync(), "Id", "Id", vehicle.CategoryId);
-            ViewData["SellerId"] = new SelectList(await _vehicleService.GetSellersAsync(), "Id", "Id", vehicle.SellerId);
+            
+            ViewData["BrandId"] = new SelectList(await _vehicleService.GetBrandsAsync(), "Id", "Name", vehicle.BrandId);
+            ViewData["CategoryId"] = new SelectList(await _vehicleService.GetCategoriesAsync(), "Id", "Name", vehicle.CategoryId);
             return View(vehicle);
         }
 

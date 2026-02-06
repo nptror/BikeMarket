@@ -12,7 +12,7 @@
 
     <div class="card shadow-sm">
         <div class="card-body">
-            <form asp-action="Create" enctype="multipart/form-data">
+            <form asp-action="Create" enctype="multipart/form-data" id="createForm">
                 <div asp-validation-summary="ModelOnly" class="text-danger"></div>
                 <input type="hidden" asp-for="SellerId" />
 
@@ -20,27 +20,27 @@
                     <div class="col-lg-8">
                         <div class="mb-3">
                             <label asp-for="Title" class="form-label">Tiêu đề</label>
-                            <input asp-for="Title" class="form-control" />
+                            <input asp-for="Title" class="form-control" id="titleInput" />
                             <span asp-validation-for="Title" class="text-danger"></span>
                         </div>
 
                         <div class="mb-3">
                             <label asp-for="Description" class="form-label">Mô tả</label>
-                            <textarea asp-for="Description" class="form-control" rows="4"></textarea>
+                            <textarea asp-for="Description" class="form-control" rows="4" id="descriptionInput"></textarea>
                             <span asp-validation-for="Description" class="text-danger"></span>
                         </div>
 
                         <div class="row g-3">
                             <div class="col-md-6">
                                 <label asp-for="BrandId" class="form-label">Hãng</label>
-                                <select asp-for="BrandId" class="form-select" asp-items="ViewBag.BrandId">
+                                <select asp-for="BrandId" class="form-select" asp-items="ViewBag.BrandId" id="brandInput">
                                     <option value="">-- Select Brand --</option>
                                 </select>
                                 <span asp-validation-for="BrandId" class="text-danger"></span>
                             </div>
                             <div class="col-md-6">
                                 <label asp-for="CategoryId" class="form-label">Danh mục</label>
-                                <select asp-for="CategoryId" class="form-select" asp-items="ViewBag.CategoryId">
+                                <select asp-for="CategoryId" class="form-select" asp-items="ViewBag.CategoryId" id="categoryInput">
                                     <option value="">-- Select Category --</option>
                                 </select>
                                 <span asp-validation-for="CategoryId" class="text-danger"></span>
@@ -50,12 +50,12 @@
                         <div class="row g-3 mt-1">
                             <div class="col-md-6">
                                 <label asp-for="Price" class="form-label">Giá</label>
-                                <input asp-for="Price" class="form-control" />
+                                <input asp-for="Price" class="form-control" id="priceInput" />
                                 <span asp-validation-for="Price" class="text-danger"></span>
                             </div>
                             <div class="col-md-6">
-                                <label asp-for="FrameSize" class="form-label">Kích thước khung</label>
-                                <input asp-for="FrameSize" class="form-control" />
+                                <label asp-for="FrameSize" class="form-label">Kích thước khung xe</label>
+                                <input asp-for="FrameSize" class="form-control" id="frameSizeInput" />
                                 <span asp-validation-for="FrameSize" class="text-danger"></span>
                             </div>
                         </div>
@@ -63,7 +63,7 @@
                         <div class="row g-3 mt-1">
                             <div class="col-md-6">
                                 <label asp-for="Condition" class="form-label">Tình trạng</label>
-                                <select asp-for="Condition" class="form-select">
+                                <select asp-for="Condition" class="form-select" id="conditionInput">
                                     <option value="">-- Select Condition --</option>
                                     <option value="excellent">Excellent</option>
                                     <option value="good">Good</option>
@@ -74,7 +74,7 @@
                             </div>
                             <div class="col-md-6">
                                 <label asp-for="YearManufactured" class="form-label">Năm sản xuất</label>
-                                <input asp-for="YearManufactured" class="form-control" type="number" />
+                                <input asp-for="YearManufactured" class="form-control" type="number" id="yearInput" />
                                 <span asp-validation-for="YearManufactured" class="text-danger"></span>
                             </div>
                         </div>
@@ -82,12 +82,12 @@
                         <div class="row g-3 mt-1">
                             <div class="col-md-6">
                                 <label asp-for="Location" class="form-label">Địa điểm</label>
-                                <input asp-for="Location" class="form-control" />
+                                <input asp-for="Location" class="form-control" id="locationInput" />
                                 <span asp-validation-for="Location" class="text-danger"></span>
                             </div>
                             <div class="col-md-6">
                                 <label asp-for="Color" class="form-label">Màu sắc</label>
-                                <input asp-for="Color" class="form-control" />
+                                <input asp-for="Color" class="form-control" id="colorInput" />
                                 <span asp-validation-for="Color" class="text-danger"></span>
                             </div>
                         </div>
@@ -103,8 +103,13 @@
                             <small class="form-text text-muted">Bạn có thể chọn nhiều ảnh cùng lúc</small>
                         </div>
 
-                        <div class="d-grid mt-4">
-                            <button type="submit" class="btn btn-primary btn-lg">Đăng tin</button>
+                        <div class="d-grid gap-2 mt-4">
+                            <button type="button" class="btn btn-outline-primary btn-lg" onclick="showPreview()">
+                                <i class="bi bi-eye"></i> Xem trước
+                            </button>
+                            <button type="submit" class="btn btn-primary btn-lg">
+                                <i class="bi bi-upload"></i> Đăng tin
+                            </button>
                         </div>
                     </div>
                 </div>
@@ -113,15 +118,138 @@
     </div>
 </div>
 
+<!-- Preview Modal -->
+<div class="modal fade" id="previewModal" tabindex="-1" aria-labelledby="previewModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-xl">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title" id="previewModalLabel">
+                    <i class="bi bi-eye"></i> Xem trước bài đăng
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body" style="max-height: 70vh; overflow-y: auto;">
+                <div class="row">
+                    <!-- Left: Images -->
+                    <div class="col-lg-6 mb-4">
+                        <div class="preview-gallery">
+                            <div id="previewCarousel" class="carousel slide" data-bs-ride="carousel">
+                                <div class="carousel-inner" id="previewCarouselInner" style="border-radius: 12px; overflow: hidden;">
+                                    <div class="carousel-item active">
+                                        <div style="background: #f5f5f5; height: 400px; display: flex; align-items: center; justify-content: center;">
+                                            <i class="bi bi-image text-muted" style="font-size: 4rem;"></i>
+                                        </div>
+                                    </div>
+                                </div>
+                                <button class="carousel-control-prev" type="button" data-bs-target="#previewCarousel" data-bs-slide="prev">
+                                    <span class="carousel-control-prev-icon"></span>
+                                </button>
+                                <button class="carousel-control-next" type="button" data-bs-target="#previewCarousel" data-bs-slide="next">
+                                    <span class="carousel-control-next-icon"></span>
+                                </button>
+                                <div class="carousel-indicators" id="previewCarouselIndicators"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Right: Details -->
+                    <div class="col-lg-6">
+                        <div class="preview-details">
+                            <h2 id="previewTitle" class="mb-3" style="font-size: 24px; font-weight: 600;">Tiêu đề bài đăng</h2>
+                            
+                            <div class="preview-price mb-4">
+                                <div style="font-size: 32px; font-weight: 700; color: #198754;" id="previewPrice">0 ₫</div>
+                                <div class="mt-2">
+                                    <span class="badge bg-success">Còn hàng</span>
+                                    <span class="badge bg-info">Giá tốt</span>
+                                </div>
+                            </div>
+
+                            <div class="preview-specs mb-4">
+                                <h5 class="mb-3" style="font-size: 18px; font-weight: 600;">Thông tin chi tiết</h5>
+                                <div class="row g-3">
+                                    <div class="col-6">
+                                        <div class="spec-item">
+                                            <small class="text-muted d-block">Hãng</small>
+                                            <strong id="previewBrand">-</strong>
+                                        </div>
+                                    </div>
+                                    <div class="col-6">
+                                        <div class="spec-item">
+                                            <small class="text-muted d-block">Danh mục</small>
+                                            <strong id="previewCategory">-</strong>
+                                        </div>
+                                    </div>
+                                    <div class="col-6">
+                                        <div class="spec-item">
+                                            <small class="text-muted d-block">Tình trạng</small>
+                                            <span class="badge bg-info" id="previewCondition">-</span>
+                                        </div>
+                                    </div>
+                                    <div class="col-6">
+                                        <div class="spec-item">
+                                            <small class="text-muted d-block">Năm sản xuất</small>
+                                            <strong id="previewYear">-</strong>
+                                        </div>
+                                    </div>
+                                    <div class="col-6">
+                                        <div class="spec-item">
+                                            <small class="text-muted d-block">Kích thước khung</small>
+                                            <strong id="previewFrameSize">-</strong>
+                                        </div>
+                                    </div>
+                                    <div class="col-6">
+                                        <div class="spec-item">
+                                            <small class="text-muted d-block">Màu sắc</small>
+                                            <strong id="previewColor">-</strong>
+                                        </div>
+                                    </div>
+                                    <div class="col-12">
+                                        <div class="spec-item">
+                                            <small class="text-muted d-block">
+                                                <i class="bi bi-geo-alt"></i> Địa điểm
+                                            </small>
+                                            <strong id="previewLocation">-</strong>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="preview-description">
+                                <h5 class="mb-3" style="font-size: 18px; font-weight: 600;">Mô tả</h5>
+                                <p id="previewDescription" class="text-muted" style="line-height: 1.6;">Chưa có mô tả</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    <i class="bi bi-x-circle"></i> Đóng
+                </button>
+                <button type="button" class="btn btn-success" onclick="confirmSubmit()">
+                    <i class="bi bi-check-circle"></i> Xác nhận đăng tin
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
 @section Scripts {
     @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
     <script>
+        let selectedFiles = [];
+
+        // Handle file input change
         document.getElementById('images').addEventListener('change', function () {
             const preview = document.getElementById('imagePreview');
             const uploadTile = preview.querySelector('.image-upload-tile');
             preview.querySelectorAll('.image-preview-wrapper').forEach(item => item.remove());
 
-            Array.from(this.files).forEach(file => {
+            selectedFiles = Array.from(this.files);
+            console.log(`📸 Selected ${selectedFiles.length} files`);
+
+            selectedFiles.forEach((file, index) => {
                 const reader = new FileReader();
                 reader.onload = function (event) {
                     const wrapper = document.createElement('div');
@@ -136,6 +264,136 @@
                 };
                 reader.readAsDataURL(file);
             });
+        });
+
+        function showPreview() {
+            // Get form values
+            const title = document.getElementById('titleInput').value || 'Chưa có tiêu đề';
+            const description = document.getElementById('descriptionInput').value || 'Chưa có mô tả';
+            const brandSelect = document.getElementById('brandInput');
+            const brand = brandSelect.options[brandSelect.selectedIndex]?.text || '-';
+            const categorySelect = document.getElementById('categoryInput');
+            const category = categorySelect.options[categorySelect.selectedIndex]?.text || '-';
+            const price = document.getElementById('priceInput').value;
+            const frameSize = document.getElementById('frameSizeInput').value || '-';
+            const conditionSelect = document.getElementById('conditionInput');
+            const condition = conditionSelect.value || '-';
+            const year = document.getElementById('yearInput').value || '-';
+            const location = document.getElementById('locationInput').value || '-';
+            const color = document.getElementById('colorInput').value || '-';
+
+            // Update preview content
+            document.getElementById('previewTitle').textContent = title;
+            document.getElementById('previewDescription').textContent = description;
+            document.getElementById('previewBrand').textContent = brand;
+            document.getElementById('previewCategory').textContent = category;
+            document.getElementById('previewFrameSize').textContent = frameSize;
+            document.getElementById('previewYear').textContent = year;
+            document.getElementById('previewLocation').textContent = location;
+            document.getElementById('previewColor').textContent = color;
+
+            // Format and display condition
+            const conditionBadge = document.getElementById('previewCondition');
+            if (condition && condition !== '-') {
+                conditionBadge.textContent = condition.charAt(0).toUpperCase() + condition.slice(1);
+            } else {
+                conditionBadge.textContent = '-';
+            }
+
+            // Format and display price
+            if (price) {
+                const formattedPrice = new Intl.NumberFormat('vi-VN', { 
+                    style: 'currency', 
+                    currency: 'VND' 
+                }).format(price);
+                document.getElementById('previewPrice').textContent = formattedPrice;
+            } else {
+                document.getElementById('previewPrice').textContent = '0 ₫';
+            }
+
+            // Update carousel images
+            const carouselInner = document.getElementById('previewCarouselInner');
+            const carouselIndicators = document.getElementById('previewCarouselIndicators');
+            carouselInner.innerHTML = '';
+            carouselIndicators.innerHTML = '';
+
+            if (selectedFiles.length > 0) {
+                selectedFiles.forEach((file, index) => {
+                    const reader = new FileReader();
+                    reader.onload = function (event) {
+                        // Create carousel item
+                        const carouselItem = document.createElement('div');
+                        carouselItem.classList.add('carousel-item');
+                        if (index === 0) carouselItem.classList.add('active');
+
+                        const img = document.createElement('img');
+                        img.src = event.target.result;
+                        img.classList.add('d-block', 'w-100');
+                        img.style.height = '400px';
+                        img.style.objectFit = 'cover';
+                        img.alt = `Image ${index + 1}`;
+
+                        carouselItem.appendChild(img);
+                        carouselInner.appendChild(carouselItem);
+
+                        // Create indicator
+                        const indicator = document.createElement('button');
+                        indicator.type = 'button';
+                        indicator.setAttribute('data-bs-target', '#previewCarousel');
+                        indicator.setAttribute('data-bs-slide-to', index.toString());
+                        if (index === 0) indicator.classList.add('active');
+                        carouselIndicators.appendChild(indicator);
+                    };
+                    reader.readAsDataURL(file);
+                });
+            } else {
+                // No images - show placeholder
+                const carouselItem = document.createElement('div');
+                carouselItem.classList.add('carousel-item', 'active');
+                carouselItem.innerHTML = `
+                    <div style="background: #f5f5f5; height: 400px; display: flex; flex-direction: column; align-items: center; justify-content: center;">
+                        <i class="bi bi-image text-muted" style="font-size: 4rem;"></i>
+                        <p class="text-muted mt-3">Chưa có hình ảnh</p>
+                    </div>
+                `;
+                carouselInner.appendChild(carouselItem);
+            }
+
+            // Show modal
+            const modal = new bootstrap.Modal(document.getElementById('previewModal'));
+            modal.show();
+        }
+
+        function confirmSubmit() {
+            // Validate required fields before submit
+            const title = document.getElementById('titleInput').value;
+            const price = document.getElementById('priceInput').value;
+            const brand = document.getElementById('brandInput').value;
+            const category = document.getElementById('categoryInput').value;
+            const condition = document.getElementById('conditionInput').value;
+
+            if (!title || !price || !brand || !category || !condition) {
+                alert('Vui lòng điền đầy đủ các trường bắt buộc!');
+                const modal = bootstrap.Modal.getInstance(document.getElementById('previewModal'));
+                modal.hide();
+                return;
+            }
+
+            // Hide modal and submit form
+            const modal = bootstrap.Modal.getInstance(document.getElementById('previewModal'));
+            modal.hide();
+
+            // Submit form after a short delay to ensure modal is closed
+            setTimeout(() => {
+                console.log('📤 Submitting form...');
+                document.getElementById('createForm').submit();
+            }, 300);
+        }
+
+        // Log on form submit
+        document.getElementById('createForm').addEventListener('submit', function(e) {
+            const filesInput = document.getElementById('images');
+            console.log(`📤 Form submitting with ${filesInput.files.length} files`);
         });
     </script>
 }
