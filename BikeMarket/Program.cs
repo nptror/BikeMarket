@@ -32,12 +32,14 @@
             builder.Services.AddScoped<IUserRatingRepository, UserRatingRepository>();
 
             builder.Services.AddScoped<IBrandService, BrandService>();
+            builder.Services.AddScoped<ICategoryService, CategoryService>();
             builder.Services.AddScoped<IUserService, UserService>();
             builder.Services.AddScoped<IVehicleService, VehicleService>();
             builder.Services.AddScoped<IOrderService, OrderService>();
             builder.Services.AddScoped<IWishlistService, WishlistService>();
             builder.Services.AddScoped<IChatService, ChatService>();
             builder.Services.AddScoped<IUserRatingService, UserRatingService>();
+            builder.Services.AddScoped<IDashboardService, DashboardService>();
 
             builder.Services.Configure<CloudinarySettings>(
                 builder.Configuration.GetSection("CloudinarySettings")

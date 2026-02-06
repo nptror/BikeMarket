@@ -4,16 +4,14 @@ using System.Linq;
 using System.Threading.Tasks;
 using Business.Interface;
 using DataAccess.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 
 namespace BikeMarket.Controllers
 {
-
-    //BrandsController --> (View) Brands
-    //BrandController --> (View) Brand
-
+    [Authorize(Roles = "admin")]
     public class BrandsController : Controller
     {
         private readonly IBrandService _brandService;
@@ -65,19 +63,20 @@ namespace BikeMarket.Controllers
 
             if (image == null || image.Length == 0)
             {
-                ModelState.AddModelError("ImageUrl", "Vui lòng chọn ảnh cho brand.");
+                ModelState.AddModelError("ImageUrl", "Please select an image for the brand.");
             }
 
             var existing = await _brandService.GetAllAsync();
             if (existing.Any(b => string.Equals(b.Name, brand.Name, StringComparison.OrdinalIgnoreCase)))
             {
-                ModelState.AddModelError("Name", "Brand đã tồn tại.");
+                ModelState.AddModelError("Name", "Brand already exists.");
             }
 
             if (ModelState.IsValid)
             {
                 brand.ImageUrl = await _photoService.UploadImageAsync(image!);
                 await _brandService.CreateAsync(brand);
+                TempData["SuccessMessage"] = "Brand created successfully!";
                 return RedirectToAction(nameof(Index));
             }
             return View(brand);
@@ -104,11 +103,18 @@ namespace BikeMarket.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("Id,Name")] Brand brand)
+        public async Task<IActionResult> Edit(int id, [Bind("Id,Name,ImageUrl")] Brand brand)
         {
             if (id != brand.Id)
             {
                 return NotFound();
+            }
+
+            // Check for duplicate brand name (excluding current brand)
+            var existing = await _brandService.GetAllAsync();
+            if (existing.Any(b => b.Id != id && string.Equals(b.Name, brand.Name, StringComparison.OrdinalIgnoreCase)))
+            {
+                ModelState.AddModelError("Name", "Brand already exists.");
             }
 
             if (ModelState.IsValid)
@@ -116,6 +122,7 @@ namespace BikeMarket.Controllers
                 try
                 {
                     await _brandService.UpdateAsync(brand);
+                    TempData["SuccessMessage"] = "Brand updated successfully!";
                 }
                 catch (DbUpdateConcurrencyException)
                 {
@@ -155,7 +162,15 @@ namespace BikeMarket.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
-            await _brandService.DeleteAsync(id);
+            try
+            {
+                await _brandService.DeleteAsync(id);
+                TempData["SuccessMessage"] = "Brand deleted successfully!";
+            }
+            catch (Exception ex)
+            {
+                TempData["ErrorMessage"] = $"Error deleting brand: {ex.Message}";
+            }
             return RedirectToAction(nameof(Index));
         }
 
