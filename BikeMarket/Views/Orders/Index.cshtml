@@ -1,71 +1,185 @@
 ﻿@model IEnumerable<DataAccess.Models.Order>
 
 @{
-    ViewData["Title"] = "Index";
+    ViewData["Title"] = "Manage Orders";
+    Layout = "_AdminLayout";
 }
 
-<h1>Index</h1>
+<!-- Page Header -->
+<div class="page-header">
+    <h1><i class="bi bi-cart-check"></i> Manage Orders</h1>
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a asp-controller="HomeAdmin" asp-action="Index">Dashboard</a></li>
+            <li class="breadcrumb-item active">Orders</li>
+        </ol>
+    </nav>
+</div>
 
-<p>
-    <a asp-action="Create">Create New</a>
-</p>
-<table class="table">
-    <thead>
-        <tr>
-            <th>
-                @Html.DisplayNameFor(model => model.Status)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.TotalAmount)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.PaymentMethod)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.PaymentStatus)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.Notes)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.CreatedAt)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.UpdatedAt)
-            </th>
-            <th></th>
-        </tr>
-    </thead>
-    <tbody>
-@foreach (var item in Model) {
-        <tr>
-            <td>
-                @Html.DisplayFor(modelItem => item.Status)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.TotalAmount)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.PaymentMethod)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.PaymentStatus)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.Notes)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.CreatedAt)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.UpdatedAt)
-            </td>
-            <td>
-                <a asp-action="Edit" asp-route-id="@item.Id">Edit</a> |
-                <a asp-action="Details" asp-route-id="@item.Id">Details</a> |
-                <a asp-action="Delete" asp-route-id="@item.Id">Delete</a>
-            </td>
-        </tr>
-}
-    </tbody>
-</table>
+<!-- Statistics -->
+<div class="row mb-4">
+    <div class="col-md-3">
+        <div class="stat-card">
+            <div class="stat-icon bg-info bg-opacity-10 text-info">
+                <i class="bi bi-cart-check"></i>
+            </div>
+            <div class="stat-content">
+                <h3>@Model.Count()</h3>
+                <p class="mb-0">Total Orders</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="stat-card">
+            <div class="stat-icon bg-warning bg-opacity-10 text-warning">
+                <i class="bi bi-clock"></i>
+            </div>
+            <div class="stat-content">
+                <h3>@Model.Count(o => o.Status == "pending")</h3>
+                <p class="mb-0">Pending</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="stat-card">
+            <div class="stat-icon bg-success bg-opacity-10 text-success">
+                <i class="bi bi-check-circle"></i>
+            </div>
+            <div class="stat-content">
+                <h3>@Model.Count(o => o.Status == "completed")</h3>
+                <p class="mb-0">Completed</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="stat-card">
+            <div class="stat-icon bg-success bg-opacity-10 text-success">
+                <i class="bi bi-currency-dollar"></i>
+            </div>
+            <div class="stat-content">
+                <h3>@Model.Sum(o => o.TotalAmount).ToString("N0")</h3>
+                <p class="mb-0">Total Revenue (VND)</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Orders Table -->
+<div class="card shadow-sm admin-table">
+    <div class="card-body">
+        @if (!Model.Any())
+        {
+            <div class="text-center py-5">
+                <i class="bi bi-inbox text-muted" style="font-size: 5rem;"></i>
+                <h4 class="mt-3">No Orders Found</h4>
+                <p class="text-muted">Orders will appear here when customers make purchases.</p>
+            </div>
+        }
+        else
+        {
+            <div class="table-responsive">
+                <table class="table table-hover align-middle">
+                    <thead>
+                        <tr>
+                            <th>Order ID</th>
+                            <th>Buyer</th>
+                            <th>Seller</th>
+                            <th>Vehicle</th>
+                            <th>Amount</th>
+                            <th>Status</th>
+                            <th>Payment</th>
+                            <th>Created</th>
+                            <th class="text-end">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var item in Model)
+                        {
+                            <tr>
+                                <td><strong>#@item.Id</strong></td>
+                                <td>
+                                    <div>
+                                        <strong>@item.Buyer?.Name</strong>
+                                        <br><small class="text-muted">@item.Buyer?.Email</small>
+                                    </div>
+                                </td>
+                                <td>
+                                    <div>
+                                        <strong>@item.Seller?.Name</strong>
+                                        <br><small class="text-muted">@item.Seller?.Email</small>
+                                    </div>
+                                </td>
+                                <td>
+                                    @item.Vehicle?.Title
+                                </td>
+                                <td>
+                                    <strong class="text-success">@item.TotalAmount.ToString("N0") VND</strong>
+                                </td>
+                                <td>
+                                    @if (item.Status == "pending")
+                                    {
+                                        <span class="badge bg-warning text-dark">Pending</span>
+                                    }
+                                    else if (item.Status == "confirmed")
+                                    {
+                                        <span class="badge bg-info">Confirmed</span>
+                                    }
+                                    else if (item.Status == "completed")
+                                    {
+                                        <span class="badge bg-success">Completed</span>
+                                    }
+                                    else if (item.Status == "cancelled")
+                                    {
+                                        <span class="badge bg-danger">Cancelled</span>
+                                    }
+                                    else if (item.Status == "paid")
+                                    {
+                                        <span class="badge bg-primary">Paid</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-secondary">@item.Status</span>
+                                    }
+                                </td>
+                                <td>
+                                    @if (item.PaymentStatus == "paid")
+                                    {
+                                        <span class="badge bg-success"><i class="bi bi-check-circle"></i> Paid</span>
+                                    }
+                                    else if (item.PaymentStatus == "unpaid")
+                                    {
+                                        <span class="badge bg-danger"><i class="bi bi-x-circle"></i> Unpaid</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-secondary">@item.PaymentStatus</span>
+                                    }
+                                    @if (!string.IsNullOrEmpty(item.PaymentMethod))
+                                    {
+                                        <br><small class="text-muted">@item.PaymentMethod</small>
+                                    }
+                                </td>
+                                <td>
+                                    <small>@item.CreatedAt?.ToString("MM/dd/yyyy HH:mm")</small>
+                                </td>
+                                <td class="text-end">
+                                    <div class="btn-group" role="group">
+                                        <a asp-action="Details" asp-route-id="@item.Id" class="btn btn-sm btn-info" title="Details">
+                                            <i class="bi bi-eye"></i>
+                                        </a>
+                                        <a asp-action="Edit" asp-route-id="@item.Id" class="btn btn-sm btn-warning" title="Edit">
+                                            <i class="bi bi-pencil"></i>
+                                        </a>
+                                        <a asp-action="Delete" asp-route-id="@item.Id" class="btn btn-sm btn-danger" title="Delete">
+                                            <i class="bi bi-trash"></i>
+                                        </a>
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+    </div>
+</div>
