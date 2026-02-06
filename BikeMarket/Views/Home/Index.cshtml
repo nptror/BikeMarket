@@ -1,15 +1,94 @@
 ﻿@using DTO.Vehicle
+@using DataAccess.Models
+@using BikeMarket.Models
+@using System.Linq
 
-@model List<VehicleListDTO>
+@model HomeIndexViewModel
 
 @{
     ViewData["Title"] = "Home";
+
+    var keyword = Model.Keyword ?? string.Empty;
+    var selectedCategory = Model.CategoryId?.ToString() ?? string.Empty;
+    var selectedBrandId = Model.BrandId;
+
+    var categoryOptions = Model.Categories
+        .Select(c => (c.Id.ToString(), c.Name))
+        .ToList();
 }
 
-<h2>Bike Marketplace</h2>
+<div class="home-hero">
+    <div class="home-search-wrapper">
+        <form class="home-search-bar" method="get" asp-controller="Home" asp-action="Index">
+            <div class="home-search-group">
+                <select class="form-select home-search-category" name="categoryId">
+                    <option value="">Danh mục</option>
+                    @foreach (var option in categoryOptions)
+                    {
+                        <option value="@option.Item1" selected="@(option.Item1 == selectedCategory)">@option.Item2</option>
+                    }
+                </select>
+                <div class="home-search-input">
+                    <i class="bi bi-search"></i>
+                    <input class="form-control" type="text" name="keyword" value="@keyword" placeholder="Tìm tên xe..." />
+                </div>
+                @if (selectedBrandId.HasValue)
+                {
+                    <input type="hidden" name="brandId" value="@selectedBrandId" />
+                }
+                <button class="btn home-search-button" type="submit">Tìm kiếm</button>
+            </div>
+        </form>
+
+        @if (Model.Brands.Any())
+        {
+            <div class="home-brand-scroll">
+                <button type="button" class="home-brand-nav" data-direction="left" aria-label="Cuộn trái">
+                    <i class="bi bi-chevron-left"></i>
+                </button>
+                <div class="home-brand-cards" id="brandScroller">
+                    @foreach (var brand in Model.Brands)
+                    {
+                        var isActive = selectedBrandId.HasValue && brand.Id == selectedBrandId.Value;
+                        <a class="home-brand-card @(isActive ? "active" : string.Empty)"
+                           asp-controller="Home"
+                           asp-action="Index"
+                           asp-route-brandId="@brand.Id"
+                           asp-route-categoryId="@Model.CategoryId"
+                           asp-route-keyword="@Model.Keyword">
+                            <div class="home-brand-image">
+                                <img src="@brand.ImageUrl" alt="@brand.Name" />
+                            </div>
+                            <div class="home-brand-name">@brand.Name</div>
+                        </a>
+                    }
+                </div>
+                <button type="button" class="home-brand-nav" data-direction="right" aria-label="Cuộn phải">
+                    <i class="bi bi-chevron-right"></i>
+                </button>
+            </div>
+        }
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        document.querySelectorAll('.home-brand-nav').forEach(button => {
+            button.addEventListener('click', () => {
+                const scroller = document.getElementById('brandScroller');
+                if (!scroller) return;
+                const direction = button.dataset.direction === 'left' ? -1 : 1;
+                const scrollAmount = scroller.clientWidth * 0.8 * direction;
+                scroller.scrollBy({ left: scrollAmount, behavior: 'smooth' });
+            });
+        });
+    </script>
+}
+
+<h2 class="mt-4">Bike Marketplace</h2>
 
 <div class="row">
-    @foreach (var item in Model)
+    @foreach (var item in Model.Vehicles)
     {
         <div class="col-md-3 mb-4">
             <div class="card h-100 shadow-sm">

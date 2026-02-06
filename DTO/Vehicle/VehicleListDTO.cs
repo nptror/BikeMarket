@@ -6,6 +6,7 @@ namespace DTO.Vehicle
     public class VehicleListDTO
     {
         public int VehicleId { get; set; }
+        public int BrandId { get; set; }
 
         [Display(Name = "Title")]
         public string Title { get; set; } = null!;

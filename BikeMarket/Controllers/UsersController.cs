@@ -1,6 +1,7 @@
 ﻿using DTO.User;
 using Business.Interface;
 using Business.Models;
+using BikeMarket.Models;
 using DataAccess.Models;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
@@ -19,10 +20,14 @@ namespace BikeMarket.Controllers
     public class UsersController : Controller
     {
         private readonly IUserService _userService;
+        private readonly IVehicleService _vehicleService;
+        private readonly IUserRatingService _userRatingService;
 
-        public UsersController(IUserService userService)
+        public UsersController(IUserService userService, IVehicleService vehicleService, IUserRatingService userRatingService)
         {
             _userService = userService;
+            _vehicleService = vehicleService;
+            _userRatingService = userRatingService;
         }
 
         // GET: Users
@@ -228,6 +233,43 @@ namespace BikeMarket.Controllers
             return RedirectToAction("Index", "Home");
         }
 
+        // GET: Users/Owner/5
+        public async Task<IActionResult> Owner(int? id)
+        {
+            if (id == null)
+            {
+                return NotFound();
+            }
+
+            var seller = await _userService.GetByIdAsync(id.Value);
+            if (seller == null)
+            {
+                return NotFound();
+            }
+
+            var summary = await _vehicleService.GetMyPostSummaryAsync(id.Value);
+            var vehicles = summary.Vehicles
+                .Where(v => string.IsNullOrEmpty(v.Status) || v.Status.Equals("available", StringComparison.OrdinalIgnoreCase))
+                .ToList();
+
+            var ratings = await _userRatingService.GetByRatedUserAsync(id.Value);
+            var tagCounts = ratings
+                .GroupBy(r => r.Rating)
+                .OrderByDescending(g => g.Key)
+                .ToDictionary(g => $"{g.Key} sao", g => g.Count());
+
+            var viewModel = new OwnerProfileViewModel
+            {
+                Seller = seller,
+                RatingAvg = seller.RatingAvg,
+                RatingCount = ratings.Count,
+                Ratings = ratings,
+                TagCounts = tagCounts,
+                Vehicles = vehicles
+            };
+
+            return View(viewModel);
+        }
 
         private Task<bool> UserExists(int id)
         {

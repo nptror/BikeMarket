@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 
 namespace DataAccess.Models;
@@ -30,6 +30,8 @@ public partial class Order
     public virtual User Buyer { get; set; } = null!;
 
     public virtual User Seller { get; set; } = null!;
+
+    public virtual ICollection<UserRating> UserRatings { get; set; } = new List<UserRating>();
 
     public virtual Vehicle Vehicle { get; set; } = null!;
 }

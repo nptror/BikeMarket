@@ -29,6 +29,7 @@
             builder.Services.AddScoped<IOrderRepository, OrderRepository>();
             builder.Services.AddScoped<IWishlistRepository, WishlistRepository>();
             builder.Services.AddScoped<IChatRepository, ChatRepository>();
+            builder.Services.AddScoped<IUserRatingRepository, UserRatingRepository>();
 
             builder.Services.AddScoped<IBrandService, BrandService>();
             builder.Services.AddScoped<IUserService, UserService>();
@@ -36,6 +37,7 @@
             builder.Services.AddScoped<IOrderService, OrderService>();
             builder.Services.AddScoped<IWishlistService, WishlistService>();
             builder.Services.AddScoped<IChatService, ChatService>();
+            builder.Services.AddScoped<IUserRatingService, UserRatingService>();
 
             builder.Services.Configure<CloudinarySettings>(
                 builder.Configuration.GetSection("CloudinarySettings")

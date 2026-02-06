@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 
 namespace DataAccess.Models;
@@ -34,6 +34,10 @@ public partial class User
     public virtual ICollection<Order> OrderBuyers { get; set; } = new List<Order>();
 
     public virtual ICollection<Order> OrderSellers { get; set; } = new List<Order>();
+
+    public virtual ICollection<UserRating> UserRatingRatedUsers { get; set; } = new List<UserRating>();
+
+    public virtual ICollection<UserRating> UserRatingRaters { get; set; } = new List<UserRating>();
 
     public virtual ICollection<Vehicle> Vehicles { get; set; } = new List<Vehicle>();
 

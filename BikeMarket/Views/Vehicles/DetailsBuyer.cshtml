@@ -421,6 +421,16 @@
         color: var(--primary);
     }
 
+    .seller-link {
+        color: inherit;
+        text-decoration: none;
+        display: inline-flex;
+    }
+
+    .seller-link:hover {
+        color: inherit;
+    }
+
     /* Responsive */
     @@media (max-width: 992px) {
         .specs-grid {
@@ -525,7 +535,7 @@
                         <button id="btnWishlist"
                                 type="button"
                                 class="btn-wishlist @(Model.IsWishlisted ? "active" : "")"
-                                onclick="toggleWishlist(@Model.VehicleId)"
+                                onclick="toggleWishlist(@Model.VehicleId)
                                 hidden="@isOwner">
                             <i class="bi @(Model.IsWishlisted ? "bi-heart-fill" : "bi-heart")" style="margin-right: 6px;"></i>
                             <span id="textWishlist">@(Model.IsWishlisted ? "Đã lưu" : "Lưu tin")</span>
@@ -614,7 +624,7 @@
                     <!-- Seller Info -->
                     <div class="seller-section">
                         <div class="seller-header">
-                            <div style="display: flex; gap: 12px; align-items: center; flex: 1;">
+                            <a class="seller-link" asp-controller="Users" asp-action="Owner" asp-route-id="@Model.SellerId" style="gap: 12px; align-items: center; flex: 1;">
                                 <div class="seller-avatar">
                                     @Model.SellerName[0]
                                 </div>
@@ -624,7 +634,7 @@
                                         Cập nhật @(Model.CreatedAt?.ToString("dd/MM/yyyy") ?? "N/A")
                                     </div>
                                 </div>
-                            </div>
+                            </a>
                         </div>
                     </div>
                 </div>
@@ -749,4 +759,4 @@
             }
         });
     </script>
-}}
+}

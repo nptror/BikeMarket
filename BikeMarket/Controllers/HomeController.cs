@@ -19,10 +19,48 @@ namespace BikeMarket.Controllers
             _vehicleService = vehicleService;
         }
 
-        public async Task<IActionResult> Index()
+        public async Task<IActionResult> Index(string? keyword, int? categoryId, int? brandId)
         {
+            var categories = await _vehicleService.GetCategoriesAsync();
+            var brands = await _vehicleService.GetBrandsAsync();
             var vehicles = await _vehicleService.GetAvailableListAsync();
-            return View(vehicles);
+
+            if (!string.IsNullOrWhiteSpace(keyword))
+            {
+                vehicles = vehicles
+                    .Where(v => !string.IsNullOrEmpty(v.Title) && v.Title.Contains(keyword, StringComparison.OrdinalIgnoreCase))
+                    .ToList();
+            }
+
+            if (categoryId.HasValue)
+            {
+                var selectedCategory = categories.FirstOrDefault(c => c.Id == categoryId.Value);
+                if (selectedCategory != null)
+                {
+                    vehicles = vehicles
+                        .Where(v => string.Equals(v.CategoryName, selectedCategory.Name, StringComparison.OrdinalIgnoreCase))
+                        .ToList();
+                }
+            }
+
+            if (brandId.HasValue)
+            {
+                vehicles = vehicles
+                    .Where(v => v.BrandId == brandId.Value)
+                    .ToList();
+            }
+
+            var viewModel = new HomeIndexViewModel
+            {
+                Categories = categories,
+                Brands = brands,
+                Keyword = keyword,
+                CategoryId = categoryId,
+                BrandId = brandId,
+                Vehicles = vehicles
+            };
+
+            return View(viewModel);
         }
         public IActionResult Privacy()
         {
