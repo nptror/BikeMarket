@@ -5,401 +5,752 @@
 }
 
 <style>
-    .mypost-container {
-        background: #f0f2f5;
-        min-height: 100vh;
-        padding-bottom: 40px;
+    :root {
+        --primary-color: #1877f2;
+        --primary-hover: #166fe5;
+        --success-color: #42b72a;
+        --warning-color: #f59e0b;
+        --danger-color: #ef4444;
+        --text-primary: #050505;
+        --text-secondary: #65676b;
+        --border-color: #dddfe2;
+        --bg-primary: #ffffff;
+        --bg-secondary: #f0f2f5;
+        --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.06);
+        --shadow-md: 0 2px 8px rgba(0, 0, 0, 0.1);
+        --shadow-lg: 0 8px 16px rgba(0, 0, 0, 0.12);
+        --radius-sm: 8px;
+        --radius-md: 12px;
+        --radius-lg: 16px;
     }
 
+    * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+    }
+
+    .mypost-container {
+        background: var(--bg-secondary);
+        min-height: 100vh;
+        padding-bottom: 60px;
+    }
+
+    /* Header Section */
     .mypost-header {
-        background: #fff;
-        padding: 20px 0;
-        box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+        background: var(--bg-primary);
+        box-shadow: var(--shadow-sm);
+        position: sticky;
+        top: 0;
+        z-index: 100;
+        animation: slideDown 0.3s ease-out;
+    }
+
+    @@keyframes slideDown {
+        from {
+            transform: translateY(-100%);
+            opacity: 0;
+        }
+        to {
+            transform: translateY(0);
+            opacity: 1;
+        }
+    }
+
+    .header-content {
+        padding: 24px 0 16px;
+    }
+
+    .header-top {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
         margin-bottom: 20px;
     }
 
     .mypost-title {
-        font-size: 24px;
+        font-size: 28px;
         font-weight: 700;
-        color: #1c1e21;
-        margin: 0;
+        color: var(--text-primary);
+        letter-spacing: -0.5px;
+    }
+
+    .btn-new-post {
+        background: linear-gradient(135deg, var(--primary-color) 0%, #0d6efd 100%);
+        color: white;
+        padding: 12px 24px;
+        border-radius: var(--radius-sm);
+        font-weight: 600;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        transition: all 0.3s ease;
+        box-shadow: var(--shadow-md);
+    }
+
+    .btn-new-post:hover {
+        transform: translateY(-2px);
+        box-shadow: var(--shadow-lg);
+        color: white;
+    }
+
+    .btn-new-post i {
+        font-size: 18px;
+    }
+
+    /* Tabs Navigation */
+    .tabs-nav {
+        display: flex;
+        gap: 8px;
+        overflow-x: auto;
+        padding-bottom: 2px;
+        scrollbar-width: none;
+    }
+
+    .tabs-nav::-webkit-scrollbar {
+        display: none;
+    }
+
+    .tab-item {
+        padding: 12px 20px;
+        border-radius: var(--radius-sm) var(--radius-sm) 0 0;
+        font-weight: 600;
+        font-size: 14px;
+        color: var(--text-secondary);
+        text-decoration: none;
+        white-space: nowrap;
+        transition: all 0.3s ease;
+        position: relative;
+        background: transparent;
+    }
+
+    .tab-item:hover {
+        color: var(--text-primary);
+        background: rgba(0, 0, 0, 0.02);
+    }
+
+    .tab-item.active {
+        color: var(--primary-color);
+        background: var(--bg-secondary);
+    }
+
+    .tab-item.active::after {
+        content: '';
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        height: 3px;
+        background: var(--primary-color);
+        border-radius: 3px 3px 0 0;
+    }
+
+    .tab-count {
+        background: rgba(0, 0, 0, 0.08);
+        padding: 2px 8px;
+        border-radius: 12px;
+        font-size: 12px;
+        font-weight: 700;
+        margin-left: 6px;
+    }
+
+    .tab-item.active .tab-count {
+        background: var(--primary-color);
+        color: white;
+    }
+
+    /* Main Content */
+    .main-content {
+        padding-top: 24px;
+    }
+
+    /* Post Grid */
+    .posts-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+        gap: 16px;
+        animation: fadeIn 0.5s ease-out;
+    }
+
+    @@keyframes fadeIn {
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
     }
 
     .post-card {
-        background: #fff;
-        border-radius: 8px;
-        box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+        background: var(--bg-primary);
+        border-radius: var(--radius-md);
         overflow: hidden;
-        transition: all 0.3s ease;
-        height: 100%;
-        display: flex;
-        flex-direction: column;
+        box-shadow: var(--shadow-sm);
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        cursor: pointer;
+        animation: cardAppear 0.5s ease-out backwards;
+    }
+
+    @@keyframes cardAppear {
+        from {
+            opacity: 0;
+            transform: scale(0.95);
+        }
+        to {
+            opacity: 1;
+            transform: scale(1);
+        }
     }
 
     .post-card:hover {
-        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-        transform: translateY(-2px);
+        transform: translateY(-4px);
+        box-shadow: var(--shadow-lg);
+    }
+
+    /* Image Container */
+    .post-image-container {
+        position: relative;
+        width: 100%;
+        padding-bottom: 65%;
+        overflow: hidden;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     }
 
     .post-image {
-        width: 100%;
-        height: 200px;
-        object-fit: cover;
-        background: #f0f2f5;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-    }
-
-    .post-image img {
+        position: absolute;
+        top: 0;
+        left: 0;
         width: 100%;
         height: 100%;
         object-fit: cover;
+        transition: transform 0.5s ease;
+    }
+
+    .post-card:hover .post-image {
+        transform: scale(1.05);
     }
 
     .post-placeholder {
-        width: 100%;
-        height: 200px;
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        color: #fff;
-        font-size: 3rem;
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        color: white;
+        font-size: 2.5rem;
+        opacity: 0.9;
     }
 
+    .post-status-badge {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        padding: 4px 10px;
+        border-radius: 16px;
+        font-size: 10px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.3px;
+        backdrop-filter: blur(10px);
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+    }
+
+    .status-available {
+        background: rgba(66, 183, 42, 0.95);
+        color: white;
+    }
+
+    .status-pending {
+        background: rgba(245, 158, 11, 0.95);
+        color: white;
+    }
+
+    .status-draft {
+        background: rgba(59, 130, 246, 0.95);
+        color: white;
+    }
+
+    .status-denied {
+        background: rgba(239, 68, 68, 0.95);
+        color: white;
+    }
+
+    .status-sold {
+        background: rgba(107, 114, 128, 0.95);
+        color: white;
+    }
+
+    /* Post Content */
     .post-content {
-        padding: 16px;
-        flex: 1;
-        display: flex;
-        flex-direction: column;
+        padding: 12px;
     }
 
     .post-title {
-        font-size: 16px;
+        font-size: 14px;
         font-weight: 600;
-        color: #1c1e21;
-        margin-bottom: 8px;
+        color: var(--text-primary);
+        line-height: 1.3;
+        margin-bottom: 6px;
         display: -webkit-box;
         -webkit-line-clamp: 2;
         -webkit-box-orient: vertical;
         overflow: hidden;
-        line-height: 1.4;
-        min-height: 44px;
+        min-height: 36px;
     }
 
     .post-price {
-        font-size: 20px;
+        font-size: 18px;
         font-weight: 700;
-        color: #1877f2;
+        color: var(--primary-color);
         margin-bottom: 8px;
     }
 
     .post-meta {
         display: flex;
-        flex-wrap: wrap;
-        gap: 8px;
-        margin-bottom: 12px;
-        flex: 1;
+        flex-direction: column;
+        gap: 6px;
+        margin-bottom: 8px;
+        padding-bottom: 8px;
+        border-bottom: 1px solid var(--border-color);
     }
 
-    .post-meta-item {
-        display: inline-flex;
+    .meta-item {
+        display: flex;
         align-items: center;
         gap: 4px;
-        font-size: 13px;
-        color: #65676b;
-    }
-
-    .post-status {
-        display: inline-block;
-        padding: 4px 12px;
-        border-radius: 20px;
         font-size: 12px;
-        font-weight: 600;
-        text-transform: uppercase;
+        color: var(--text-secondary);
     }
 
-    .status-available {
-        background: #d4edda;
-        color: #155724;
-    }
-
-    .status-pending {
-        background: #fff3cd;
-        color: #856404;
-    }
-
-    .status-draft {
-        background: #d1ecf1;
-        color: #0c5460;
-    }
-
-    .status-denied {
-        background: #f8d7da;
-        color: #721c24;
-    }
-
-    .status-sold {
-        background: #e2e3e5;
-        color: #383d41;
-    }
-
-    .post-actions {
-        display: flex;
-        gap: 8px;
-        padding-top: 12px;
-        border-top: 1px solid #e4e6eb;
-    }
-
-    .post-btn {
-        flex: 1;
-        padding: 8px;
-        border: none;
-        border-radius: 6px;
-        font-size: 14px;
-        font-weight: 600;
-        cursor: pointer;
-        transition: all 0.2s;
-        text-decoration: none;
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        gap: 6px;
-    }
-
-    .btn-view {
-        background: #e4e6eb;
-        color: #1c1e21;
-    }
-
-    .btn-view:hover {
-        background: #d8dadf;
-        color: #1c1e21;
-    }
-
-    .btn-edit {
-        background: #1877f2;
-        color: #fff;
-    }
-
-    .btn-edit:hover {
-        background: #166fe5;
-        color: #fff;
-    }
-
-    .empty-state {
-        background: #fff;
-        border-radius: 8px;
-        padding: 60px 20px;
-        text-align: center;
-        box-shadow: 0 1px 2px rgba(0,0,0,0.1);
-    }
-
-    .empty-state-icon {
-        font-size: 4rem;
-        color: #bcc0c4;
-        margin-bottom: 16px;
-    }
-
-    .empty-state-title {
-        font-size: 20px;
-        font-weight: 600;
-        color: #1c1e21;
-        margin-bottom: 8px;
-    }
-
-    .empty-state-text {
-        font-size: 15px;
-        color: #65676b;
-        margin-bottom: 20px;
-    }
-
-    .btn-create {
-        background: #1877f2;
-        color: #fff;
-        padding: 10px 24px;
-        border-radius: 6px;
-        font-weight: 600;
-        text-decoration: none;
-        display: inline-block;
-    }
-
-    .btn-create:hover {
-        background: #166fe5;
-        color: #fff;
+    .meta-item i {
+        font-size: 13px;
+        color: var(--primary-color);
     }
 
     .post-date {
-        font-size: 12px;
-        color: #65676b;
-        margin-top: auto;
+        font-size: 11px;
+        color: var(--text-secondary);
+        display: flex;
+        align-items: center;
+        gap: 4px;
+        margin-bottom: 10px;
     }
 
-    @@media (max-width: 1200px) {
-        .post-card-col {
-            flex: 0 0 33.333333%;
-            max-width: 33.333333%;
+    /* Action Buttons */
+    .post-actions {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 6px;
+    }
+
+    .post-btn {
+        padding: 8px;
+        border: none;
+        border-radius: var(--radius-sm);
+        font-size: 13px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        text-decoration: none;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 4px;
+    }
+
+    .btn-view {
+        background: var(--bg-secondary);
+        color: var(--text-primary);
+    }
+
+    .btn-view:hover {
+        background: #e4e6eb;
+        color: var(--text-primary);
+        transform: translateY(-1px);
+    }
+
+    .btn-edit {
+        background: var(--primary-color);
+        color: white;
+    }
+
+    .btn-edit:hover {
+        background: var(--primary-hover);
+        color: white;
+        transform: translateY(-1px);
+    }
+
+    /* Empty State */
+    .empty-state {
+        background: var(--bg-primary);
+        border-radius: var(--radius-lg);
+        padding: 80px 40px;
+        text-align: center;
+        box-shadow: var(--shadow-sm);
+        animation: fadeIn 0.5s ease-out;
+    }
+
+    .empty-state-icon {
+        font-size: 5rem;
+        color: #dddfe2;
+        margin-bottom: 24px;
+        animation: bounce 2s infinite;
+    }
+
+    @@keyframes bounce {
+        0%, 100% {
+            transform: translateY(0);
+        }
+        50% {
+            transform: translateY(-10px);
         }
     }
 
-    @@media (max-width: 768px) {
-        .post-card-col {
-            flex: 0 0 50%;
-            max-width: 50%;
+    .empty-state-title {
+        font-size: 24px;
+        font-weight: 700;
+        color: var(--text-primary);
+        margin-bottom: 12px;
+    }
+
+    .empty-state-text {
+        font-size: 16px;
+        color: var(--text-secondary);
+        margin-bottom: 32px;
+        line-height: 1.5;
+    }
+
+    .btn-create-empty {
+        background: var(--primary-color);
+        color: white;
+        padding: 14px 32px;
+        border-radius: var(--radius-sm);
+        font-weight: 600;
+        font-size: 16px;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+        transition: all 0.3s ease;
+        box-shadow: var(--shadow-md);
+    }
+
+    .btn-create-empty:hover {
+        background: var(--primary-hover);
+        color: white;
+        transform: translateY(-2px);
+        box-shadow: var(--shadow-lg);
+    }
+
+    /* Pagination Info */
+    .pagination-info {
+        margin-top: 32px;
+        text-align: center;
+    }
+
+    .info-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        background: var(--bg-primary);
+        padding: 14px 24px;
+        border-radius: var(--radius-md);
+        font-size: 14px;
+        color: var(--text-secondary);
+        box-shadow: var(--shadow-sm);
+    }
+
+    /* Responsive Design */
+    @@media (min-width: 1400px) {
+        .posts-grid {
+            grid-template-columns: repeat(5, 1fr);
+        }
+    }
+
+    @@media (min-width: 1200px) and (max-width: 1399px) {
+        .posts-grid {
+            grid-template-columns: repeat(4, 1fr);
+        }
+    }
+
+    @@media (min-width: 992px) and (max-width: 1199px) {
+        .posts-grid {
+            grid-template-columns: repeat(4, 1fr);
+        }
+    }
+
+    @@media (min-width: 768px) and (max-width: 991px) {
+        .posts-grid {
+            grid-template-columns: repeat(3, 1fr);
+        }
+    }
+
+    @@media (max-width: 767px) {
+        .posts-grid {
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+        }
+
+        .mypost-title {
+            font-size: 22px;
+        }
+
+        .header-top {
+            flex-direction: column;
+            gap: 12px;
+            align-items: stretch;
+        }
+
+        .btn-new-post {
+            width: 100%;
+            justify-content: center;
+        }
+
+        .post-image-container {
+            padding-bottom: 75%;
+        }
+
+        .post-placeholder {
+            font-size: 2rem;
         }
     }
 
     @@media (max-width: 576px) {
-        .post-card-col {
-            flex: 0 0 100%;
-            max-width: 100%;
+        .posts-grid {
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+        }
+
+        .mypost-container {
+            padding-bottom: 40px;
+        }
+
+        .header-content {
+            padding: 16px 0 12px;
+        }
+
+        .tabs-nav {
+            gap: 4px;
+        }
+
+        .tab-item {
+            padding: 10px 12px;
+            font-size: 12px;
+        }
+
+        .tab-count {
+            padding: 1px 6px;
+            font-size: 11px;
+        }
+
+        .empty-state {
+            padding: 60px 24px;
+        }
+
+        .empty-state-icon {
+            font-size: 4rem;
+        }
+
+        .empty-state-title {
+            font-size: 20px;
+        }
+
+        .post-content {
+            padding: 10px;
+        }
+
+        .post-title {
+            font-size: 13px;
+            min-height: 34px;
+        }
+
+        .post-price {
+            font-size: 16px;
+        }
+
+        .meta-item {
+            font-size: 11px;
+        }
+
+        .post-date {
+            font-size: 10px;
+        }
+
+        .post-btn {
+            padding: 7px;
+            font-size: 12px;
+        }
+    }
+
+    @@media (max-width: 400px) {
+        .posts-grid {
+            grid-template-columns: 1fr;
         }
     }
 </style>
 
 <div class="mypost-container">
-    <!-- Header with Tabs -->
+    <!-- Header Section -->
     <div class="mypost-header">
         <div class="container-lg">
-            <h1 class="mypost-title mb-3">Tin đăng của tôi</h1>
-            <div class="content-nav">
-                <a class="content-nav-link @(Model.ActiveTab == "display" ? "active" : "")" asp-action="MyPost" asp-route-tab="display">
-                    ĐANG HIỂN THỊ (@Model.DisplayCount)
-                </a>
-                <a class="content-nav-link @(Model.ActiveTab == "draft" ? "active" : "")" asp-action="MyPost" asp-route-tab="draft">
-                    TIN NHÁP (@Model.DraftCount)
-                </a>
-                <a class="content-nav-link @(Model.ActiveTab == "pending" ? "active" : "")" asp-action="MyPost" asp-route-tab="pending">
-                    CHỜ DUYỆT (@Model.PendingCount)
-                </a>
-                <a class="content-nav-link @(Model.ActiveTab == "denied" ? "active" : "")" asp-action="MyPost" asp-route-tab="denied">
-                    BỊ TỪ CHỐI (@Model.DeniedCount)
-                </a>
+            <div class="header-content">
+                <div class="header-top">
+                    <h1 class="mypost-title">📝 Tin đăng của tôi</h1>
+                    <a asp-action="Create" class="btn-new-post">
+                        <i class="bi bi-plus-circle-fill"></i>
+                        Đăng tin mới
+                    </a>
+                </div>
+
+                <nav class="tabs-nav">
+                    <a href="@Url.Action("MyPost", new { tab = "display" })" 
+                       class="tab-item @(Model.ActiveTab == "display" ? "active" : "")">
+                        Đang hiển thị
+                        <span class="tab-count">@Model.DisplayCount</span>
+                    </a>
+                    <a href="@Url.Action("MyPost", new { tab = "pending" })" 
+                       class="tab-item @(Model.ActiveTab == "pending" ? "active" : "")">
+                        Chờ duyệt
+                        <span class="tab-count">@Model.PendingCount</span>
+                    </a>
+                    <a href="@Url.Action("MyPost", new { tab = "draft" })" 
+                       class="tab-item @(Model.ActiveTab == "draft" ? "active" : "")">
+                        Tin nháp
+                        <span class="tab-count">@Model.DraftCount</span>
+                    </a>
+                    <a href="@Url.Action("MyPost", new { tab = "denied" })" 
+                       class="tab-item @(Model.ActiveTab == "denied" ? "active" : "")">
+                        Bị từ chối
+                        <span class="tab-count">@Model.DeniedCount</span>
+                    </a>
+                </nav>
             </div>
         </div>
     </div>
 
-    <!-- Content -->
-    <div class="container-lg">
+    <!-- Main Content -->
+    <div class="container-lg main-content">
         @if (Model.Vehicles.Count == 0)
         {
             <div class="empty-state">
                 <div class="empty-state-icon">
                     <i class="bi bi-inbox"></i>
                 </div>
-                <h3 class="empty-state-title">Chưa có tin đăng nào</h3>
-                <p class="empty-state-text">
+                <h3 class="empty-state-title">
                     @if (Model.ActiveTab == "display")
                     {
-                        <text>Bạn chưa có tin đăng nào đang hiển thị</text>
+                        <text>Chưa có tin đang hiển thị</text>
                     }
                     else if (Model.ActiveTab == "draft")
                     {
-                        <text>Bạn chưa có tin nháp nào</text>
+                        <text>Chưa có tin nháp nào</text>
                     }
                     else if (Model.ActiveTab == "pending")
                     {
-                        <text>Bạn không có tin nào đang chờ duyệt</text>
+                        <text>Không có tin đang chờ duyệt</text>
                     }
                     else if (Model.ActiveTab == "denied")
                     {
-                        <text>Bạn không có tin nào bị từ chối</text>
+                        <text>Không có tin bị từ chối</text>
                     }
+                </h3>
+                <p class="empty-state-text">
+                    Bắt đầu đăng tin để rao bán xe đạp của bạn!
                 </p>
-                <a asp-action="Create" class="btn-create">
-                    <i class="bi bi-plus-circle"></i> Đăng tin mới
+                <a asp-action="Create" class="btn-create-empty">
+                    <i class="bi bi-plus-circle-fill"></i>
+                    Tạo tin đăng đầu tiên
                 </a>
             </div>
         }
         else
         {
-            <!-- Posts Grid: 4 columns x 3 rows = 12 items per page -->
-            <div class="row g-3">
+            <div class="posts-grid">
                 @foreach (var item in Model.Vehicles.Take(12))
                 {
-                    <div class="col-xl-3 col-lg-4 col-md-6 col-sm-6 post-card-col">
-                        <div class="post-card">
-                            <!-- Image -->
+                    <div class="post-card" style="animation-delay: @(Model.Vehicles.IndexOf(item) * 0.05)s">
+                        <!-- Image -->
+                        <div class="post-image-container">
                             @if (!string.IsNullOrEmpty(item.ThumbnailUrl))
                             {
-                                <div class="post-image">
-                                    <img src="@item.ThumbnailUrl" alt="@item.Title" />
-                                </div>
+                                <img src="@item.ThumbnailUrl" alt="@item.Title" class="post-image" />
                             }
                             else
                             {
-                                <div class="post-placeholder">
-                                    <i class="bi bi-bicycle"></i>
-                                </div>
+                                <i class="bi bi-bicycle post-placeholder"></i>
                             }
 
-                            <!-- Content -->
-                            <div class="post-content">
-                                <h3 class="post-title">@item.Title</h3>
-                                
-                                <div class="post-price">@item.Price.ToString("N0") ₫</div>
-                                
-                                <div class="post-meta">
-                                    <span class="post-meta-item">
-                                        <i class="bi bi-tag"></i> @item.CategoryName
-                                    </span>
-                                    <span class="post-meta-item">
-                                        <i class="bi bi-geo-alt"></i> @item.Location
-                                    </span>
-                                </div>
+                            <!-- Status Badge -->
+                            @{
+                                var status = string.IsNullOrEmpty(item.Status) ? "available" : item.Status.ToLower();
+                                var statusClass = status switch
+                                {
+                                    "available" => "status-available",
+                                    "pending" => "status-pending",
+                                    "draft" => "status-draft",
+                                    "denied" => "status-denied",
+                                    "sold" => "status-sold",
+                                    _ => "status-available"
+                                };
+                                var statusText = status switch
+                                {
+                                    "available" => "Đang hiển thị",
+                                    "pending" => "Chờ duyệt",
+                                    "draft" => "Tin nháp",
+                                    "denied" => "Bị từ chối",
+                                    "sold" => "Đã bán",
+                                    _ => status
+                                };
+                            }
+                            <span class="post-status-badge @statusClass">@statusText</span>
+                        </div>
 
-                                <div class="mb-2">
-                                    @{
-                                        var status = string.IsNullOrEmpty(item.Status) ? "available" : item.Status.ToLower();
-                                        var statusClass = status switch
-                                        {
-                                            "available" => "status-available",
-                                            "pending" => "status-pending",
-                                            "draft" => "status-draft",
-                                            "denied" => "status-denied",
-                                            "sold" => "status-sold",
-                                            _ => "status-available"
-                                        };
-                                        var statusText = status switch
-                                        {
-                                            "available" => "Đang hiển thị",
-                                            "pending" => "Chờ duyệt",
-                                            "draft" => "Tin nháp",
-                                            "denied" => "Bị từ chối",
-                                            "sold" => "Đã bán",
-                                            _ => status
-                                        };
-                                    }
-                                    <span class="post-status @statusClass">@statusText</span>
+                        <!-- Content -->
+                        <div class="post-content">
+                            <h3 class="post-title">@item.Title</h3>
+                            
+                            <div class="post-price">@item.Price.ToString("N0") ₫</div>
+                            
+                            <div class="post-meta">
+                                <div class="meta-item">
+                                    <i class="bi bi-tag-fill"></i>
+                                    <span>@item.CategoryName</span>
                                 </div>
+                                <div class="meta-item">
+                                    <i class="bi bi-geo-alt-fill"></i>
+                                    <span>@item.Location</span>
+                                </div>
+                            </div>
 
-                                <div class="post-date">
-                                    <i class="bi bi-clock"></i> @item.CreatedAt?.ToString("dd/MM/yyyy HH:mm")
-                                </div>
+                            <div class="post-date">
+                                <i class="bi bi-clock"></i>
+                                @item.CreatedAt?.ToString("dd/MM/yyyy HH:mm")
+                            </div>
 
-                                <!-- Actions -->
-                                <div class="post-actions">
-                                    <a asp-action="DetailsAdmin" asp-route-id="@item.VehicleId" class="post-btn btn-view">
-                                        <i class="bi bi-eye"></i> Xem
-                                    </a>
-                                    <a asp-action="Edit" asp-route-id="@item.VehicleId" class="post-btn btn-edit">
-                                        <i class="bi bi-pencil"></i> Sửa
-                                    </a>
-                                </div>
+                            <!-- Actions -->
+                            <div class="post-actions">
+                                <a asp-action="DetailsAdmin" asp-route-id="@item.VehicleId" class="post-btn btn-view">
+                                    <i class="bi bi-eye-fill"></i>
+                                    Xem
+                                </a>
+                                <a asp-action="Edit" asp-route-id="@item.VehicleId" class="post-btn btn-edit">
+                                    <i class="bi bi-pencil-fill"></i>
+                                    Sửa
+                                </a>
                             </div>
                         </div>
                     </div>
                 }
             </div>
 
-            <!-- Pagination hint if more than 12 items -->
             @if (Model.Vehicles.Count > 12)
             {
-                <div class="text-center mt-4">
-                    <div class="alert alert-info d-inline-block">
-                        <i class="bi bi-info-circle"></i> 
-                        Hiển thị 12 tin đầu tiên trong tổng số @Model.Vehicles.Count tin
+                <div class="pagination-info">
+                    <div class="info-badge">
+                        <i class="bi bi-info-circle-fill"></i>
+                        Hiển thị 12 tin đầu tiên trong tổng số <strong>@Model.Vehicles.Count</strong> tin
                     </div>
                 </div>
             }
