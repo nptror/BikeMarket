@@ -1,75 +1,156 @@
 ﻿@model DataAccess.Models.User
 
 @{
-    ViewData["Title"] = "Delete";
+    ViewData["Title"] = "Delete User";
+    Layout = "_AdminLayout";
 }
 
-<h1>Delete</h1>
-
-<h3>Are you sure you want to delete this?</h3>
-<div>
-    <h4>User</h4>
-    <hr />
-    <dl class="row">
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Name)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Name)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Email)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Email)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.EmailVerified)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.EmailVerified)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.PasswordHash)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.PasswordHash)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Phone)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Phone)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Role)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Role)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.RatingAvg)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.RatingAvg)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Status)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Status)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.CreatedAt)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.CreatedAt)
-        </dd>
-    </dl>
-    
-    <form asp-action="Delete">
-        <input type="hidden" asp-for="Id" />
-        <input type="submit" value="Delete" class="btn btn-danger" /> |
-        <a asp-action="Index">Back to List</a>
-    </form>
+<!-- Page Header -->
+<div class="page-header">
+    <h1><i class="bi bi-trash"></i> Delete User</h1>
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a asp-controller="HomeAdmin" asp-action="Index">Dashboard</a></li>
+            <li class="breadcrumb-item"><a asp-action="Index">Users</a></li>
+            <li class="breadcrumb-item active">Delete</li>
+        </ol>
+    </nav>
 </div>
+
+<div class="row">
+    <div class="col-md-8 offset-md-2">
+        <div class="alert alert-danger">
+            <i class="bi bi-exclamation-triangle"></i> <strong>Warning!</strong> Are you sure you want to delete this user?
+        </div>
+
+        <div class="card shadow-sm">
+            <div class="card-header bg-danger text-white">
+                <h5 class="mb-0"><i class="bi bi-people"></i> User Details</h5>
+            </div>
+            <div class="card-body">
+                <div class="text-center mb-4">
+                    <div class="avatar-circle-large mx-auto">
+                        @Model.Name.Substring(0, 1).ToUpper()
+                    </div>
+                </div>
+
+                <dl class="row">
+                    <dt class="col-sm-3">User ID</dt>
+                    <dd class="col-sm-9"><strong>#@Model.Id</strong></dd>
+
+                    <dt class="col-sm-3">Full Name</dt>
+                    <dd class="col-sm-9"><strong class="fs-5">@Model.Name</strong></dd>
+
+                    <dt class="col-sm-3">Email</dt>
+                    <dd class="col-sm-9">
+                        @Model.Email
+                        @if (Model.EmailVerified == true)
+                        {
+                            <i class="bi bi-patch-check-fill text-primary ms-2" title="Verified"></i>
+                        }
+                    </dd>
+
+                    <dt class="col-sm-3">Phone</dt>
+                    <dd class="col-sm-9">@(Model.Phone ?? "N/A")</dd>
+
+                    <dt class="col-sm-3">Role</dt>
+                    <dd class="col-sm-9">
+                        @if (Model.Role == "admin")
+                        {
+                            <span class="badge bg-warning text-dark">Admin</span>
+                        }
+                        else if (Model.Role == "seller")
+                        {
+                            <span class="badge bg-success">Seller</span>
+                        }
+                        else
+                        {
+                            <span class="badge bg-info">Buyer</span>
+                        }
+                    </dd>
+
+                    <dt class="col-sm-3">Status</dt>
+                    <dd class="col-sm-9">
+                        @if (Model.Status == "active")
+                        {
+                            <span class="badge bg-success">Active</span>
+                        }
+                        else if (Model.Status == "inactive")
+                        {
+                            <span class="badge bg-secondary">Inactive</span>
+                        }
+                        else if (Model.Status == "suspended")
+                        {
+                            <span class="badge bg-danger">Suspended</span>
+                        }
+                        else
+                        {
+                            <span class="badge bg-secondary">@Model.Status</span>
+                        }
+                    </dd>
+
+                    <dt class="col-sm-3">Rating</dt>
+                    <dd class="col-sm-9">
+                        @if (Model.RatingAvg.HasValue && Model.RatingAvg.Value > 0)
+                        {
+                            <span class="text-warning">
+                                <i class="bi bi-star-fill"></i> @Model.RatingAvg.Value.ToString("F1")
+                            </span>
+                        }
+                        else
+                        {
+                            <span class="text-muted">No rating</span>
+                        }
+                    </dd>
+
+                    <dt class="col-sm-3">Created At</dt>
+                    <dd class="col-sm-9">@Model.CreatedAt?.ToString("MMMM dd, yyyy HH:mm")</dd>
+                </dl>
+
+                @if (Model.Vehicles.Any())
+                {
+                    <div class="alert alert-warning">
+                        <i class="bi bi-exclamation-circle"></i> <strong>Important:</strong> This user has <strong>@Model.Vehicles.Count</strong> vehicle(s).
+                        Deleting the user may affect these vehicles.
+                    </div>
+                }
+
+                @if (Model.OrderBuyers.Any() || Model.OrderSellers.Any())
+                {
+                    <div class="alert alert-warning">
+                        <i class="bi bi-exclamation-circle"></i> <strong>Important:</strong> This user has order history.
+                    </div>
+                }
+
+                <hr>
+
+                <form asp-action="Delete" method="post">
+                    <input type="hidden" asp-for="Id" />
+                    <div class="d-flex gap-2">
+                        <button type="submit" class="btn btn-danger">
+                            <i class="bi bi-trash"></i> Confirm Delete
+                        </button>
+                        <a asp-action="Index" class="btn btn-secondary">
+                            <i class="bi bi-arrow-left"></i> Cancel
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.avatar-circle-large {
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    font-size: 2.5rem;
+}
+</style>

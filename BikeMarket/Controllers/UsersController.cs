@@ -75,6 +75,7 @@ namespace BikeMarket.Controllers
                     return View(registerDto);
                 }
 
+                TempData["SuccessMessage"] = "Tạo người dùng thành công!";
                 return RedirectToAction(nameof(Index));
             }
             return View(registerDto);
@@ -176,6 +177,7 @@ namespace BikeMarket.Controllers
                 try
                 {
                     await _userService.UpdateAsync(user);
+                    TempData["SuccessMessage"] = "User updated successfully!";
                 }
                 catch (DbUpdateConcurrencyException)
                 {
@@ -215,7 +217,15 @@ namespace BikeMarket.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
-            await _userService.DeleteAsync(id);
+            try
+            {
+                await _userService.DeleteAsync(id);
+                TempData["SuccessMessage"] = "User deleted successfully!";
+            }
+            catch (Exception ex)
+            {
+                TempData["ErrorMessage"] = $"Error deleting user: {ex.Message}";
+            }
             return RedirectToAction(nameof(Index));
         }
 

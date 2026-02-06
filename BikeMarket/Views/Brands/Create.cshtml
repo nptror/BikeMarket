@@ -1,36 +1,67 @@
 ﻿@model DataAccess.Models.Brand
 
 @{
-    ViewData["Title"] = "Create";
+    ViewData["Title"] = "Create Brand";
 }
 
-<h1>Create</h1>
-
-<h4>Brand</h4>
-<hr />
-<div class="row">
-    <div class="col-md-4">
-        <form asp-action="Create" enctype="multipart/form-data">
-            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-            <div class="form-group">
-                <label asp-for="Name" class="control-label"></label>
-                <input asp-for="Name" class="form-control" />
-                <span asp-validation-for="Name" class="text-danger"></span>
-            </div>
-            <div class="form-group mt-3">
-                <label class="control-label">Ảnh brand</label>
-                <input type="file" name="image" class="form-control" accept="image/*" />
-                <span class="text-danger">@Html.ValidationMessage("ImageUrl")</span>
-            </div>
-            <div class="form-group mt-3">
-                <input type="submit" value="Create" class="btn btn-primary" />
-            </div>
-        </form>
-    </div>
+<!-- Page Header -->
+<div class="page-header">
+    <h1><i class="bi bi-plus-circle"></i> Create New Brand</h1>
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a asp-controller="HomeAdmin" asp-action="Index">Dashboard</a></li>
+            <li class="breadcrumb-item"><a asp-action="Index">Brands</a></li>
+            <li class="breadcrumb-item active">Create</li>
+        </ol>
+    </nav>
 </div>
 
-<div>
-    <a asp-action="Index">Back to List</a>
+<div class="row">
+    <div class="col-md-8 offset-md-2">
+        <div class="card shadow-sm">
+            <div class="card-header bg-secondary text-white">
+                <h5 class="mb-0"><i class="bi bi-tags"></i> Brand Information</h5>
+            </div>
+            <div class="card-body">
+                <form asp-action="Create" method="post" enctype="multipart/form-data">
+                    <div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
+                    
+                    <div class="mb-3">
+                        <label asp-for="Name" class="form-label">
+                            <i class="bi bi-tag"></i> Brand Name <span class="text-danger">*</span>
+                        </label>
+                        <input asp-for="Name" class="form-control form-control-lg" placeholder="e.g., Giant, Trek, Specialized" />
+                        <span asp-validation-for="Name" class="text-danger"></span>
+                        <small class="form-text text-muted">
+                            <i class="bi bi-info-circle"></i> Enter a unique brand name
+                        </small>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">
+                            <i class="bi bi-image"></i> Brand Image <span class="text-danger">*</span>
+                        </label>
+                        <input type="file" name="image" class="form-control" accept="image/*" />
+                        <span class="text-danger">@Html.ValidationMessage("ImageUrl")</span>
+                        <small class="form-text text-muted">
+                            <i class="bi bi-info-circle"></i> Upload a clear brand logo or image
+                        </small>
+                    </div>
+
+                    <hr class="my-4">
+
+                    <div class="d-flex gap-2">
+                        <button type="submit" class="btn btn-secondary">
+                            <i class="bi bi-check-circle"></i> Create Brand
+                        </button>
+                        <a asp-action="Index" class="btn btn-outline-secondary">
+                            <i class="bi bi-x-circle"></i> Cancel
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
 </div>
 
 @section Scripts {
