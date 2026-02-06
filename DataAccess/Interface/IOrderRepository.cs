@@ -4,6 +4,7 @@ namespace DataAccess.Interface;
 
 public interface IOrderRepository
 {
+    Task<List<Order>> GetAllAsync();
     Task<List<Order>> GetAllWithIncludesAsync();
     Task<Order?> GetByIdWithIncludesAsync(int id);
     Task<Order?> GetByIdAsync(int id);

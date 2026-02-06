@@ -13,6 +13,11 @@ public class OrderRepository : IOrderRepository
         _context = context;
     }
 
+    public Task<List<Order>> GetAllAsync()
+    {
+        return _context.Orders.ToListAsync();
+    }
+
     public Task<List<Order>> GetAllWithIncludesAsync()
     {
         return _context.Orders

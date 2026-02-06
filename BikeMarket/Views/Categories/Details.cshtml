@@ -1,18 +1,18 @@
-﻿@model DataAccess.Models.Brand
+@model DataAccess.Models.Category
 
 @{
-    ViewData["Title"] = "Brand Details";
+    ViewData["Title"] = "Category Details";
 }
 
 <!-- Page Header -->
 <div class="page-header">
     <div class="d-flex justify-content-between align-items-center">
         <div>
-            <h1><i class="bi bi-tags"></i> Brand Details</h1>
+            <h1><i class="bi bi-grid"></i> Category Details</h1>
             <nav aria-label="breadcrumb">
                 <ol class="breadcrumb">
                     <li class="breadcrumb-item"><a asp-controller="HomeAdmin" asp-action="Index">Dashboard</a></li>
-                    <li class="breadcrumb-item"><a asp-action="Index">Brands</a></li>
+                    <li class="breadcrumb-item"><a asp-action="Index">Categories</a></li>
                     <li class="breadcrumb-item active">Details</li>
                 </ol>
             </nav>
@@ -32,35 +32,20 @@
     <div class="col-md-8 offset-md-2">
         <div class="card shadow-sm">
             <div class="card-header bg-info text-white">
-                <h5 class="mb-0"><i class="bi bi-tags"></i> Brand Information</h5>
+                <h5 class="mb-0"><i class="bi bi-grid"></i> Category Information</h5>
             </div>
             <div class="card-body">
-                @if (!string.IsNullOrEmpty(Model.ImageUrl))
-                {
-                    <div class="text-center mb-4">
-                        <img src="@Model.ImageUrl" alt="@Model.Name" class="img-thumbnail" style="max-width: 400px;">
-                    </div>
-                }
-
                 <dl class="row">
-                    <dt class="col-sm-4">Brand ID</dt>
+                    <dt class="col-sm-4">Category ID</dt>
                     <dd class="col-sm-8"><strong>#@Model.Id</strong></dd>
 
-                    <dt class="col-sm-4">Brand Name</dt>
+                    <dt class="col-sm-4">Category Name</dt>
                     <dd class="col-sm-8"><strong class="fs-5">@Model.Name</strong></dd>
 
                     <dt class="col-sm-4">Total Vehicles</dt>
                     <dd class="col-sm-8">
                         <span class="badge bg-secondary">@Model.Vehicles.Count vehicle(s)</span>
                     </dd>
-
-                    @if (!string.IsNullOrEmpty(Model.ImageUrl))
-                    {
-                        <dt class="col-sm-4">Image URL</dt>
-                        <dd class="col-sm-8">
-                            <small class="text-muted text-break">@Model.ImageUrl</small>
-                        </dd>
-                    }
                 </dl>
             </div>
         </div>
@@ -69,7 +54,7 @@
         {
             <div class="card shadow-sm mt-4">
                 <div class="card-header bg-light">
-                    <h5 class="mb-0"><i class="bi bi-bicycle"></i> Vehicles using this Brand</h5>
+                    <h5 class="mb-0"><i class="bi bi-bicycle"></i> Vehicles in this Category</h5>
                 </div>
                 <div class="card-body">
                     <div class="list-group">
@@ -104,7 +89,7 @@
             <div class="card shadow-sm mt-4">
                 <div class="card-body text-center py-4">
                     <i class="bi bi-inbox text-muted" style="font-size: 3rem;"></i>
-                    <p class="text-muted mt-3">No vehicles using this brand yet.</p>
+                    <p class="text-muted mt-3">No vehicles in this category yet.</p>
                 </div>
             </div>
         }
