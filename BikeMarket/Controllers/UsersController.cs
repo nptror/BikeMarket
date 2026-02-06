@@ -276,7 +276,21 @@ namespace BikeMarket.Controllers
             return _userService.ExistsAsync(id);
         }
 
+        // GET: Users/Profile/5
+        public async Task<IActionResult> Profile(int? id)
+        {
+            if (id == null)
+            {
+                return NotFound();
+            }
 
+            var user = await _userService.GetByIdAsync(id.Value);
+            if (user == null)
+            {
+                return NotFound();
+            }
 
+            return View(user);
+        }
     }
 }
