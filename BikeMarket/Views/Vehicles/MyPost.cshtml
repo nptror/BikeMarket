@@ -1,57 +1,412 @@
 ﻿@model BikeMarket.Models.VehicleMyPostViewModel
 
 @{
-    ViewData["Title"] = "MyPost";
+    ViewData["Title"] = "Tin đăng của tôi";
 }
 
-<div class="content-nav">
-    <a class="content-nav-link @(Model.ActiveTab == "display" ? "active" : "")" asp-action="MyPost" asp-route-tab="display">
-         ĐANG HIỂN THỊ (@Model.DisplayCount)
-    </a>
-    <a class="content-nav-link @(Model.ActiveTab == "draft" ? "active" : "")" asp-action="MyPost" asp-route-tab="draft">
-        TIN NHÁP (@Model.DraftCount)
-    </a>
-    <a class="content-nav-link @(Model.ActiveTab == "pending" ? "active" : "")" asp-action="MyPost" asp-route-tab="pending">
-         CHỜ DUYỆT (@Model.PendingCount)
-    </a>
-    <a class="content-nav-link @(Model.ActiveTab == "denied" ? "active" : "")" asp-action="MyPost" asp-route-tab="denied">
-         BỊ TỪ CHỐI (@Model.DeniedCount)
-    </a>
-</div>
-
-<div class="mt-3">
-    <h1>MyPost</h1>
-
-    @if (Model.Vehicles.Count == 0)
-    {
-        <div class="text-muted">Chưa có tin đăng.</div>
+<style>
+    .mypost-container {
+        background: #f0f2f5;
+        min-height: 100vh;
+        padding-bottom: 40px;
     }
-    else
-    {
-        <table class="table">
-            <thead>
-                <tr>
-                    <th>Tiêu đề</th>
-                    <th>Giá</th>
-                    <th>Trạng thái</th>
-                    <th>Ngày tạo</th>
-                    <th></th>
-                </tr>
-            </thead>
-            <tbody>
-            @foreach (var item in Model.Vehicles)
+
+    .mypost-header {
+        background: #fff;
+        padding: 20px 0;
+        box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+        margin-bottom: 20px;
+    }
+
+    .mypost-title {
+        font-size: 24px;
+        font-weight: 700;
+        color: #1c1e21;
+        margin: 0;
+    }
+
+    .post-card {
+        background: #fff;
+        border-radius: 8px;
+        box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+        overflow: hidden;
+        transition: all 0.3s ease;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .post-card:hover {
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        transform: translateY(-2px);
+    }
+
+    .post-image {
+        width: 100%;
+        height: 200px;
+        object-fit: cover;
+        background: #f0f2f5;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .post-image img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+    .post-placeholder {
+        width: 100%;
+        height: 200px;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #fff;
+        font-size: 3rem;
+    }
+
+    .post-content {
+        padding: 16px;
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .post-title {
+        font-size: 16px;
+        font-weight: 600;
+        color: #1c1e21;
+        margin-bottom: 8px;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+        line-height: 1.4;
+        min-height: 44px;
+    }
+
+    .post-price {
+        font-size: 20px;
+        font-weight: 700;
+        color: #1877f2;
+        margin-bottom: 8px;
+    }
+
+    .post-meta {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin-bottom: 12px;
+        flex: 1;
+    }
+
+    .post-meta-item {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        font-size: 13px;
+        color: #65676b;
+    }
+
+    .post-status {
+        display: inline-block;
+        padding: 4px 12px;
+        border-radius: 20px;
+        font-size: 12px;
+        font-weight: 600;
+        text-transform: uppercase;
+    }
+
+    .status-available {
+        background: #d4edda;
+        color: #155724;
+    }
+
+    .status-pending {
+        background: #fff3cd;
+        color: #856404;
+    }
+
+    .status-draft {
+        background: #d1ecf1;
+        color: #0c5460;
+    }
+
+    .status-denied {
+        background: #f8d7da;
+        color: #721c24;
+    }
+
+    .status-sold {
+        background: #e2e3e5;
+        color: #383d41;
+    }
+
+    .post-actions {
+        display: flex;
+        gap: 8px;
+        padding-top: 12px;
+        border-top: 1px solid #e4e6eb;
+    }
+
+    .post-btn {
+        flex: 1;
+        padding: 8px;
+        border: none;
+        border-radius: 6px;
+        font-size: 14px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+    }
+
+    .btn-view {
+        background: #e4e6eb;
+        color: #1c1e21;
+    }
+
+    .btn-view:hover {
+        background: #d8dadf;
+        color: #1c1e21;
+    }
+
+    .btn-edit {
+        background: #1877f2;
+        color: #fff;
+    }
+
+    .btn-edit:hover {
+        background: #166fe5;
+        color: #fff;
+    }
+
+    .empty-state {
+        background: #fff;
+        border-radius: 8px;
+        padding: 60px 20px;
+        text-align: center;
+        box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+    }
+
+    .empty-state-icon {
+        font-size: 4rem;
+        color: #bcc0c4;
+        margin-bottom: 16px;
+    }
+
+    .empty-state-title {
+        font-size: 20px;
+        font-weight: 600;
+        color: #1c1e21;
+        margin-bottom: 8px;
+    }
+
+    .empty-state-text {
+        font-size: 15px;
+        color: #65676b;
+        margin-bottom: 20px;
+    }
+
+    .btn-create {
+        background: #1877f2;
+        color: #fff;
+        padding: 10px 24px;
+        border-radius: 6px;
+        font-weight: 600;
+        text-decoration: none;
+        display: inline-block;
+    }
+
+    .btn-create:hover {
+        background: #166fe5;
+        color: #fff;
+    }
+
+    .post-date {
+        font-size: 12px;
+        color: #65676b;
+        margin-top: auto;
+    }
+
+    @@media (max-width: 1200px) {
+        .post-card-col {
+            flex: 0 0 33.333333%;
+            max-width: 33.333333%;
+        }
+    }
+
+    @@media (max-width: 768px) {
+        .post-card-col {
+            flex: 0 0 50%;
+            max-width: 50%;
+        }
+    }
+
+    @@media (max-width: 576px) {
+        .post-card-col {
+            flex: 0 0 100%;
+            max-width: 100%;
+        }
+    }
+</style>
+
+<div class="mypost-container">
+    <!-- Header with Tabs -->
+    <div class="mypost-header">
+        <div class="container-lg">
+            <h1 class="mypost-title mb-3">Tin đăng của tôi</h1>
+            <div class="content-nav">
+                <a class="content-nav-link @(Model.ActiveTab == "display" ? "active" : "")" asp-action="MyPost" asp-route-tab="display">
+                    ĐANG HIỂN THỊ (@Model.DisplayCount)
+                </a>
+                <a class="content-nav-link @(Model.ActiveTab == "draft" ? "active" : "")" asp-action="MyPost" asp-route-tab="draft">
+                    TIN NHÁP (@Model.DraftCount)
+                </a>
+                <a class="content-nav-link @(Model.ActiveTab == "pending" ? "active" : "")" asp-action="MyPost" asp-route-tab="pending">
+                    CHỜ DUYỆT (@Model.PendingCount)
+                </a>
+                <a class="content-nav-link @(Model.ActiveTab == "denied" ? "active" : "")" asp-action="MyPost" asp-route-tab="denied">
+                    BỊ TỪ CHỐI (@Model.DeniedCount)
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Content -->
+    <div class="container-lg">
+        @if (Model.Vehicles.Count == 0)
+        {
+            <div class="empty-state">
+                <div class="empty-state-icon">
+                    <i class="bi bi-inbox"></i>
+                </div>
+                <h3 class="empty-state-title">Chưa có tin đăng nào</h3>
+                <p class="empty-state-text">
+                    @if (Model.ActiveTab == "display")
+                    {
+                        <text>Bạn chưa có tin đăng nào đang hiển thị</text>
+                    }
+                    else if (Model.ActiveTab == "draft")
+                    {
+                        <text>Bạn chưa có tin nháp nào</text>
+                    }
+                    else if (Model.ActiveTab == "pending")
+                    {
+                        <text>Bạn không có tin nào đang chờ duyệt</text>
+                    }
+                    else if (Model.ActiveTab == "denied")
+                    {
+                        <text>Bạn không có tin nào bị từ chối</text>
+                    }
+                </p>
+                <a asp-action="Create" class="btn-create">
+                    <i class="bi bi-plus-circle"></i> Đăng tin mới
+                </a>
+            </div>
+        }
+        else
+        {
+            <!-- Posts Grid: 4 columns x 3 rows = 12 items per page -->
+            <div class="row g-3">
+                @foreach (var item in Model.Vehicles.Take(12))
+                {
+                    <div class="col-xl-3 col-lg-4 col-md-6 col-sm-6 post-card-col">
+                        <div class="post-card">
+                            <!-- Image -->
+                            @if (!string.IsNullOrEmpty(item.ThumbnailUrl))
+                            {
+                                <div class="post-image">
+                                    <img src="@item.ThumbnailUrl" alt="@item.Title" />
+                                </div>
+                            }
+                            else
+                            {
+                                <div class="post-placeholder">
+                                    <i class="bi bi-bicycle"></i>
+                                </div>
+                            }
+
+                            <!-- Content -->
+                            <div class="post-content">
+                                <h3 class="post-title">@item.Title</h3>
+                                
+                                <div class="post-price">@item.Price.ToString("N0") ₫</div>
+                                
+                                <div class="post-meta">
+                                    <span class="post-meta-item">
+                                        <i class="bi bi-tag"></i> @item.CategoryName
+                                    </span>
+                                    <span class="post-meta-item">
+                                        <i class="bi bi-geo-alt"></i> @item.Location
+                                    </span>
+                                </div>
+
+                                <div class="mb-2">
+                                    @{
+                                        var status = string.IsNullOrEmpty(item.Status) ? "available" : item.Status.ToLower();
+                                        var statusClass = status switch
+                                        {
+                                            "available" => "status-available",
+                                            "pending" => "status-pending",
+                                            "draft" => "status-draft",
+                                            "denied" => "status-denied",
+                                            "sold" => "status-sold",
+                                            _ => "status-available"
+                                        };
+                                        var statusText = status switch
+                                        {
+                                            "available" => "Đang hiển thị",
+                                            "pending" => "Chờ duyệt",
+                                            "draft" => "Tin nháp",
+                                            "denied" => "Bị từ chối",
+                                            "sold" => "Đã bán",
+                                            _ => status
+                                        };
+                                    }
+                                    <span class="post-status @statusClass">@statusText</span>
+                                </div>
+
+                                <div class="post-date">
+                                    <i class="bi bi-clock"></i> @item.CreatedAt?.ToString("dd/MM/yyyy HH:mm")
+                                </div>
+
+                                <!-- Actions -->
+                                <div class="post-actions">
+                                    <a asp-action="DetailsAdmin" asp-route-id="@item.VehicleId" class="post-btn btn-view">
+                                        <i class="bi bi-eye"></i> Xem
+                                    </a>
+                                    <a asp-action="Edit" asp-route-id="@item.VehicleId" class="post-btn btn-edit">
+                                        <i class="bi bi-pencil"></i> Sửa
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+
+            <!-- Pagination hint if more than 12 items -->
+            @if (Model.Vehicles.Count > 12)
             {
-                <tr>
-                    <td>@item.Title</td>
-                    <td>@item.Price.ToString("C0")</td>
-                    <td>@(string.IsNullOrEmpty(item.Status) ? "available" : item.Status)</td>
-                    <td>@item.CreatedAt?.ToString("dd/MM/yyyy")</td>
-                    <td>
-                        <a asp-action="DetailsAdmin" asp-route-id="@item.VehicleId">Details</a>
-                    </td>
-                </tr>
+                <div class="text-center mt-4">
+                    <div class="alert alert-info d-inline-block">
+                        <i class="bi bi-info-circle"></i> 
+                        Hiển thị 12 tin đầu tiên trong tổng số @Model.Vehicles.Count tin
+                    </div>
+                </div>
             }
-            </tbody>
-        </table>
-    }
+        }
+    </div>
 </div>
+
+@section Scripts {
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+}

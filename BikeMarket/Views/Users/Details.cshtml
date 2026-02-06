@@ -1,72 +1,346 @@
 ﻿@model DataAccess.Models.User
 
 @{
-    ViewData["Title"] = "Details";
+    ViewData["Title"] = "Thông tin tài khoản";
 }
 
-<h1>Details</h1>
+<style>
+    .profile-container {
+        background: #f8f9fa;
+        min-height: 100vh;
+        padding: 40px 0;
+    }
 
-<div>
-    <h4>User</h4>
-    <hr />
-    <dl class="row">
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Name)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Name)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Email)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Email)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.EmailVerified)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.EmailVerified)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.PasswordHash)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.PasswordHash)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Phone)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Phone)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Role)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Role)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.RatingAvg)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.RatingAvg)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Status)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Status)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.CreatedAt)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.CreatedAt)
-        </dd>
-    </dl>
+    .profile-card {
+        background: #fff;
+        border-radius: 16px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        overflow: hidden;
+        max-width: 800px;
+        margin: 0 auto;
+    }
+
+    .profile-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        padding: 40px;
+        text-align: center;
+        position: relative;
+    }
+
+    .profile-avatar {
+        width: 120px;
+        height: 120px;
+        border-radius: 50%;
+        background: #fff;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 16px;
+        font-size: 48px;
+        font-weight: 700;
+        color: #667eea;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    }
+
+    .profile-name {
+        font-size: 28px;
+        font-weight: 700;
+        color: #fff;
+        margin-bottom: 8px;
+    }
+
+    .profile-role {
+        display: inline-block;
+        padding: 6px 16px;
+        background: rgba(255,255,255,0.2);
+        border-radius: 20px;
+        color: #fff;
+        font-size: 14px;
+        font-weight: 600;
+        text-transform: uppercase;
+        backdrop-filter: blur(10px);
+    }
+
+    .profile-body {
+        padding: 40px;
+    }
+
+    .info-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 24px;
+        margin-bottom: 32px;
+    }
+
+    .info-item {
+        background: #f8f9fa;
+        padding: 20px;
+        border-radius: 12px;
+        transition: all 0.3s ease;
+    }
+
+    .info-item:hover {
+        background: #e9ecef;
+        transform: translateY(-2px);
+    }
+
+    .info-label {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 13px;
+        color: #6c757d;
+        font-weight: 600;
+        text-transform: uppercase;
+        margin-bottom: 8px;
+        letter-spacing: 0.5px;
+    }
+
+    .info-label i {
+        font-size: 18px;
+        color: #667eea;
+    }
+
+    .info-value {
+        font-size: 18px;
+        font-weight: 600;
+        color: #212529;
+        word-break: break-word;
+    }
+
+    .profile-actions {
+        display: flex;
+        gap: 12px;
+        padding-top: 32px;
+        border-top: 1px solid #e9ecef;
+    }
+
+    .btn-action {
+        flex: 1;
+        padding: 14px;
+        border-radius: 10px;
+        font-weight: 600;
+        text-decoration: none;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        transition: all 0.3s ease;
+        border: none;
+        cursor: pointer;
+        font-size: 15px;
+    }
+
+    .btn-primary-custom {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: #fff;
+    }
+
+    .btn-primary-custom:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+        color: #fff;
+    }
+
+    .btn-secondary-custom {
+        background: #fff;
+        color: #495057;
+        border: 2px solid #dee2e6;
+    }
+
+    .btn-secondary-custom:hover {
+        background: #f8f9fa;
+        border-color: #adb5bd;
+        color: #495057;
+    }
+
+    .stats-section {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 16px;
+        margin-bottom: 32px;
+        padding: 24px;
+        background: linear-gradient(135deg, rgba(102, 126, 234, 0.05) 0%, rgba(118, 75, 162, 0.05) 100%);
+        border-radius: 12px;
+    }
+
+    .stat-item {
+        text-align: center;
+    }
+
+    .stat-value {
+        font-size: 28px;
+        font-weight: 700;
+        color: #667eea;
+        margin-bottom: 4px;
+    }
+
+    .stat-label {
+        font-size: 13px;
+        color: #6c757d;
+        font-weight: 600;
+    }
+
+    .verified-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        padding: 4px 12px;
+        background: #d4edda;
+        color: #155724;
+        border-radius: 20px;
+        font-size: 12px;
+        font-weight: 600;
+        margin-left: 8px;
+    }
+
+    .verified-badge i {
+        font-size: 14px;
+    }
+
+    @@media (max-width: 768px) {
+        .info-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .stats-section {
+            grid-template-columns: 1fr;
+        }
+
+        .profile-body {
+            padding: 24px;
+        }
+
+        .profile-header {
+            padding: 32px 20px;
+        }
+
+        .profile-actions {
+            flex-direction: column;
+        }
+    }
+</style>
+
+<div class="profile-container">
+    <div class="container">
+        <div class="profile-card">
+            <!-- Header -->
+            <div class="profile-header">
+                <div class="profile-avatar">
+                    @if (!string.IsNullOrEmpty(Model.Name))
+                    {
+                        @Model.Name[0].ToString().ToUpper()
+                    }
+                    else
+                    {
+                        <text>U</text>
+                    }
+                </div>
+                <h1 class="profile-name">
+                    @Model.Name
+                    @if (Model.EmailVerified == true)
+                    {
+                        <span class="verified-badge">
+                            <i class="bi bi-check-circle-fill"></i> Verified
+                        </span>
+                    }
+                </h1>
+                <span class="profile-role">@Model.Role</span>
+            </div>
+
+            <!-- Body -->
+            <div class="profile-body">
+                <!-- Stats Section -->
+                <div class="stats-section">
+                    <div class="stat-item">
+                        <div class="stat-value">@(Model.RatingAvg?.ToString("F1") ?? "0.0")</div>
+                        <div class="stat-label">
+                            <i class="bi bi-star-fill text-warning"></i> Đánh giá
+                        </div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value">@Model.Vehicles.Count</div>
+                        <div class="stat-label">
+                            <i class="bi bi-bicycle"></i> Tin đăng
+                        </div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value">@Model.OrderBuyers.Count</div>
+                        <div class="stat-label">
+                            <i class="bi bi-bag-check"></i> Đơn hàng
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Information Grid -->
+                <div class="info-grid">
+                    <div class="info-item">
+                        <div class="info-label">
+                            <i class="bi bi-person-circle"></i>
+                            Họ và tên
+                        </div>
+                        <div class="info-value">@Model.Name</div>
+                    </div>
+
+                    <div class="info-item">
+                        <div class="info-label">
+                            <i class="bi bi-envelope"></i>
+                            Email
+                        </div>
+                        <div class="info-value">@Model.Email</div>
+                    </div>
+
+                    <div class="info-item">
+                        <div class="info-label">
+                            <i class="bi bi-telephone"></i>
+                            Số điện thoại
+                        </div>
+                        <div class="info-value">
+                            @if (!string.IsNullOrEmpty(Model.Phone))
+                            {
+                                @Model.Phone
+                            }
+                            else
+                            {
+                                <span class="text-muted">Chưa cập nhật</span>
+                            }
+                        </div>
+                    </div>
+
+                    <div class="info-item">
+                        <div class="info-label">
+                            <i class="bi bi-calendar-check"></i>
+                            Ngày tham gia
+                        </div>
+                        <div class="info-value">
+                            @if (Model.CreatedAt.HasValue)
+                            {
+                                @Model.CreatedAt.Value.ToString("dd/MM/yyyy")
+                            }
+                            else
+                            {
+                                <span class="text-muted">Không rõ</span>
+                            }
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Actions -->
+                <div class="profile-actions">
+                    <a asp-action="Edit" asp-route-id="@Model.Id" class="btn-action btn-primary-custom">
+                        <i class="bi bi-pencil-square"></i>
+                        Chỉnh sửa thông tin
+                    </a>
+                    <a asp-action="Index" class="btn-action btn-secondary-custom">
+                        <i class="bi bi-arrow-left"></i>
+                        Quay lại danh sách
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
-<div>
-    <a asp-action="Edit" asp-route-id="@Model?.Id">Edit</a> |
-    <a asp-action="Index">Back to List</a>
-</div>
+
+@section Scripts {
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+}
