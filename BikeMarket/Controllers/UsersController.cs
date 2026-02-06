@@ -31,9 +31,23 @@ namespace BikeMarket.Controllers
         }
 
         // GET: Users
-        public async Task<IActionResult> Index()
+        public async Task<IActionResult> Index(
+            string? search = null,
+            decimal ratingAvg = 0,
+            string? role = null,
+            string? sortBy = "email",
+            string? sortOrder = "asc")
         {
-            return View(await _userService.GetAllAsync());
+            var users = await _userService.GetAllUserAsync(search, ratingAvg, role, sortBy, sortOrder);
+            
+            // Pass filter values to view for form state
+            ViewBag.Search = search;
+            ViewBag.RatingAvg = ratingAvg;
+            ViewBag.Role = role;
+            ViewBag.SortBy = sortBy;
+            ViewBag.SortOrder = sortOrder;
+            
+            return View(users);
         }
 
         // GET: Users/Details/5

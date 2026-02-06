@@ -23,6 +23,26 @@ public class UserService : IUserService
         return _userRepository.GetAllAsync();
     }
 
+    public async Task<List<UserProfileDTO>> GetAllUserAsync(
+        string? search = null,
+        decimal ratingAvg = 0,
+        string? role = null,
+        string? sortBy = "email",
+        string? sortOrder = "asc")
+    {
+        var users = await _userRepository.GetAllAsync(search, ratingAvg, role, sortBy, sortOrder);
+
+        return users.Select(u => new UserProfileDTO
+        {
+            Id = u.Id,
+            Name = u.Name,
+            Email = u.Email,
+            Phone = u.Phone,
+            Role = u.Role,
+            RatingAvg = u.RatingAvg ?? 0
+        }).ToList();
+    }
+
     public Task<User?> GetByIdAsync(int id)
     {
         return _userRepository.GetByIdAsync(id);
