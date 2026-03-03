@@ -1,8 +1,8 @@
-@model BikeMarket.Models.OwnerProfileViewModel
+﻿@model BikeMarket.Models.OwnerProfileViewModel
 @using System.Linq
 
 @{
-    ViewData["Title"] = "Ng??i b�n";
+    ViewData["Title"] = "Ngươi bán";
     var ratingAvg = Model.RatingAvg ?? 0m;
     var ratingAvgText = ratingAvg.ToString("0.0");
 }
@@ -36,7 +36,7 @@
                             }
                         </div>
                         <div class="text-muted" style="font-size: 14px;">
-                            (@Model.RatingCount ?�nh gi�)
+                            (@Model.RatingCount đánh giá)
                         </div>
                     </div>
                 </div>
@@ -51,7 +51,7 @@
                         }
                         else
                         {
-                            <span class="text-muted">Ch?a c� ?�nh gi�.</span>
+                            <span class="text-muted">Chưa có đánh giá.</span>
                         }
                     </div>
                 </div>
@@ -106,7 +106,7 @@
         </div>
     </div>
 
-    <h5 class="mb-3">Tin ?ang b�n</h5>
+    <h5 class="mb-3">Tin đang bán</h5>
     <div class="row">
         @foreach (var item in Model.Vehicles)
         {
@@ -125,7 +125,7 @@
                     <div class="card-body">
                         <h6 class="card-title">@item.Title</h6>
                         <div class="text-muted" style="font-size: 13px;">
-                            @item.Price.ToString("N0") ? � @item.Location
+                            @item.Price.ToString("N0") đồng· @item.Location
                         </div>
                     </div>
                     <div class="card-footer bg-white">
@@ -133,7 +133,7 @@
                            asp-controller="Vehicles"
                            asp-action="DetailsBuyer"
                            asp-route-id="@item.VehicleId">
-                            Xem chi ti?t
+                            Xem chi tiết
                         </a>
                     </div>
                 </div>

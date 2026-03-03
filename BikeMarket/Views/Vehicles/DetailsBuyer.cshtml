@@ -532,10 +532,13 @@
 
                     <!-- Action Buttons -->
                     <div class="action-buttons">
+                        <form id="wishlistTokenForm" method="post" style="display:none;">
+                            @Html.AntiForgeryToken()
+                        </form>
                         <button id="btnWishlist"
                                 type="button"
                                 class="btn-wishlist @(Model.IsWishlisted ? "active" : "")"
-                                onclick="toggleWishlist(@Model.VehicleId)
+                                onclick="toggleWishlist(@Model.VehicleId)"
                                 hidden="@isOwner">
                             <i class="bi @(Model.IsWishlisted ? "bi-heart-fill" : "bi-heart")" style="margin-right: 6px;"></i>
                             <span id="textWishlist">@(Model.IsWishlisted ? "Đã lưu" : "Lưu tin")</span>
