@@ -23,5 +23,17 @@ namespace DataAccess.Repository
                 .OrderByDescending(r => r.CreatedAt)
                 .ToListAsync();
         }
+
+        public Task<UserRating?> GetByOrderAndRaterAsync(int orderId, int raterId)
+        {
+            return _context.UserRatings
+                .FirstOrDefaultAsync(r => r.OrderId == orderId && r.RaterId == raterId);
+        }
+
+        public async Task AddAsync(UserRating rating)
+        {
+            _context.UserRatings.Add(rating);
+            await _context.SaveChangesAsync();
+        }
     }
 }

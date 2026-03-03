@@ -12,5 +12,7 @@ namespace BikeMarket.Models
         public IEnumerable<UserRating> Ratings { get; set; } = new List<UserRating>();
         public Dictionary<string, int> TagCounts { get; set; } = new();
         public IEnumerable<VehicleListDTO> Vehicles { get; set; } = new List<VehicleListDTO>();
+        public bool CanRateSeller { get; set; }
+        public int? PaidOrderId { get; set; }
     }
 }

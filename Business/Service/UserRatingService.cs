@@ -17,5 +17,15 @@ namespace Business.Service
         {
             return _userRatingRepository.GetByRatedUserAsync(ratedUserId);
         }
+
+        public Task<UserRating?> GetByOrderAndRaterAsync(int orderId, int raterId)
+        {
+            return _userRatingRepository.GetByOrderAndRaterAsync(orderId, raterId);
+        }
+
+        public Task CreateAsync(UserRating rating)
+        {
+            return _userRatingRepository.AddAsync(rating);
+        }
     }
 }

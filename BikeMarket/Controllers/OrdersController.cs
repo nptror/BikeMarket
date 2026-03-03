@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Business.Interface;
+using BikeMarket.Models;
 using DataAccess.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
@@ -14,10 +15,12 @@ namespace BikeMarket.Controllers
     public class OrdersController : Controller
     {
         private readonly IOrderService _orderService;
+        private readonly IUserRatingService _userRatingService;
 
-        public OrdersController(IOrderService orderService)
+        public OrdersController(IOrderService orderService, IUserRatingService userRatingService)
         {
             _orderService = orderService;
+            _userRatingService = userRatingService;
         }
 
         [HttpPost]
@@ -50,7 +53,42 @@ namespace BikeMarket.Controllers
                 return NotFound();
             }
 
-            return RedirectToAction(nameof(Details), new { id });
+            return RedirectToAction(nameof(PaymentSuccess), new { id });
+        }
+
+        public async Task<IActionResult> PaymentSuccess(int? id)
+        {
+            if (id == null)
+            {
+                return NotFound();
+            }
+
+            var order = await _orderService.GetByIdAsync(id.Value);
+            if (order == null)
+            {
+                return NotFound();
+            }
+
+            var sessionUserId = HttpContext.Session.GetString("UserId");
+            if (string.IsNullOrEmpty(sessionUserId))
+            {
+                return RedirectToAction("Login", "Users");
+            }
+
+            var buyerId = int.Parse(sessionUserId);
+            if (order.BuyerId != buyerId)
+            {
+                return Forbid();
+            }
+
+            var hasRating = await _userRatingService.GetByOrderAndRaterAsync(order.Id, buyerId) != null;
+            var viewModel = new OrderPaymentSuccessViewModel
+            {
+                Order = order,
+                CanRateSeller = order.PaymentStatus == "paid" && !hasRating
+            };
+
+            return View(viewModel);
         }
 
         // GET: Orders

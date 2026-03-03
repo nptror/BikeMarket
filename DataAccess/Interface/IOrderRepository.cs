@@ -8,6 +8,7 @@ public interface IOrderRepository
     Task<List<Order>> GetAllWithIncludesAsync();
     Task<Order?> GetByIdWithIncludesAsync(int id);
     Task<Order?> GetByIdAsync(int id);
+    Task<Order?> GetLatestPaidOrderAsync(int buyerId, int sellerId);
     Task AddAsync(Order order);
     Task UpdateAsync(Order order);
     Task DeleteAsync(Order order);

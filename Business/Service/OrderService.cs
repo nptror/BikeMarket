@@ -27,6 +27,11 @@ public class OrderService : IOrderService
         return _orderRepository.GetByIdWithIncludesAsync(id);
     }
 
+    public Task<Order?> GetLatestPaidOrderAsync(int buyerId, int sellerId)
+    {
+        return _orderRepository.GetLatestPaidOrderAsync(buyerId, sellerId);
+    }
+
     public Task CreateAsync(Order order)
     {
         return _orderRepository.AddAsync(order);

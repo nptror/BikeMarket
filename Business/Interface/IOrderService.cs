@@ -6,6 +6,7 @@ public interface IOrderService
 {
     Task<List<Order>> GetAllAsync();
     Task<Order?> GetByIdAsync(int id);
+    Task<Order?> GetLatestPaidOrderAsync(int buyerId, int sellerId);
     Task CreateAsync(Order order);
     Task UpdateAsync(Order order);
     Task DeleteAsync(int id);

@@ -22,12 +22,14 @@ namespace BikeMarket.Controllers
         private readonly IUserService _userService;
         private readonly IVehicleService _vehicleService;
         private readonly IUserRatingService _userRatingService;
+        private readonly IOrderService _orderService;
 
-        public UsersController(IUserService userService, IVehicleService vehicleService, IUserRatingService userRatingService)
+        public UsersController(IUserService userService, IVehicleService vehicleService, IUserRatingService userRatingService, IOrderService orderService)
         {
             _userService = userService;
             _vehicleService = vehicleService;
             _userRatingService = userRatingService;
+            _orderService = orderService;
         }
 
         // GET: Users
@@ -282,6 +284,23 @@ namespace BikeMarket.Controllers
                 .OrderByDescending(g => g.Key)
                 .ToDictionary(g => $"{g.Key} sao", g => g.Count());
 
+            var canRateSeller = false;
+            int? paidOrderId = null;
+            var sessionUserId = HttpContext.Session.GetString("UserId");
+            if (!string.IsNullOrEmpty(sessionUserId) && int.TryParse(sessionUserId, out var buyerId) && buyerId != seller.Id)
+            {
+                var paidOrder = await _orderService.GetLatestPaidOrderAsync(buyerId, seller.Id);
+                if (paidOrder != null)
+                {
+                    var existingRating = await _userRatingService.GetByOrderAndRaterAsync(paidOrder.Id, buyerId);
+                    if (existingRating == null)
+                    {
+                        canRateSeller = true;
+                        paidOrderId = paidOrder.Id;
+                    }
+                }
+            }
+
             var viewModel = new OwnerProfileViewModel
             {
                 Seller = seller,
@@ -289,7 +308,9 @@ namespace BikeMarket.Controllers
                 RatingCount = ratings.Count,
                 Ratings = ratings,
                 TagCounts = tagCounts,
-                Vehicles = vehicles
+                Vehicles = vehicles,
+                CanRateSeller = canRateSeller,
+                PaidOrderId = paidOrderId
             };
 
             return View(viewModel);

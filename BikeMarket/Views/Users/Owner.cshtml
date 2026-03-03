@@ -13,12 +13,18 @@
             <div class="seller-avatar">
                 @(Model.Seller?.Name?.FirstOrDefault().ToString().ToUpperInvariant() ?? "U")
             </div>
-            <div>
+            <div class="flex-grow-1">
                 <h4 class="mb-1">@Model.Seller?.Name</h4>
                 <div class="text-muted" style="font-size: 14px;">
                     Tham gia @(Model.Seller?.CreatedAt?.ToString("dd/MM/yyyy") ?? "N/A")
                 </div>
             </div>
+            @if (Model.CanRateSeller && Model.PaidOrderId.HasValue)
+            {
+                <a asp-controller="UserRatings" asp-action="Create" asp-route-orderId="@Model.PaidOrderId" class="btn btn-warning">
+                    <i class="bi bi-star-fill"></i> Đánh giá người bán
+                </a>
+            }
         </div>
     </div>
 

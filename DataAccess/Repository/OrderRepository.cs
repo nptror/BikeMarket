@@ -41,6 +41,15 @@ public class OrderRepository : IOrderRepository
         return _context.Orders.FirstOrDefaultAsync(o => o.Id == id);
     }
 
+    public Task<Order?> GetLatestPaidOrderAsync(int buyerId, int sellerId)
+    {
+        return _context.Orders
+            .Include(o => o.Vehicle)
+            .Where(o => o.BuyerId == buyerId && o.SellerId == sellerId && o.PaymentStatus == "paid")
+            .OrderByDescending(o => o.UpdatedAt ?? o.CreatedAt)
+            .FirstOrDefaultAsync();
+    }
+
     public async Task AddAsync(Order order)
     {
         _context.Orders.Add(order);
