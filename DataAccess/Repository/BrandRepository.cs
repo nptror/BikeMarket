@@ -18,9 +18,19 @@ public class BrandRepository : IBrandRepository
         return _context.Brands.ToListAsync();
     }
 
+    public Task<List<Brand>> GetAllWithVehiclesAsync()
+    {
+        return _context.Brands.Include(b => b.Vehicles).ToListAsync();
+    }
+
     public Task<Brand?> GetByIdAsync(int id)
     {
         return _context.Brands.FirstOrDefaultAsync(b => b.Id == id);
+    }
+
+    public Task<Brand?> GetByIdWithVehiclesAsync(int id)
+    {
+        return _context.Brands.Include(b => b.Vehicles).FirstOrDefaultAsync(b => b.Id == id);
     }
 
     public async Task AddAsync(Brand brand)
@@ -31,8 +41,13 @@ public class BrandRepository : IBrandRepository
 
     public async Task UpdateAsync(Brand brand)
     {
-        _context.Brands.Update(brand);
-        await _context.SaveChangesAsync();
+        var existing = await _context.Brands.FindAsync(brand.Id);
+        if (existing != null)
+        {
+            existing.Name = brand.Name;
+            existing.ImageUrl = brand.ImageUrl;
+            await _context.SaveChangesAsync();
+        }
     }
 
     public async Task DeleteAsync(Brand brand)

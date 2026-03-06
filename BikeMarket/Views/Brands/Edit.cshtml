@@ -23,7 +23,7 @@
                 <h5 class="mb-0"><i class="bi bi-tags"></i> Edit Brand #@Model.Id</h5>
             </div>
             <div class="card-body">
-                <form asp-action="Edit" method="post">
+                <form asp-action="Edit" method="post" enctype="multipart/form-data">
                     <div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
                     
                     <input type="hidden" asp-for="Id" />
@@ -40,15 +40,26 @@
                         </small>
                     </div>
 
-                    @if (!string.IsNullOrEmpty(Model.ImageUrl))
-                    {
-                        <div class="mb-3">
-                            <label class="form-label">Current Image</label>
-                            <div>
-                                <img src="@Model.ImageUrl" alt="@Model.Name" class="img-thumbnail" style="max-width: 200px;">
+                    <div class="mb-3">
+                        <label class="form-label">
+                            <i class="bi bi-image"></i> Ảnh thương hiệu
+                        </label>
+                        @if (!string.IsNullOrEmpty(Model.ImageUrl))
+                        {
+                            <div class="mb-2">
+                                <img id="currentImage" src="@Model.ImageUrl" alt="@Model.Name" class="img-thumbnail" style="max-width: 200px;">
                             </div>
+                        }
+                        <input type="file" name="image" id="imageInput" class="form-control" accept="image/*" />
+                        <span id="imageError" class="text-danger" style="display:none;"></span>
+                        <small class="form-text text-muted">
+                            <i class="bi bi-info-circle"></i> Chọn ảnh mới để thay đổi. Chỉ chấp nhận 1 file ảnh (JPG, PNG, GIF). Để trống nếu không muốn đổi ảnh.
+                        </small>
+                        <div id="imagePreview" class="mt-2" style="display:none;">
+                            <p class="text-muted mb-1"><small>Ảnh mới:</small></p>
+                            <img id="previewImg" src="" alt="Preview" class="img-thumbnail" style="max-width: 200px;">
                         </div>
-                    }
+                    </div>
 
                     <div class="alert alert-info">
                         <i class="bi bi-info-circle"></i> <strong>Note:</strong> This brand is currently used by <strong>@Model.Vehicles.Count</strong> vehicle(s).
@@ -72,4 +83,41 @@
 
 @section Scripts {
     @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    <script>
+        document.getElementById('imageInput').addEventListener('change', function () {
+            const file = this.files[0];
+            const errorEl = document.getElementById('imageError');
+            const previewEl = document.getElementById('imagePreview');
+            const previewImg = document.getElementById('previewImg');
+
+            errorEl.style.display = 'none';
+            errorEl.textContent = '';
+            previewEl.style.display = 'none';
+
+            if (!file) return;
+
+            const allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+            if (!allowedTypes.includes(file.type)) {
+                errorEl.textContent = 'Chỉ chấp nhận file ảnh (JPG, PNG, GIF, WEBP).';
+                errorEl.style.display = 'block';
+                this.value = '';
+                return;
+            }
+
+            const maxSize = 5 * 1024 * 1024;
+            if (file.size > maxSize) {
+                errorEl.textContent = 'File ảnh không được vượt quá 5MB.';
+                errorEl.style.display = 'block';
+                this.value = '';
+                return;
+            }
+
+            const reader = new FileReader();
+            reader.onload = function (e) {
+                previewImg.src = e.target.result;
+                previewEl.style.display = 'block';
+            };
+            reader.readAsDataURL(file);
+        });
+    </script>
 }

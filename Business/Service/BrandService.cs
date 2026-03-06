@@ -18,9 +18,19 @@ public class BrandService : IBrandService
         return _brandRepository.GetAllAsync();
     }
 
+    public Task<List<Brand>> GetAllWithVehiclesAsync()
+    {
+        return _brandRepository.GetAllWithVehiclesAsync();
+    }
+
     public Task<Brand?> GetByIdAsync(int id)
     {
         return _brandRepository.GetByIdAsync(id);
+    }
+
+    public Task<Brand?> GetByIdWithVehiclesAsync(int id)
+    {
+        return _brandRepository.GetByIdWithVehiclesAsync(id);
     }
 
     public Task CreateAsync(Brand brand)

@@ -18,9 +18,19 @@ public class CategoryRepository : ICategoryRepository
         return _context.Categories.ToListAsync();
     }
 
+    public Task<List<Category>> GetAllWithVehiclesAsync()
+    {
+        return _context.Categories.Include(c => c.Vehicles).ToListAsync();
+    }
+
     public Task<Category?> GetByIdAsync(int id)
     {
         return _context.Categories.FirstOrDefaultAsync(c => c.Id == id);
+    }
+
+    public Task<Category?> GetByIdWithVehiclesAsync(int id)
+    {
+        return _context.Categories.Include(c => c.Vehicles).FirstOrDefaultAsync(c => c.Id == id);
     }
 
     public async Task AddAsync(Category category)
@@ -31,8 +41,12 @@ public class CategoryRepository : ICategoryRepository
 
     public async Task UpdateAsync(Category category)
     {
-        _context.Categories.Update(category);
-        await _context.SaveChangesAsync();
+        var existing = await _context.Categories.FindAsync(category.Id);
+        if (existing != null)
+        {
+            existing.Name = category.Name;
+            await _context.SaveChangesAsync();
+        }
     }
 
     public async Task DeleteAsync(Category category)

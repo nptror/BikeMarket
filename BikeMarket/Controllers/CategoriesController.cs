@@ -19,7 +19,7 @@ namespace BikeMarket.Controllers
         // GET: Categories
         public async Task<IActionResult> Index()
         {
-            var categories = await _categoryService.GetAllAsync();
+            var categories = await _categoryService.GetAllWithVehiclesAsync();
             return View(categories);
         }
 
@@ -69,7 +69,7 @@ namespace BikeMarket.Controllers
             if (id == null)
                 return NotFound();
 
-            var category = await _categoryService.GetByIdAsync(id.Value);
+            var category = await _categoryService.GetByIdWithVehiclesAsync(id.Value);
             if (category == null)
                 return NotFound();
 
@@ -83,6 +83,8 @@ namespace BikeMarket.Controllers
         {
             if (id != category.Id)
                 return NotFound();
+
+            ModelState.Remove("Vehicles");
 
             // Check for duplicate category name (excluding current category)
             var existing = await _categoryService.GetAllAsync();

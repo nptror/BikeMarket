@@ -26,7 +26,7 @@ namespace BikeMarket.Controllers
         // GET: Brands
         public async Task<IActionResult> Index()
         {
-            return View(await _brandService.GetAllAsync());
+            return View(await _brandService.GetAllWithVehiclesAsync());
         }
 
         // GET: Brands/Details/5
@@ -90,7 +90,7 @@ namespace BikeMarket.Controllers
                 return NotFound();
             }
 
-            var brand = await _brandService.GetByIdAsync(id.Value);
+            var brand = await _brandService.GetByIdWithVehiclesAsync(id.Value);
             if (brand == null)
             {
                 return NotFound();
@@ -103,12 +103,14 @@ namespace BikeMarket.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("Id,Name,ImageUrl")] Brand brand)
+        public async Task<IActionResult> Edit(int id, [Bind("Id,Name,ImageUrl")] Brand brand, IFormFile? image)
         {
             if (id != brand.Id)
             {
                 return NotFound();
             }
+
+            ModelState.Remove("Vehicles");
 
             // Check for duplicate brand name (excluding current brand)
             var existing = await _brandService.GetAllAsync();
@@ -121,6 +123,11 @@ namespace BikeMarket.Controllers
             {
                 try
                 {
+                    if (image != null && image.Length > 0)
+                    {
+                        brand.ImageUrl = await _photoService.UploadImageAsync(image);
+                    }
+
                     await _brandService.UpdateAsync(brand);
                     TempData["SuccessMessage"] = "Brand updated successfully!";
                 }

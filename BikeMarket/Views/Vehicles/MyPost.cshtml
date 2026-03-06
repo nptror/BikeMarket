@@ -341,7 +341,7 @@
     /* Action Buttons */
     .post-actions {
         display: grid;
-        grid-template-columns: 1fr 1fr;
+        grid-template-columns: 1fr;
         gap: 6px;
     }
 
@@ -731,12 +731,9 @@
 
                             <!-- Actions -->
                             <div class="post-actions">
-                                <a asp-action="DetailsAdmin" asp-route-id="@item.VehicleId" class="post-btn btn-view">
-                                    <i class="bi bi-eye-fill"></i>
-                                    Xem
-                                </a>
+                             
                                 <a asp-action="Edit" asp-route-id="@item.VehicleId" class="post-btn btn-edit">
-                                    <i class="bi bi-pencil-fill"></i>
+                                   
                                     Sửa
                                 </a>
                             </div>

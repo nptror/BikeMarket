@@ -18,9 +18,19 @@ public class CategoryService : ICategoryService
         return _categoryRepository.GetAllAsync();
     }
 
+    public Task<List<Category>> GetAllWithVehiclesAsync()
+    {
+        return _categoryRepository.GetAllWithVehiclesAsync();
+    }
+
     public Task<Category?> GetByIdAsync(int id)
     {
         return _categoryRepository.GetByIdAsync(id);
+    }
+
+    public Task<Category?> GetByIdWithVehiclesAsync(int id)
+    {
+        return _categoryRepository.GetByIdWithVehiclesAsync(id);
     }
 
     public Task CreateAsync(Category category)
