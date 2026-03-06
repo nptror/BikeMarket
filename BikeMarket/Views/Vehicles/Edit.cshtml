@@ -4,6 +4,13 @@
     ViewData["Title"] = "Edit";
 }
 
+<!-- Delete image form placed OUTSIDE the main edit form -->
+<form id="deleteImageForm" method="post" asp-action="DeleteImage" style="display:none;">
+    @Html.AntiForgeryToken()
+    <input type="hidden" name="imageId" id="deleteImageId" />
+    <input type="hidden" name="vehicleId" id="deleteVehicleId" value="@Model.Id" />
+</form>
+
 <div class="container-lg py-4">
     <div class="d-flex align-items-center justify-content-between mb-3">
         <h1 class="h3 mb-0">Chỉnh sửa tin</h1>
@@ -117,14 +124,10 @@
                                     {
                                         <div class="image-preview-wrapper existing-image" data-url="@image.ImageUrl">
                                             <img src="@image.ImageUrl" class="image-preview-item" alt="Vehicle image" />
-                                            <form asp-action="DeleteImage" method="post" class="image-delete-form">
-                                                @Html.AntiForgeryToken()
-                                                <input type="hidden" name="imageId" value="@image.Id" />
-                                                <input type="hidden" name="vehicleId" value="@Model.Id" />
-                                                <button type="submit" class="image-delete-button" title="Xóa ảnh">
-                                                    <i class="bi bi-x"></i>
-                                                </button>
-                                            </form>
+                                            <button type="button" class="image-delete-button" title="Xóa ảnh"
+                                                    onclick="deleteImage(@image.Id)">
+                                                <i class="bi bi-x"></i>
+                                            </button>
                                         </div>
                                     }
                                 }
@@ -268,6 +271,67 @@
 @section Scripts {
     @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
     <script>
+        const MAX_WIDTH = 1200;
+        const MAX_HEIGHT = 1200;
+        const IMAGE_QUALITY = 0.7;
+
+        function resizeImage(file) {
+            return new Promise((resolve) => {
+                if (!file.type.startsWith('image/')) {
+                    resolve(file);
+                    return;
+                }
+                const reader = new FileReader();
+                reader.onload = function (e) {
+                    const img = new Image();
+                    img.onload = function () {
+                        let width = img.width;
+                        let height = img.height;
+
+                        if (width <= MAX_WIDTH && height <= MAX_HEIGHT) {
+                            resolve(file);
+                            return;
+                        }
+
+                        if (width > height) {
+                            if (width > MAX_WIDTH) {
+                                height = Math.round(height * MAX_WIDTH / width);
+                                width = MAX_WIDTH;
+                            }
+                        } else {
+                            if (height > MAX_HEIGHT) {
+                                width = Math.round(width * MAX_HEIGHT / height);
+                                height = MAX_HEIGHT;
+                            }
+                        }
+
+                        const canvas = document.createElement('canvas');
+                        canvas.width = width;
+                        canvas.height = height;
+                        const ctx = canvas.getContext('2d');
+                        ctx.drawImage(img, 0, 0, width, height);
+
+                        canvas.toBlob(function (blob) {
+                            const resizedFile = new File([blob], file.name, {
+                                type: 'image/jpeg',
+                                lastModified: Date.now()
+                            });
+                            console.log(`🖼️ Resized ${file.name}: ${(file.size / 1024).toFixed(0)}KB → ${(resizedFile.size / 1024).toFixed(0)}KB`);
+                            resolve(resizedFile);
+                        }, 'image/jpeg', IMAGE_QUALITY);
+                    };
+                    img.src = e.target.result;
+                };
+                reader.readAsDataURL(file);
+            });
+        }
+
+        function deleteImage(imageId) {
+            if (!confirm('Bạn có chắc muốn xóa ảnh này?')) return;
+            document.getElementById('deleteImageId').value = imageId;
+            document.getElementById('deleteImageForm').submit();
+        }
+
         let newSelectedFiles = [];
         let existingImageUrls = [];
 
@@ -411,7 +475,7 @@
                     img.style.objectFit = 'cover';
                     img.alt = `New Image ${index + 1}`;
 
-                    carouselItem.appendChild(img);
+                    carouselItem.appendChild(img); 
                     carouselInner.appendChild(carouselItem);
 
                     // Create indicator
@@ -446,7 +510,6 @@
         }
 
         function confirmSubmit() {
-            // Validate required fields
             const title = document.getElementById('titleInput').value;
             const price = document.getElementById('priceInput').value;
             const brand = document.getElementById('brandInput').value;
@@ -460,20 +523,69 @@
                 return;
             }
 
-            // Hide modal and submit
             const modal = bootstrap.Modal.getInstance(document.getElementById('previewModal'));
             modal.hide();
 
             setTimeout(() => {
                 console.log('📤 Submitting edit form...');
-                document.getElementById('editForm').submit();
+                document.getElementById('editForm').requestSubmit();
             }, 300);
         }
 
-        // Log on form submit
-        document.getElementById('editForm').addEventListener('submit', function(e) {
-            const filesInput = document.getElementById('newImages');
-            console.log(`📤 Form submitting with ${filesInput.files.length} new files + ${existingImageUrls.length} existing`);
+        // Intercept form submit to resize images
+        document.getElementById('editForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+
+            const form = e.target;
+            const submitBtn = form.querySelector('button[type="submit"]');
+            const originalBtnHtml = submitBtn.innerHTML;
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Đang xử lý ảnh...';
+
+            try {
+                const formData = new FormData(form);
+
+                // Remove original files from formData
+                formData.delete('newImages');
+
+                // Resize and append new images
+                const fileInput = document.getElementById('newImages');
+                const files = Array.from(fileInput.files);
+
+                if (files.length > 0) {
+                    console.log(`🔄 Resizing ${files.length} images...`);
+                    const resizedFiles = await Promise.all(files.map(f => resizeImage(f)));
+                    resizedFiles.forEach(file => {
+                        formData.append('newImages', file, file.name);
+                    });
+                    console.log('✅ All images resized');
+                }
+
+                submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Đang lưu...';
+
+                const response = await fetch(form.action, {
+                    method: 'POST',
+                    body: formData
+                });
+
+                if (response.redirected) {
+                    window.location.href = response.url;
+                } else if (response.ok) {
+                    const html = await response.text();
+                    document.open();
+                    document.write(html);
+                    document.close();
+                } else {
+                    alert('Có lỗi xảy ra khi lưu. Vui lòng thử lại.');
+                    submitBtn.disabled = false;
+                    submitBtn.innerHTML = originalBtnHtml;
+                }
+            } catch (error) {
+                console.error('❌ Submit error:', error);
+                alert('Có lỗi xảy ra. Vui lòng thử lại.');
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = originalBtnHtml;
+            }
         });
     </script>
 }

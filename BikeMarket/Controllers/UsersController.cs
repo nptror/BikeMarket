@@ -97,6 +97,34 @@ namespace BikeMarket.Controllers
             return View(registerDto);
         }
 
+        public IActionResult Register()
+        {
+            return View();
+        }
+
+        // POST: Users/Create
+        // To protect from overposting attacks, enable the specific properties you want to bind to.
+        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Register(UserRegisterDTO registerDto)
+        {
+            if (ModelState.IsValid)
+            {
+                var result = await _userService.RegisterAsync(registerDto);
+                if (!result.Success)
+                {
+                    ModelState.AddModelError("Email", result.ErrorMessage ?? "Đăng ký thất bại");
+                    return View(registerDto);
+                }
+
+                TempData["SuccessMessage"] = "Đăng ký thành công! Vui lòng đăng nhập.";
+                return RedirectToAction(nameof(Login));
+            }
+            return View(registerDto);
+        }
+
+
         public IActionResult Login()
         {
             return View();

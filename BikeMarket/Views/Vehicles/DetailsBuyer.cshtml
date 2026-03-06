@@ -29,76 +29,153 @@
         box-shadow: 0 1px 3px rgba(0,0,0,0.1);
     }
 
-    /* Gallery Section */
+    /* Gallery Section - Carousel Style */
     .gallery-section {
         position: relative;
         background: white;
-        border-radius: 8px;
+        border-radius: 12px;
         overflow: hidden;
         margin-bottom: 20px;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.1);
     }
 
-    .main-image {
-        position: relative;
+    .gallery-carousel .carousel-item img {
         width: 100%;
         height: 500px;
-        background: var(--bg-light);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        overflow: hidden;
-    }
-
-    .main-image img {
-        width: 100%;
-        height: 100%;
         object-fit: cover;
+        background: var(--bg-light);
     }
 
-    .image-counter {
+    .gallery-carousel .carousel-control-prev,
+    .gallery-carousel .carousel-control-next {
+        width: 44px;
+        height: 44px;
+        top: 50%;
+        transform: translateY(-50%);
+        bottom: auto;
+        background: rgba(0, 0, 0, 0.5);
+        border-radius: 50%;
+        opacity: 0;
+        transition: opacity 0.3s;
+    }
+
+    .gallery-carousel .carousel-control-prev {
+        left: 12px;
+    }
+
+    .gallery-carousel .carousel-control-next {
+        right: 12px;
+    }
+
+    .gallery-section:hover .carousel-control-prev,
+    .gallery-section:hover .carousel-control-next {
+        opacity: 1;
+    }
+
+    .gallery-carousel .carousel-control-prev-icon,
+    .gallery-carousel .carousel-control-next-icon {
+        width: 20px;
+        height: 20px;
+    }
+
+    .gallery-carousel .carousel-indicators {
+        bottom: 12px;
+        margin-bottom: 0;
+    }
+
+    .gallery-carousel .carousel-indicators button {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        border: none;
+        background: rgba(255, 255, 255, 0.5);
+        transition: all 0.3s;
+    }
+
+    .gallery-carousel .carousel-indicators button.active {
+        width: 24px;
+        border-radius: 4px;
+        background: white;
+    }
+
+    .gallery-counter {
         position: absolute;
         top: 12px;
         right: 12px;
-        background: rgba(34, 34, 34, 0.8);
+        background: rgba(34, 34, 34, 0.7);
         color: white;
-        padding: 8px 12px;
-        border-radius: 4px;
-        font-size: 14px;
+        padding: 6px 12px;
+        border-radius: 20px;
+        font-size: 13px;
         font-weight: 500;
+        z-index: 2;
+        pointer-events: none;
     }
 
-    .carousel-nav {
+    .gallery-thumbs {
         display: flex;
-        gap: 6px;
+        gap: 8px;
         padding: 12px;
-        background: var(--bg-light);
+        background: white;
         overflow-x: auto;
         border-top: 1px solid var(--border);
     }
 
-    .carousel-nav .thumb {
-        width: 60px;
-        height: 60px;
+    .gallery-thumbs::-webkit-scrollbar {
+        height: 4px;
+    }
+
+    .gallery-thumbs::-webkit-scrollbar-thumb {
+        background: #ccc;
+        border-radius: 2px;
+    }
+
+    .gallery-thumb {
+        width: 64px;
+        height: 64px;
         border: 2px solid transparent;
-        border-radius: 4px;
+        border-radius: 8px;
         overflow: hidden;
         cursor: pointer;
         flex-shrink: 0;
         transition: all 0.2s;
+        opacity: 0.6;
     }
 
-    .carousel-nav .thumb:hover {
+    .gallery-thumb:hover {
+        opacity: 1;
+        border-color: var(--secondary);
+    }
+
+    .gallery-thumb.active {
         border-color: var(--primary);
+        opacity: 1;
     }
 
-    .carousel-nav .thumb img {
+    .gallery-thumb img {
         width: 100%;
         height: 100%;
         object-fit: cover;
     }
 
-    .carousel-nav .thumb.active {
-        border-color: var(--primary);
+    .gallery-placeholder {
+        width: 100%;
+        height: 500px;
+        background: var(--bg-light);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .gallery-placeholder i {
+        font-size: 4rem;
+        color: #ccc;
+    }
+
+    .gallery-placeholder p {
+        color: #999;
+        margin-top: 12px;
     }
 
     /* Product Info Section */
@@ -382,7 +459,6 @@
         width: 48px;
         height: 48px;
         border-radius: 50%;
-        background: #ddd;
         display: flex;
         align-items: center;
         justify-content: center;
@@ -441,7 +517,11 @@
             grid-template-columns: 1fr;
         }
 
-        .main-image {
+        .gallery-carousel .carousel-item img {
+            height: 350px;
+        }
+
+        .gallery-placeholder {
             height: 350px;
         }
     }
@@ -459,6 +539,21 @@
             flex-direction: column;
             gap: 12px;
         }
+
+        .gallery-carousel .carousel-item img {
+            height: 280px;
+        }
+
+        .gallery-placeholder {
+            height: 280px;
+        }
+
+        .gallery-carousel .carousel-control-prev,
+        .gallery-carousel .carousel-control-next {
+            opacity: 1;
+            width: 36px;
+            height: 36px;
+        }
     }
 </style>
 
@@ -468,34 +563,61 @@
         <!-- Left: Gallery -->
         <div class="col-lg-6 mb-4">
             <div class="gallery-section">
-                <!-- Main Image -->
-                <div class="main-image" id="mainImageContainer">
-                    @if (Model.ImageUrls != null && Model.ImageUrls.Count > 0)
-                    {
-                        <img id="mainImage" src="@Model.ImageUrls[0]" alt="@Model.Title">
-                    }
-                    else
-                    {
-                        <img id="mainImage" src="https://via.placeholder.com/500?text=No+Image" alt="No Image">
-                    }
-                    @if (Model.ImageUrls != null && Model.ImageUrls.Count > 0)
-                    {
-                        <div class="image-counter">
-                            <span id="currentImageIndex">1</span>/<span id="totalImages">@Model.ImageUrls.Count</span>
-                        </div>
-                    }
-                </div>
-
-                <!-- Thumbnails -->
                 @if (Model.ImageUrls != null && Model.ImageUrls.Count > 0)
                 {
-                    <div class="carousel-nav">
-                        @for (int i = 0; i < Model.ImageUrls.Count; i++)
+                    <!-- Image Counter -->
+                    <div class="gallery-counter">
+                        <i class="bi bi-images"></i>
+                        <span id="currentImageIndex">1</span> / @Model.ImageUrls.Count
+                    </div>
+
+                    <!-- Carousel -->
+                    <div id="galleryCarousel" class="carousel slide gallery-carousel" data-bs-ride="false">
+                        <div class="carousel-inner">
+                            @for (int i = 0; i < Model.ImageUrls.Count; i++)
+                            {
+                                <div class="carousel-item @(i == 0 ? "active" : "")">
+                                    <img src="@Model.ImageUrls[i]" alt="@Model.Title - Ảnh @(i + 1)" />
+                                </div>
+                            }
+                        </div>
+
+                        @if (Model.ImageUrls.Count > 1)
                         {
-                            <div class="thumb @(i == 0 ? "active" : "")" onclick="changeImage(@i)">
-                                <img src="@Model.ImageUrls[i]" alt="Thumb @i">
+                            <button class="carousel-control-prev" type="button" data-bs-target="#galleryCarousel" data-bs-slide="prev">
+                                <span class="carousel-control-prev-icon"></span>
+                            </button>
+                            <button class="carousel-control-next" type="button" data-bs-target="#galleryCarousel" data-bs-slide="next">
+                                <span class="carousel-control-next-icon"></span>
+                            </button>
+
+                            <div class="carousel-indicators">
+                                @for (int i = 0; i < Model.ImageUrls.Count; i++)
+                                {
+                                    <button type="button" data-bs-target="#galleryCarousel" data-bs-slide-to="@i" class="@(i == 0 ? "active" : "")"></button>
+                                }
                             </div>
                         }
+                    </div>
+
+                    <!-- Thumbnails -->
+                    @if (Model.ImageUrls.Count > 1)
+                    {
+                        <div class="gallery-thumbs">
+                            @for (int i = 0; i < Model.ImageUrls.Count; i++)
+                            {
+                                <div class="gallery-thumb @(i == 0 ? "active" : "")" data-bs-target="#galleryCarousel" data-bs-slide-to="@i">
+                                    <img src="@Model.ImageUrls[i]" alt="Thumb @(i + 1)" />
+                                </div>
+                            }
+                        </div>
+                    }
+                }
+                else
+                {
+                    <div class="gallery-placeholder">
+                        <i class="bi bi-image"></i>
+                        <p>Chưa có hình ảnh</p>
                     </div>
                 }
             </div>
@@ -524,49 +646,67 @@
                         <div>
                             <div class="price-main">@Model.Price.ToString("C0")</div>
                             <div class="price-badges" style="margin-top: 8px;">
-                                <span class="price-badge">✓ Giá tốt</span>
-                                <span class="price-badge secondary">Còn hàng</span>
+                                @if (Model.Status == "sold")
+                                {
+                                    <span class="price-badge" style="background:#ffebee; color:#d32f2f;">Đã bán</span>
+                                }
+                                else
+                                {
+                                    <span class="price-badge">✓ Giá tốt</span>
+                                    <span class="price-badge secondary">Còn hàng</span>
+                                }
                             </div>
                         </div>
                     </div>
 
                     <!-- Action Buttons -->
-                    <div class="action-buttons">
-                        <form id="wishlistTokenForm" method="post" style="display:none;">
-                            @Html.AntiForgeryToken()
-                        </form>
-                        <button id="btnWishlist"
-                                type="button"
-                                class="btn-wishlist @(Model.IsWishlisted ? "active" : "")"
-                                onclick="toggleWishlist(@Model.VehicleId)"
-                                hidden="@isOwner">
-                            <i class="bi @(Model.IsWishlisted ? "bi-heart-fill" : "bi-heart")" style="margin-right: 6px;"></i>
-                            <span id="textWishlist">@(Model.IsWishlisted ? "Đã lưu" : "Lưu tin")</span>
-                        </button>
-
-                        <form id="chatForm" asp-controller="Chat" asp-action="Index" method="post" style="margin: 0;">
-                            @Html.AntiForgeryToken()
-                            <input type="hidden" name="sellerId" value="@Model.SellerId" />
-                            <button type="submit" class="btn-chat" style="width: 100%; cursor: pointer;" hidden="@isOwner">
-                                <i class="bi bi-chat-dots" style="margin-right: 6px;"></i>Chat ngay
-                            </button>
-                        </form>
-                    </div>
-
-                    <div class="mt-2">
-                        @if (isOwner)
-                        {
-                            <a asp-action="Edit" asp-route-id="@Model.VehicleId" class="btn-edit w-100">Sửa</a>
-                        }
-                        else
-                        {
-                            <form id="buyNowForm" asp-controller="Orders" asp-action="BuyNow" method="post">
+                    @if (Model.Status != "sold")
+                    {
+                        <div class="action-buttons">
+                            <form id="wishlistTokenForm" method="post" style="display:none;">
                                 @Html.AntiForgeryToken()
-                                <input type="hidden" name="vehicleId" value="@Model.VehicleId" />
-                                <button type="submit" class="btn-buy w-100">Mua ngay</button>
                             </form>
-                        }
-                    </div>
+                            <button id="btnWishlist"
+                                    type="button"
+                                    class="btn-wishlist @(Model.IsWishlisted ? "active" : "")"
+                                    onclick="toggleWishlist(@Model.VehicleId)"
+                                    hidden="@isOwner">
+                                <i class="bi @(Model.IsWishlisted ? "bi-heart-fill" : "bi-heart")" style="margin-right: 6px;"></i>
+                                <span id="textWishlist">@(Model.IsWishlisted ? "Đã lưu" : "Lưu tin")</span>
+                            </button>
+
+                            <form id="chatForm" asp-controller="Chat" asp-action="Index" method="post" style="margin: 0;">
+                                @Html.AntiForgeryToken()
+                                <input type="hidden" name="sellerId" value="@Model.SellerId" />
+                                <button type="submit" class="btn-chat" style="width: 100%; cursor: pointer;" hidden="@isOwner">
+                                    <i class="bi bi-chat-dots" style="margin-right: 6px;"></i>Chat ngay
+                                </button>
+                            </form>
+                        </div>
+
+                        <div class="mt-2">
+                            @if (isOwner)
+                            {
+                                <a asp-action="Edit" asp-route-id="@Model.VehicleId" class="btn-edit w-100">Sửa</a>
+                            }
+                            else
+                            {
+                                <form id="buyNowForm" asp-controller="Orders" asp-action="BuyNow" method="post">
+                                    @Html.AntiForgeryToken()
+                                    <input type="hidden" name="vehicleId" value="@Model.VehicleId" />
+                                    <button type="submit" class="btn-buy w-100">Mua ngay</button>
+                                </form>
+                            }
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="mt-2 mb-3">
+                            <div class="alert alert-danger text-center mb-0" style="font-weight:600;">
+                                <i class="bi bi-x-circle-fill"></i> Sản phẩm này đã được bán
+                            </div>
+                        </div>
+                    }
 
                     <!-- Location & Status -->
                     <div class="location-status">
@@ -654,27 +794,43 @@
 </div>
 
 @section Scripts {
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
     <script>
-        let currentImageIndex = 0;
-        const images = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.ImageUrls ?? new List<string>()));
         const isLoggedIn = @isLoggedIn.ToString().ToLowerInvariant();
 
-        function changeImage(index) {
-            if (images.length === 0) return;
-            
-            currentImageIndex = index;
-            document.getElementById('mainImage').src = images[index];
-            document.getElementById('currentImageIndex').textContent = index + 1;
+        // Carousel + Thumbnail sync
+        document.addEventListener('DOMContentLoaded', function () {
+            const carouselEl = document.getElementById('galleryCarousel');
+            if (!carouselEl) return;
 
-            // Update active thumbnail
-            document.querySelectorAll('.carousel-nav .thumb').forEach((thumb, i) => {
-                thumb.classList.toggle('active', i === index);
+            const thumbs = document.querySelectorAll('.gallery-thumb');
+            const counterEl = document.getElementById('currentImageIndex');
+
+            // Sync thumbnails when carousel slides
+            carouselEl.addEventListener('slid.bs.carousel', function (e) {
+                const index = e.to;
+
+                // Update counter
+                if (counterEl) counterEl.textContent = index + 1;
+
+                // Update active thumbnail
+                thumbs.forEach((t, i) => t.classList.toggle('active', i === index));
+
+                // Scroll active thumbnail into view
+                if (thumbs[index]) {
+                    thumbs[index].scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+                }
             });
-        }
+
+            // Click thumbnail to slide
+            thumbs.forEach((thumb, i) => {
+                thumb.addEventListener('click', function () {
+                    const carousel = bootstrap.Carousel.getOrCreateInstance(carouselEl);
+                    carousel.to(i);
+                });
+            });
+        });
 
         async function toggleWishlist(vehicleId) {
             const token = document.querySelector('input[name="__RequestVerificationToken"]')?.value;

@@ -1,85 +1,592 @@
-﻿<h2>SignalR Chat</h2>
-
-@{
+﻿@{
+    ViewData["Title"] = "Tin nhắn";
     var conversationId = ViewData["ConversationId"] as int?;
+    var currentUserIdStr = Context.Session.GetString("UserId");
 }
 
-<div style="display:flex; height:500px">
+<style>
+    .chat-container {
+        display: flex;
+        height: calc(100vh - 120px);
+        background: #fff;
+        border-radius: 12px;
+        box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+        overflow: hidden;
+    }
 
-    <!-- ===== LEFT: CONVERSATIONS ===== -->
-    <div style="width:30%; border-right:1px solid #ccc; padding:10px">
-        <ul id="conversationList"></ul>
-    </div>
+    /* ===== LEFT SIDEBAR ===== */
+    .chat-sidebar {
+        width: 340px;
+        border-right: 1px solid #e4e6eb;
+        display: flex;
+        flex-direction: column;
+        background: #fff;
+        flex-shrink: 0;
+    }
 
-    <!-- ===== RIGHT: CHAT ===== -->
-    <div style="width:70%; padding:10px">
-        <ul id="messagesList" style="height:400px; overflow-y:auto"></ul>
+    .sidebar-header {
+        padding: 16px 20px;
+        border-bottom: 1px solid #e4e6eb;
+    }
 
-        <input type="text" id="messageInput" placeholder="Type a message..."
-               style="width:80%" />
-        <button onclick="sendMessage()">Send</button>
+    .sidebar-header h2 {
+        font-size: 24px;
+        font-weight: 700;
+        margin: 0;
+        color: #050505;
+    }
+
+    .sidebar-search {
+        padding: 8px 16px;
+    }
+
+    .sidebar-search input {
+        width: 100%;
+        padding: 8px 12px;
+        border-radius: 20px;
+        border: none;
+        background: #f0f2f5;
+        font-size: 14px;
+        outline: none;
+    }
+
+    .sidebar-search input:focus {
+        box-shadow: 0 0 0 2px #0084ff33;
+    }
+
+    .conversation-list {
+        flex: 1;
+        overflow-y: auto;
+        list-style: none;
+        padding: 4px 8px;
+        margin: 0;
+    }
+
+    .conversation-list::-webkit-scrollbar {
+        width: 6px;
+    }
+
+    .conversation-list::-webkit-scrollbar-thumb {
+        background: #ccc;
+        border-radius: 3px;
+    }
+
+    .conversation-item {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 10px 12px;
+        border-radius: 10px;
+        cursor: pointer;
+        transition: background 0.15s;
+        position: relative;
+    }
+
+    .conversation-item:hover {
+        background: #f0f2f5;
+    }
+
+    .conversation-item.active {
+        background: #e7f3ff;
+    }
+
+    .conv-avatar {
+        width: 48px;
+        height: 48px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: #fff;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 700;
+        font-size: 18px;
+        flex-shrink: 0;
+    }
+
+    .conv-info {
+        flex: 1;
+        min-width: 0;
+    }
+
+    .conv-name {
+        font-size: 15px;
+        font-weight: 600;
+        color: #050505;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .conv-last-msg {
+        font-size: 13px;
+        color: #65676b;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        margin-top: 2px;
+    }
+
+    .conv-item-has-unread .conv-name,
+    .conv-item-has-unread .conv-last-msg {
+        font-weight: 700;
+        color: #050505;
+    }
+
+    .conv-meta {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-end;
+        gap: 4px;
+        flex-shrink: 0;
+    }
+
+    .conv-time {
+        font-size: 11px;
+        color: #65676b;
+    }
+
+    .conv-unread-badge {
+        background: #0084ff;
+        color: #fff;
+        font-size: 11px;
+        font-weight: 700;
+        min-width: 18px;
+        height: 18px;
+        border-radius: 9px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 0 5px;
+    }
+
+    /* ===== RIGHT: CHAT AREA ===== */
+    .chat-main {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        background: #fff;
+        min-width: 0;
+    }
+
+    /* Chat header */
+    .chat-header {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 12px 20px;
+        border-bottom: 1px solid #e4e6eb;
+        background: #fff;
+    }
+
+    .chat-header-avatar {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: #fff;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 700;
+        font-size: 16px;
+    }
+
+    .chat-header-name {
+        font-size: 16px;
+        font-weight: 700;
+        color: #050505;
+    }
+
+    .chat-header-status {
+        font-size: 12px;
+        color: #65676b;
+    }
+
+    /* Messages */
+    .messages-area {
+        flex: 1;
+        overflow-y: auto;
+        padding: 16px 20px;
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+        background: #fff;
+    }
+
+    .messages-area::-webkit-scrollbar {
+        width: 6px;
+    }
+
+    .messages-area::-webkit-scrollbar-thumb {
+        background: #ccc;
+        border-radius: 3px;
+    }
+
+    .msg-row {
+        display: flex;
+        align-items: flex-end;
+        gap: 8px;
+        max-width: 70%;
+    }
+
+    .msg-row.sent {
+        align-self: flex-end;
+    }
+
+    .msg-row.received {
+        align-self: flex-start;
+    }
+
+    .msg-bubble {
+        padding: 8px 14px;
+        border-radius: 18px;
+        font-size: 15px;
+        line-height: 1.4;
+        word-break: break-word;
+        max-width: 100%;
+    }
+
+    .msg-row.sent .msg-bubble {
+        background: #0084ff;
+        color: #fff;
+        border-bottom-right-radius: 4px;
+    }
+
+    .msg-row.received .msg-bubble {
+        background: #f0f2f5;
+        color: #050505;
+        border-bottom-left-radius: 4px;
+    }
+
+    .msg-time {
+        font-size: 11px;
+        color: #999;
+        margin-top: 2px;
+        text-align: right;
+    }
+
+    .msg-row.received .msg-time {
+        text-align: left;
+    }
+
+    /* Input area */
+    .chat-input-area {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 12px 20px;
+        border-top: 1px solid #e4e6eb;
+        background: #fff;
+    }
+
+    .chat-input-area input {
+        flex: 1;
+        padding: 10px 16px;
+        border-radius: 20px;
+        border: none;
+        background: #f0f2f5;
+        font-size: 15px;
+        outline: none;
+    }
+
+    .chat-input-area input:focus {
+        box-shadow: 0 0 0 2px #0084ff33;
+    }
+
+    .chat-send-btn {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        border: none;
+        background: #0084ff;
+        color: #fff;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: background 0.2s;
+        flex-shrink: 0;
+    }
+
+    .chat-send-btn:hover {
+        background: #006bd6;
+    }
+
+    .chat-send-btn:disabled {
+        background: #bcc0c4;
+        cursor: default;
+    }
+
+    /* Empty state */
+    .chat-empty {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        color: #65676b;
+        gap: 12px;
+    }
+
+    .chat-empty i {
+        font-size: 4rem;
+        color: #ccc;
+    }
+
+    .chat-empty p {
+        font-size: 16px;
+    }
+
+    /* Responsive */
+    @@media (max-width: 768px) {
+        .chat-sidebar {
+            width: 72px;
+        }
+
+        .sidebar-header, .sidebar-search, .conv-info, .conv-meta {
+            display: none;
+        }
+
+        .conversation-item {
+            justify-content: center;
+            padding: 8px;
+        }
+
+        .conv-avatar {
+            width: 44px;
+            height: 44px;
+            font-size: 16px;
+        }
+
+        .chat-sidebar.mobile-expanded {
+            width: 300px;
+            position: absolute;
+            z-index: 10;
+            box-shadow: 4px 0 12px rgba(0,0,0,0.1);
+        }
+
+        .chat-sidebar.mobile-expanded .sidebar-header,
+        .chat-sidebar.mobile-expanded .sidebar-search,
+        .chat-sidebar.mobile-expanded .conv-info,
+        .chat-sidebar.mobile-expanded .conv-meta {
+            display: block;
+        }
+    }
+</style>
+
+<div class="container-fluid py-3" style="max-width: 1100px;">
+    <div class="chat-container">
+        <!-- LEFT SIDEBAR -->
+        <div class="chat-sidebar">
+            <div class="sidebar-header">
+                <h2>Tin nhắn</h2>
+            </div>
+            <div class="sidebar-search">
+                <input type="text" id="searchConv" placeholder="Tìm kiếm..." oninput="filterConversations()" />
+            </div>
+            <ul class="conversation-list" id="conversationList"></ul>
+        </div>
+
+        <!-- RIGHT CHAT AREA -->
+        <div class="chat-main">
+            <div id="chatHeaderArea" style="display:none;">
+                <div class="chat-header">
+                    <div class="chat-header-avatar" id="chatHeaderAvatar">U</div>
+                    <div>
+                        <div class="chat-header-name" id="chatHeaderName">Người dùng</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="messages-area" id="messagesArea">
+                <div class="chat-empty" id="chatEmpty">
+                    <i class="bi bi-chat-dots"></i>
+                    <p>Chọn một cuộc trò chuyện để bắt đầu</p>
+                </div>
+            </div>
+
+            <div class="chat-input-area" id="chatInputArea" style="display:none;">
+                <input type="text" id="messageInput" placeholder="Aa" onkeydown="if(event.key==='Enter') sendMessage()" />
+                <button class="chat-send-btn" onclick="sendMessage()" id="sendBtn">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+                        <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z" fill="currentColor"/>
+                    </svg>
+                </button>
+            </div>
+        </div>
     </div>
 </div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/7.0.5/signalr.min.js"></script>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
 
 <script>
+    const currentUserId = @(currentUserIdStr ?? "0");
     let currentConversationId = null;
+    let conversationsData = [];
 
     const connection = new signalR.HubConnectionBuilder()
         .withUrl("/chatHub")
         .build();
 
     connection.on("ReceiveMessage", function (conversationId, senderId, message) {
-        if (conversationId !== currentConversationId) return;
+        // Update sidebar last message
+        const conv = conversationsData.find(c => c.id === conversationId);
+        if (conv) {
+            conv.lastMessage = message;
+            conv.lastMessageAt = new Date().toISOString();
+            if (conversationId !== currentConversationId && senderId !== currentUserId) {
+                conv.unreadCount = (conv.unreadCount || 0) + 1;
+            }
+            renderConversations();
+        }
 
-        const li = document.createElement("li");
-        li.textContent = `${senderId}: ${message}`;
-        document.getElementById("messagesList").appendChild(li);
+        if (conversationId === currentConversationId) {
+            appendMessage(senderId, message, new Date().toISOString());
+            scrollToBottom();
+        }
     });
 
     connection.start().then(() => loadConversations());
 
     function loadConversations() {
         return fetch("/api/chat/conversations")
-             .then(res => res.json())
-             .then(data => {
-                 const ul = document.getElementById("conversationList");
-                 ul.innerHTML = "";
-
-                 data.forEach(c => {
-                    const li = document.createElement("li");
-                    li.textContent = `Vehicle ${c.vehicleId}`;
-                    li.style.cursor = "pointer";
-                    li.onclick = () => openConversation(c.id);
-                    ul.appendChild(li);
-                 });
+            .then(res => res.json())
+            .then(data => {
+                conversationsData = data;
+                renderConversations();
 
                 const initialConversationId = @(conversationId?.ToString() ?? "null");
                 if (initialConversationId) {
                     openConversation(initialConversationId);
                 }
-             });
-     }
+            });
+    }
+
+    function renderConversations() {
+        const ul = document.getElementById("conversationList");
+        const filter = (document.getElementById("searchConv")?.value || "").toLowerCase();
+        ul.innerHTML = "";
+
+        const sorted = [...conversationsData].sort((a, b) => {
+            const tA = a.lastMessageAt ? new Date(a.lastMessageAt) : new Date(0);
+            const tB = b.lastMessageAt ? new Date(b.lastMessageAt) : new Date(0);
+            return tB - tA;
+        });
+
+        sorted.forEach(c => {
+            if (filter && !c.otherUserName.toLowerCase().includes(filter)) return;
+
+            const li = document.createElement("li");
+            li.className = "conversation-item" +
+                (c.id === currentConversationId ? " active" : "") +
+                (c.unreadCount > 0 ? " conv-item-has-unread" : "");
+            li.onclick = () => openConversation(c.id);
+
+            li.innerHTML = `
+                <div class="conv-avatar">${c.otherUserInitial || 'U'}</div>
+                <div class="conv-info">
+                    <div class="conv-name">${escapeHtml(c.otherUserName || 'Người dùng')}</div>
+                    <div class="conv-last-msg">${escapeHtml(c.lastMessage || 'Chưa có tin nhắn')}</div>
+                </div>
+                <div class="conv-meta">
+                    <span class="conv-time">${formatTime(c.lastMessageAt)}</span>
+                    ${c.unreadCount > 0 ? `<span class="conv-unread-badge">${c.unreadCount}</span>` : ''}
+                </div>
+            `;
+
+            ul.appendChild(li);
+        });
+    }
+
+    function filterConversations() {
+        renderConversations();
+    }
 
     function openConversation(conversationId) {
         currentConversationId = conversationId;
-        document.getElementById("messagesList").innerHTML = "";
+        const conv = conversationsData.find(c => c.id === conversationId);
+
+        // Reset unread
+        if (conv) {
+            conv.unreadCount = 0;
+        }
+
+        // Update header
+        document.getElementById("chatHeaderArea").style.display = "block";
+        document.getElementById("chatInputArea").style.display = "flex";
+        const chatEmpty = document.getElementById("chatEmpty");
+        if (chatEmpty) {
+            chatEmpty.style.display = "none";
+        }
+        document.getElementById("chatHeaderName").textContent = conv?.otherUserName || "Người dùng";
+        document.getElementById("chatHeaderAvatar").textContent = conv?.otherUserInitial || "U";
+
+        renderConversations();
+
+        // Load messages - clear only message rows, keep chatEmpty hidden
+        const messagesArea = document.getElementById("messagesArea");
+        const msgs = messagesArea.querySelectorAll('.msg-row');
+        msgs.forEach(m => m.remove());
 
         fetch(`/api/chat/messages/${conversationId}`)
             .then(res => res.json())
             .then(data => {
                 data.forEach(m => {
-                    const li = document.createElement("li");
-                    li.textContent = `${m.senderId}: ${m.content}`;
-                    document.getElementById("messagesList").appendChild(li);
+                    appendMessage(m.senderId, m.content, m.sentAt);
                 });
+                scrollToBottom();
             });
     }
 
+    function appendMessage(senderId, content, sentAt) {
+        const area = document.getElementById("messagesArea");
+        const isSent = senderId === currentUserId;
+
+        const row = document.createElement("div");
+        row.className = "msg-row " + (isSent ? "sent" : "received");
+
+        row.innerHTML = `
+            <div>
+                <div class="msg-bubble">${escapeHtml(content || '')}</div>
+                <div class="msg-time">${formatTime(sentAt)}</div>
+            </div>
+        `;
+
+        area.appendChild(row);
+    }
+
     function sendMessage() {
-        const message = document.getElementById("messageInput").value;
+        const input = document.getElementById("messageInput");
+        const message = input.value.trim();
+        if (!message || !currentConversationId) return;
+
         connection.invoke("SendMessage", currentConversationId, message);
-        document.getElementById("messageInput").value = "";
+        input.value = "";
+        input.focus();
+    }
+
+    function scrollToBottom() {
+        const area = document.getElementById("messagesArea");
+        area.scrollTop = area.scrollHeight;
+    }
+
+    function formatTime(dateStr) {
+        if (!dateStr) return "";
+        const d = new Date(dateStr);
+        const now = new Date();
+        const diff = now - d;
+
+        if (diff < 60000) return "Vừa xong";
+        if (diff < 3600000) return Math.floor(diff / 60000) + " phút";
+        if (diff < 86400000) return d.getHours().toString().padStart(2, '0') + ":" + d.getMinutes().toString().padStart(2, '0');
+        return d.getDate() + "/" + (d.getMonth() + 1);
+    }
+
+    function escapeHtml(str) {
+        const div = document.createElement('div');
+        div.textContent = str;
+        return div.innerHTML;
     }
 </script>

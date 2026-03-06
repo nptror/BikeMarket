@@ -32,6 +32,9 @@ public class ChatRepository : IChatRepository
     public Task<List<Conversation>> GetConversationsForUserAsync(int userId)
     {
         return _context.Conversations
+            .Include(c => c.Buyer)
+            .Include(c => c.Seller)
+            .Include(c => c.LastMessage)
             .Where(c => c.BuyerId == userId || c.SellerId == userId)
             .OrderByDescending(c => c.LastMessageAt)
             .ToListAsync();

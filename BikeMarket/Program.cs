@@ -8,6 +8,7 @@
     using DataAccess.Repository;
     using DTO.Service;
     using Microsoft.AspNetCore.Authentication.Cookies;
+    using Microsoft.AspNetCore.Http.Features;
     using Microsoft.AspNetCore.Identity;
     using Microsoft.EntityFrameworkCore;
 
@@ -20,6 +21,16 @@
             // Add services to the container.
             builder.Services.AddControllersWithViews();
             builder.Services.AddSignalR();
+
+            builder.Services.Configure<FormOptions>(options =>
+            {
+                options.MultipartBodyLengthLimit = 50 * 1024 * 1024; // 50 MB
+            });
+
+            builder.WebHost.ConfigureKestrel(options =>
+            {
+                options.Limits.MaxRequestBodySize = 50 * 1024 * 1024; // 50 MB
+            });
 
             builder.Services.AddScoped<IPhotoService, PhotoService>();
             builder.Services.AddScoped<IBrandRepository, BrandRepository>();
@@ -61,7 +72,7 @@
                     options.ExpireTimeSpan = TimeSpan.FromDays(7);
                     options.SlidingExpiration = true;
                     options.Cookie.HttpOnly = true;
-                    options.Cookie.SecurePolicy = CookieSecurePolicy.Always; // HTTPS only
+                    options.Cookie.SecurePolicy = CookieSecurePolicy.SameAsRequest;
                 });
 
             builder.Services.AddScoped<IPasswordHasher<User>, PasswordHasher<User>>();

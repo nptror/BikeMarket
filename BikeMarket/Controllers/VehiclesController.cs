@@ -128,10 +128,14 @@ namespace BikeMarket.Controllers
             Vehicle vehicle,
             List<IFormFile>? images)
         {
-            // ✅ Remove non-bindable navigation properties from ModelState
+            // ✅ Remove all non-bindable / server-set properties from ModelState
             ModelState.Remove("Brand");
             ModelState.Remove("Category");
             ModelState.Remove("Seller");
+            ModelState.Remove("SellerId");
+            ModelState.Remove("VehicleImages");
+            ModelState.Remove("Orders");
+            ModelState.Remove("Wishlists");
 
             // Debug: Log số lượng ảnh nhận được
             Console.WriteLine($"📸 [POST] Create() - Received {images?.Count ?? 0} images");
@@ -146,11 +150,11 @@ namespace BikeMarket.Controllers
             if (!ModelState.IsValid)
             {
                 Console.WriteLine("❌ [POST] Create() - ModelState Invalid");
-                foreach (var modelState in ModelState.Values)
+                foreach (var entry in ModelState)
                 {
-                    foreach (var error in modelState.Errors)
+                    foreach (var error in entry.Value.Errors)
                     {
-                        Console.WriteLine($"   Error: {error.ErrorMessage}");
+                        Console.WriteLine($"   Key: {entry.Key} - Error: {error.ErrorMessage}");
                     }
                 }
 
@@ -246,7 +250,7 @@ namespace BikeMarket.Controllers
                         throw;
                     }
                 }
-                return RedirectToAction(nameof(DetailsAdmin), new { id = vehicle.Id });
+                return RedirectToAction(nameof(MyPost));
             }
             
             ViewData["BrandId"] = new SelectList(await _vehicleService.GetBrandsAsync(), "Id", "Name", vehicle.BrandId);

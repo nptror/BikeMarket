@@ -59,7 +59,7 @@ public class OrderService : IOrderService
     public async Task<Order?> BuyNowAsync(int buyerId, int vehicleId)
     {
         var vehicle = await _vehicleRepository.GetByIdAsync(vehicleId);
-        if (vehicle == null)
+        if (vehicle == null || vehicle.Status == "sold")
         {
             return null;
         }
@@ -92,6 +92,15 @@ public class OrderService : IOrderService
         order.UpdatedAt = DateTime.Now;
 
         await _orderRepository.UpdateAsync(order);
+
+        // C?p nh?t status xe thành "sold"
+        var vehicle = await _vehicleRepository.GetByIdAsync(order.VehicleId);
+        if (vehicle != null)
+        {
+            vehicle.Status = "sold";
+            await _vehicleRepository.UpdateAsync(vehicle);
+        }
+
         return true;
     }
 

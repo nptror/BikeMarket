@@ -1,7 +1,7 @@
-@model BikeMarket.Models.UserEditProfileViewModel
+﻿@model BikeMarket.Models.UserEditProfileViewModel
 
 @{
-    ViewData["Title"] = "Ch?nh s?a th�ng tin";
+    ViewData["Title"] = "Chỉnh sửa thông tin";
 }
 
 <style>
@@ -63,7 +63,7 @@
     <div class="container">
         <div class="edit-profile-card">
             <div class="edit-profile-header">
-                <h2 class="mb-0"><i class="bi bi-pencil-square"></i> Ch?nh s?a th�ng tin</h2>
+                <h2 class="mb-0"><i class="bi bi-pencil-square"></i>Chỉnh sửa thông tin</h2>
             </div>
             <div class="edit-profile-body">
                 <form asp-action="EditProfile" method="post">
@@ -73,7 +73,7 @@
 
                     <div class="mb-3">
                         <label asp-for="Name" class="form-label">
-                            <i class="bi bi-person"></i> H? v� t�n
+                            <i class="bi bi-person"></i> Họ và tên
                         </label>
                         <input asp-for="Name" class="form-control" />
                         <span asp-validation-for="Name" class="text-danger"></span>
@@ -89,7 +89,7 @@
 
                     <div class="mb-3">
                         <label asp-for="Phone" class="form-label">
-                            <i class="bi bi-telephone"></i> S? ?i?n tho?i
+                            <i class="bi bi-telephone"></i> Số điện thoại
                         </label>
                         <input asp-for="Phone" class="form-control" />
                         <span asp-validation-for="Phone" class="text-danger"></span>
@@ -97,10 +97,10 @@
 
                     <div class="d-flex gap-2">
                         <button type="submit" class="btn btn-primary-custom">
-                            <i class="bi bi-check-circle"></i> L?u thay ??i
+                            <i class="bi bi-check-circle"></i> Lưu thay đổi
                         </button>
                         <a asp-action="Profile" asp-route-id="@Model.Id" class="btn btn-secondary-custom">
-                            <i class="bi bi-arrow-left"></i> Quay l?i
+                            <i class="bi bi-arrow-left"></i> Quay lại
                         </a>
                     </div>
                 </form>
