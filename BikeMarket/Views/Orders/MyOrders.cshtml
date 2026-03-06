@@ -1,0 +1,542 @@
+﻿@model BikeMarket.Models.MyOrdersViewModel
+
+@{
+    ViewData["Title"] = "Đơn hàng của tôi";
+}
+
+<style>
+    .myorders-container {
+        min-height: 70vh;
+        padding-bottom: 40px;
+    }
+
+    .myorders-header {
+        background: #fff;
+        border-radius: 12px;
+        padding: 24px;
+        margin-bottom: 24px;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    }
+
+    .myorders-title {
+        font-size: 26px;
+        font-weight: 700;
+        color: #222;
+        margin-bottom: 16px;
+    }
+
+    .myorders-tabs {
+        display: flex;
+        gap: 8px;
+        border-bottom: 2px solid #f0f0f0;
+    }
+
+    .myorders-tab {
+        padding: 12px 20px;
+        font-weight: 600;
+        font-size: 14px;
+        color: #65676b;
+        text-decoration: none;
+        border-bottom: 3px solid transparent;
+        transition: all 0.2s;
+        margin-bottom: -2px;
+    }
+
+    .myorders-tab:hover {
+        color: #222;
+    }
+
+    .myorders-tab.active {
+        color: #1877f2;
+        border-bottom-color: #1877f2;
+    }
+
+    .myorders-tab .tab-count {
+        background: rgba(0,0,0,0.08);
+        padding: 2px 8px;
+        border-radius: 12px;
+        font-size: 12px;
+        font-weight: 700;
+        margin-left: 6px;
+    }
+
+    .myorders-tab.active .tab-count {
+        background: #1877f2;
+        color: #fff;
+    }
+
+    /* Order Cards */
+    .order-list {
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+    }
+
+    .order-card {
+        background: #fff;
+        border-radius: 12px;
+        overflow: hidden;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        transition: box-shadow 0.2s;
+    }
+
+    .order-card:hover {
+        box-shadow: 0 4px 12px rgba(0,0,0,0.12);
+    }
+
+    .order-card-inner {
+        display: flex;
+        gap: 16px;
+        padding: 16px;
+    }
+
+    .order-card-image {
+        width: 140px;
+        height: 110px;
+        border-radius: 8px;
+        overflow: hidden;
+        flex-shrink: 0;
+        background: #f0f2f5;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .order-card-image img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+    .order-card-image .placeholder-icon {
+        font-size: 2.5rem;
+        color: #ccc;
+    }
+
+    .order-card-body {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        min-width: 0;
+    }
+
+    .order-card-title {
+        font-size: 16px;
+        font-weight: 600;
+        color: #222;
+        margin-bottom: 4px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .order-card-title a {
+        color: inherit;
+        text-decoration: none;
+    }
+
+    .order-card-title a:hover {
+        color: #1877f2;
+    }
+
+    .order-card-price {
+        font-size: 20px;
+        font-weight: 700;
+        color: #d32f2f;
+        margin-bottom: 6px;
+    }
+
+    .order-card-meta {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 16px;
+        font-size: 13px;
+        color: #65676b;
+    }
+
+    .order-card-meta-item {
+        display: flex;
+        align-items: center;
+        gap: 4px;
+    }
+
+    .order-card-meta-item i {
+        color: #1877f2;
+    }
+
+    .order-card-actions {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 0 16px 16px;
+        flex-shrink: 0;
+    }
+
+    .order-status-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        padding: 5px 12px;
+        border-radius: 20px;
+        font-size: 12px;
+        font-weight: 700;
+    }
+
+    .badge-paid {
+        background: #e3f2fd;
+        color: #1565c0;
+    }
+
+    .badge-shipped {
+        background: #fff3e0;
+        color: #e65100;
+    }
+
+    .badge-completed {
+        background: #e8f5e9;
+        color: #2e7d32;
+    }
+
+    .order-btn {
+        padding: 8px 20px;
+        border: none;
+        border-radius: 8px;
+        font-size: 14px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    .order-btn:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+    }
+
+    .order-btn-received {
+        background: #42b72a;
+        color: #fff;
+    }
+
+    .order-btn-received:hover {
+        background: #36a420;
+    }
+
+    .order-btn-handover {
+        background: #1877f2;
+        color: #fff;
+    }
+
+    .order-btn-handover:hover {
+        background: #166fe5;
+    }
+
+    /* Empty State */
+    .order-empty {
+        text-align: center;
+        padding: 80px 20px;
+        background: #fff;
+        border-radius: 16px;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    }
+
+    .order-empty-icon {
+        font-size: 5rem;
+        color: #ddd;
+        margin-bottom: 16px;
+    }
+
+    .order-empty h3 {
+        font-size: 20px;
+        font-weight: 700;
+        color: #222;
+        margin-bottom: 8px;
+    }
+
+    .order-empty p {
+        font-size: 15px;
+        color: #65676b;
+        margin-bottom: 24px;
+    }
+
+    .order-empty a {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        background: #1877f2;
+        color: #fff;
+        padding: 12px 28px;
+        border-radius: 8px;
+        font-weight: 600;
+        text-decoration: none;
+        transition: all 0.3s;
+    }
+
+    .order-empty a:hover {
+        background: #166fe5;
+        color: #fff;
+    }
+
+    /* Success message */
+    .order-success-msg {
+        background: #e8f5e9;
+        color: #2e7d32;
+        padding: 12px 20px;
+        border-radius: 8px;
+        margin-bottom: 16px;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    @@media (max-width: 576px) {
+        .order-card-inner {
+            flex-direction: column;
+        }
+
+        .order-card-image {
+            width: 100%;
+            height: 180px;
+        }
+
+        .order-card-actions {
+            flex-direction: column;
+            align-items: stretch;
+        }
+
+        .order-btn {
+            justify-content: center;
+        }
+
+        .myorders-tabs {
+            overflow-x: auto;
+        }
+    }
+</style>
+
+<div class="container-lg py-4 myorders-container">
+
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="order-success-msg">
+            <i class="bi bi-check-circle-fill"></i> @TempData["SuccessMessage"]
+        </div>
+    }
+
+    <div class="myorders-header">
+        <h1 class="myorders-title">
+            <i class="bi bi-bag-check"></i> Đơn hàng của tôi
+        </h1>
+        <nav class="myorders-tabs">
+            <a href="@Url.Action("MyOrders", new { tab = "bought" })"
+               class="myorders-tab @(Model.ActiveTab == "bought" ? "active" : "")">
+                <i class="bi bi-cart-check"></i> Đã mua
+                <span class="tab-count">@Model.BoughtCount</span>
+            </a>
+            <a href="@Url.Action("MyOrders", new { tab = "handover" })"
+               class="myorders-tab @(Model.ActiveTab == "handover" ? "active" : "")">
+                <i class="bi bi-box-seam"></i> Bàn giao
+                <span class="tab-count">@Model.HandoverCount</span>
+            </a>
+        </nav>
+    </div>
+
+    @if (Model.ActiveTab == "bought")
+    {
+        @if (Model.BoughtOrders.Count == 0)
+        {
+            <div class="order-empty">
+                <div class="order-empty-icon"><i class="bi bi-cart"></i></div>
+                <h3>Chưa có đơn hàng nào</h3>
+                <p>Các đơn hàng bạn đã thanh toán sẽ hiện ở đây</p>
+                <a asp-controller="Home" asp-action="Index">
+                    <i class="bi bi-search"></i> Khám phá ngay
+                </a>
+            </div>
+        }
+        else
+        {
+            <div class="order-list">
+                @foreach (var order in Model.BoughtOrders)
+                {
+                    var thumbnail = order.Vehicle?.VehicleImages?.OrderBy(i => i.Id).FirstOrDefault()?.ImageUrl;
+                    var statusText = order.Status == "shipped" ? "Đã bàn giao" : "Đã thanh toán";
+                    var badgeClass = order.Status == "shipped" ? "badge-shipped" : "badge-paid";
+
+                    <div class="order-card">
+                        <div class="order-card-inner">
+                            <div class="order-card-image">
+                                @if (!string.IsNullOrEmpty(thumbnail))
+                                {
+                                    <img src="@thumbnail" alt="@order.Vehicle?.Title" />
+                                }
+                                else
+                                {
+                                    <i class="bi bi-bicycle placeholder-icon"></i>
+                                }
+                            </div>
+                            <div class="order-card-body">
+                                <div class="order-card-title">
+                                    <a asp-controller="Vehicles" asp-action="DetailsBuyer" asp-route-id="@order.VehicleId">
+                                        @order.Vehicle?.Title
+                                    </a>
+                                </div>
+                                <div class="order-card-price">@order.TotalAmount.ToString("N0") ₫</div>
+                                <div class="order-card-meta">
+                                    <div class="order-card-meta-item">
+                                        <i class="bi bi-person-fill"></i>
+                                        <span>Người bán: @order.Seller?.Name</span>
+                                    </div>
+                                    <div class="order-card-meta-item">
+                                        <i class="bi bi-calendar3"></i>
+                                        <span>@order.CreatedAt?.ToString("dd/MM/yyyy HH:mm")</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="order-card-actions">
+                            <span class="order-status-badge @badgeClass">
+                                <i class="bi @(order.Status == "shipped" ? "bi-truck" : "bi-credit-card-fill")"></i>
+                                @statusText
+                            </span>
+                            @if (order.Status == "shipped")
+                            {
+                                <form id="formReceived-@order.Id" asp-action="ConfirmReceived" method="post" style="display:inline;">
+                                    @Html.AntiForgeryToken()
+                                    <input type="hidden" name="orderId" value="@order.Id" />
+                                    <button type="button" class="order-btn order-btn-received"
+                                            onclick="confirmReceived(@order.Id, '@Html.Raw(order.Vehicle?.Title?.Replace("'", "\\'"))')">
+                                        <i class="bi bi-check-circle-fill"></i> Đã nhận xe
+                                    </button>
+                                </form>
+                            }
+                        </div>
+                    </div>
+                }
+            </div>
+        }
+    }
+    else
+    {
+        @if (Model.HandoverOrders.Count == 0)
+        {
+            <div class="order-empty">
+                <div class="order-empty-icon"><i class="bi bi-box-seam"></i></div>
+                <h3>Chưa có đơn cần bàn giao</h3>
+                <p>Khi có người mua thanh toán, đơn hàng sẽ hiện ở đây để bạn xác nhận bàn giao</p>
+                <a asp-controller="Vehicles" asp-action="MyPost">
+                    <i class="bi bi-pencil-square"></i> Quản lý tin đăng
+                </a>
+            </div>
+        }
+        else
+        {
+            <div class="order-list">
+                @foreach (var order in Model.HandoverOrders)
+                {
+                    var thumbnail = order.Vehicle?.VehicleImages?.OrderBy(i => i.Id).FirstOrDefault()?.ImageUrl;
+                    var isShipped = order.Status == "shipped";
+                    var statusText = isShipped ? "Đã bàn giao" : "Đã thanh toán";
+                    var badgeClass = isShipped ? "badge-shipped" : "badge-paid";
+
+                    <div class="order-card">
+                        <div class="order-card-inner">
+                            <div class="order-card-image">
+                                @if (!string.IsNullOrEmpty(thumbnail))
+                                {
+                                    <img src="@thumbnail" alt="@order.Vehicle?.Title" />
+                                }
+                                else
+                                {
+                                    <i class="bi bi-bicycle placeholder-icon"></i>
+                                }
+                            </div>
+                            <div class="order-card-body">
+                                <div class="order-card-title">
+                                    @order.Vehicle?.Title
+                                </div>
+                                <div class="order-card-price">@order.TotalAmount.ToString("N0") ₫</div>
+                                <div class="order-card-meta">
+                                    <div class="order-card-meta-item">
+                                        <i class="bi bi-person-fill"></i>
+                                        <span>Người mua: @order.Buyer?.Name</span>
+                                    </div>
+                                    <div class="order-card-meta-item">
+                                        <i class="bi bi-calendar3"></i>
+                                        <span>@order.CreatedAt?.ToString("dd/MM/yyyy HH:mm")</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="order-card-actions">
+                            <span class="order-status-badge @badgeClass">
+                                <i class="bi @(isShipped ? "bi-truck" : "bi-credit-card-fill")"></i>
+                                @statusText
+                            </span>
+                            @if (!isShipped)
+                            {
+                                <form id="formHandover-@order.Id" asp-action="ConfirmHandover" method="post" style="display:inline;">
+                                    @Html.AntiForgeryToken()
+                                    <input type="hidden" name="orderId" value="@order.Id" />
+                                    <button type="button" class="order-btn order-btn-handover"
+                                            onclick="confirmHandover(@order.Id, '@Html.Raw(order.Buyer?.Name?.Replace("'", "\\'"))')">
+                                        <i class="bi bi-box-seam-fill"></i> Đã bàn giao
+                                    </button>
+                                </form>
+                            }
+                        </div>
+                    </div>
+                }
+            </div>
+        }
+    }
+</div>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+        function confirmReceived(orderId, vehicleTitle) {
+            Swal.fire({
+                title: 'Xác nhận nhận xe',
+                html: `<p>Bạn đã nhận được xe <strong>${vehicleTitle}</strong>?</p>
+                       <p style="font-size:13px;color:#65676b;margin-top:8px;">Sau khi xác nhận, đơn hàng sẽ hoàn tất và không thể hoàn tác.</p>`,
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonColor: '#42b72a',
+                cancelButtonColor: '#6c757d',
+                confirmButtonText: '<i class="bi bi-check-circle-fill"></i> Đã nhận xe',
+                cancelButtonText: 'Hủy',
+                reverseButtons: true,
+                focusCancel: true
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    document.getElementById('formReceived-' + orderId).submit();
+                }
+            });
+        }
+
+        function confirmHandover(orderId, buyerName) {
+            Swal.fire({
+                title: 'Xác nhận bàn giao',
+                html: `<p>Bạn đã bàn giao xe cho <strong>${buyerName}</strong>?</p>
+                       <p style="font-size:13px;color:#65676b;margin-top:8px;">Người mua sẽ xác nhận nhận xe để hoàn tất đơn hàng.</p>`,
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonColor: '#1877f2',
+                cancelButtonColor: '#6c757d',
+                confirmButtonText: '<i class="bi bi-box-seam-fill"></i> Xác nhận bàn giao',
+                cancelButtonText: 'Hủy',
+                reverseButtons: true,
+                focusCancel: true
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    document.getElementById('formHandover-' + orderId).submit();
+                }
+            });
+        }
+    </script>
+}

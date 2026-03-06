@@ -59,7 +59,7 @@ public class OrderService : IOrderService
     public async Task<Order?> BuyNowAsync(int buyerId, int vehicleId)
     {
         var vehicle = await _vehicleRepository.GetByIdAsync(vehicleId);
-        if (vehicle == null || vehicle.Status == "sold")
+        if (vehicle == null || vehicle.Status == "sold" || vehicle.Status == "paid")
         {
             return null;
         }
@@ -93,15 +93,51 @@ public class OrderService : IOrderService
 
         await _orderRepository.UpdateAsync(order);
 
-        // C?p nh?t status xe thành "sold"
+        var vehicle = await _vehicleRepository.GetByIdAsync(order.VehicleId);
+        if (vehicle != null)
+        {
+            vehicle.Status = "paid";
+            await _vehicleRepository.UpdateAsync(vehicle);
+        }
+
+        return true;
+    }
+
+    public Task<List<Order>> GetPaidOrdersByBuyerAsync(int buyerId)
+    {
+        return _orderRepository.GetPaidOrdersByBuyerAsync(buyerId);
+    }
+
+    public Task<List<Order>> GetPaidOrdersBySellerAsync(int sellerId)
+    {
+        return _orderRepository.GetPaidOrdersBySellerAsync(sellerId);
+    }
+
+    public async Task ConfirmHandoverAsync(int orderId)
+    {
+        var order = await _orderRepository.GetByIdAsync(orderId);
+        if (order == null) return;
+
+        order.Status = "shipped";
+        order.UpdatedAt = DateTime.Now;
+        await _orderRepository.UpdateAsync(order);
+    }
+
+    public async Task ConfirmReceivedAsync(int orderId)
+    {
+        var order = await _orderRepository.GetByIdAsync(orderId);
+        if (order == null) return;
+
+        order.Status = "completed";
+        order.UpdatedAt = DateTime.Now;
+        await _orderRepository.UpdateAsync(order);
+
         var vehicle = await _vehicleRepository.GetByIdAsync(order.VehicleId);
         if (vehicle != null)
         {
             vehicle.Status = "sold";
             await _vehicleRepository.UpdateAsync(vehicle);
         }
-
-        return true;
     }
 
     public Task<List<User>> GetUsersAsync()

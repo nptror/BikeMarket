@@ -13,4 +13,6 @@ public interface IOrderRepository
     Task UpdateAsync(Order order);
     Task DeleteAsync(Order order);
     Task<bool> ExistsAsync(int id);
+    Task<List<Order>> GetPaidOrdersByBuyerAsync(int buyerId);
+    Task<List<Order>> GetPaidOrdersBySellerAsync(int sellerId);
 }

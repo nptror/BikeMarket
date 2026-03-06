@@ -14,4 +14,5 @@ public interface IWishlistService
     Task<WishlistToggleResult> ToggleAsync(int userId, int vehicleId);
     Task<List<User>> GetUsersAsync();
     Task<List<Vehicle>> GetVehiclesAsync();
+    Task<List<Wishlist>> GetByBuyerIdAsync(int buyerId);
 }

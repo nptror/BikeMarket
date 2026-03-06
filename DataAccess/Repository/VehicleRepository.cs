@@ -19,6 +19,7 @@ public class VehicleRepository : IVehicleRepository
             .Include(v => v.Brand)
             .Include(v => v.Category)
             .Include(v => v.Seller)
+            .Where(v => v.Status != "deleted")
             .ToListAsync();
     }
 
@@ -39,7 +40,7 @@ public class VehicleRepository : IVehicleRepository
             .Include(v => v.Brand)
             .Include(v => v.Category)
             .Include(v => v.VehicleImages)
-            .Where(v => v.SellerId == sellerId)
+            .Where(v => v.SellerId == sellerId && v.Status != "deleted")
             .OrderByDescending(v => v.CreatedAt)
             .ToListAsync();
     }
@@ -60,6 +61,7 @@ public class VehicleRepository : IVehicleRepository
             .Include(v => v.Brand)
             .Include(v => v.Category)
             .Include(v => v.Seller)
+            .Include(v => v.VehicleImages)
             .FirstOrDefaultAsync(v => v.Id == id);
     }
 

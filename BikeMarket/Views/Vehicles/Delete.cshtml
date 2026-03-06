@@ -1,81 +1,352 @@
 ﻿@model DataAccess.Models.Vehicle
 
 @{
-    ViewData["Title"] = "Delete";
+    ViewData["Title"] = "Xóa tin đăng";
+    var thumbnail = Model.VehicleImages?.OrderBy(i => i.Id).FirstOrDefault()?.ImageUrl;
+    var statusText = Model.Status switch
+    {
+        "available" => "Đang hiển thị",
+        "pending" => "Chờ duyệt",
+        "draft" => "Bản nháp",
+        "rejected" => "Đã từ chối",
+        "sold" => "Đã bán",
+        _ => Model.Status ?? "N/A"
+    };
+    var statusClass = Model.Status switch
+    {
+        "available" => "bg-success",
+        "pending" => "bg-warning text-dark",
+        "draft" => "bg-info",
+        "rejected" => "bg-danger",
+        "sold" => "bg-secondary",
+        _ => "bg-secondary"
+    };
 }
 
-<h1>Delete</h1>
+<style>
+    .delete-container {
+        max-width: 700px;
+        margin: 0 auto;
+    }
 
-<h3>Are you sure you want to delete this?</h3>
-<div>
-    <h4>Vehicle</h4>
-    <hr />
-    <dl class="row">
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Title)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Title)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Description)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Description)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Price)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Price)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.FrameSize)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.FrameSize)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Condition)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Condition)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.YearManufactured)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.YearManufactured)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Location)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Location)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Status)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Status)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Color)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Color)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.CreatedAt)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.CreatedAt)
-        </dd>
-    </dl>
-    
-    <form asp-action="Delete">
-        <input type="hidden" asp-for="Id" />
-        <input type="submit" value="Delete" class="btn btn-danger" /> |
-        <a asp-action="DetailsAdmin">Back</a>
-    </form>
+    .delete-card {
+        background: #fff;
+        border-radius: 12px;
+        overflow: hidden;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    }
+
+    .delete-warning-banner {
+        background: linear-gradient(135deg, #ff6b6b, #d32f2f);
+        color: #fff;
+        padding: 20px 24px;
+        display: flex;
+        align-items: center;
+        gap: 14px;
+    }
+
+    .delete-warning-banner i {
+        font-size: 2rem;
+        flex-shrink: 0;
+    }
+
+    .delete-warning-banner h2 {
+        font-size: 20px;
+        font-weight: 700;
+        margin: 0 0 4px;
+    }
+
+    .delete-warning-banner p {
+        font-size: 14px;
+        margin: 0;
+        opacity: 0.9;
+    }
+
+    .delete-vehicle-info {
+        display: flex;
+        gap: 16px;
+        padding: 20px 24px;
+        border-bottom: 1px solid #f0f0f0;
+    }
+
+    .delete-vehicle-image {
+        width: 120px;
+        height: 90px;
+        border-radius: 8px;
+        overflow: hidden;
+        flex-shrink: 0;
+        background: #f0f2f5;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .delete-vehicle-image img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+    .delete-vehicle-image .placeholder-icon {
+        font-size: 2rem;
+        color: #ccc;
+    }
+
+    .delete-vehicle-body {
+        flex: 1;
+        min-width: 0;
+    }
+
+    .delete-vehicle-title {
+        font-size: 17px;
+        font-weight: 600;
+        color: #222;
+        margin-bottom: 4px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .delete-vehicle-price {
+        font-size: 20px;
+        font-weight: 700;
+        color: #d32f2f;
+        margin-bottom: 6px;
+    }
+
+    .delete-vehicle-meta {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 12px;
+        font-size: 13px;
+        color: #65676b;
+    }
+
+    .delete-vehicle-meta-item {
+        display: flex;
+        align-items: center;
+        gap: 4px;
+    }
+
+    .delete-vehicle-meta-item i {
+        color: #1877f2;
+        font-size: 14px;
+    }
+
+    .delete-details {
+        padding: 20px 24px;
+        border-bottom: 1px solid #f0f0f0;
+    }
+
+    .delete-details-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 14px;
+    }
+
+    .delete-detail-item {
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+    }
+
+    .delete-detail-label {
+        font-size: 12px;
+        color: #65676b;
+        text-transform: uppercase;
+        letter-spacing: 0.3px;
+    }
+
+    .delete-detail-value {
+        font-size: 14px;
+        font-weight: 500;
+        color: #222;
+    }
+
+    .delete-actions {
+        padding: 20px 24px;
+        display: flex;
+        gap: 12px;
+        align-items: center;
+    }
+
+    .delete-btn {
+        padding: 10px 24px;
+        border: none;
+        border-radius: 8px;
+        font-size: 15px;
+        font-weight: 600;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        transition: all 0.2s;
+        text-decoration: none;
+    }
+
+    .delete-btn:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+    }
+
+    .delete-btn-confirm {
+        background: #d32f2f;
+        color: #fff;
+    }
+
+    .delete-btn-confirm:hover {
+        background: #b71c1c;
+        color: #fff;
+    }
+
+    .delete-btn-cancel {
+        background: #f0f2f5;
+        color: #222;
+    }
+
+    .delete-btn-cancel:hover {
+        background: #e4e6eb;
+        color: #222;
+    }
+
+    @@media (max-width: 576px) {
+        .delete-vehicle-info {
+            flex-direction: column;
+        }
+
+        .delete-vehicle-image {
+            width: 100%;
+            height: 160px;
+        }
+
+        .delete-details-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .delete-actions {
+            flex-direction: column;
+        }
+
+        .delete-btn {
+            width: 100%;
+            justify-content: center;
+        }
+    }
+</style>
+
+<div class="container py-4 delete-container">
+    <div class="delete-card">
+        <!-- Warning Banner -->
+        <div class="delete-warning-banner">
+            <i class="bi bi-exclamation-triangle-fill"></i>
+            <div>
+                <h2>Xác nhận xóa tin đăng</h2>
+                <p>Tin đăng sẽ bị ẩn khỏi trang web và không còn hiển thị cho người mua.</p>
+            </div>
+        </div>
+
+        <!-- Vehicle Summary -->
+        <div class="delete-vehicle-info">
+            <div class="delete-vehicle-image">
+                @if (!string.IsNullOrEmpty(thumbnail))
+                {
+                    <img src="@thumbnail" alt="@Model.Title" />
+                }
+                else
+                {
+                    <i class="bi bi-bicycle placeholder-icon"></i>
+                }
+            </div>
+            <div class="delete-vehicle-body">
+                <div class="delete-vehicle-title">@Model.Title</div>
+                <div class="delete-vehicle-price">@Model.Price.ToString("N0") ₫</div>
+                <div class="delete-vehicle-meta">
+                    <div class="delete-vehicle-meta-item">
+                        <i class="bi bi-tag-fill"></i>
+                        <span>@Model.Brand?.Name · @Model.Category?.Name</span>
+                    </div>
+                    <div class="delete-vehicle-meta-item">
+                        <span class="badge @statusClass" style="font-size:11px;">@statusText</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Details -->
+        <div class="delete-details">
+            <div class="delete-details-grid">
+                <div class="delete-detail-item">
+                    <span class="delete-detail-label">Tình trạng</span>
+                    <span class="delete-detail-value">@Model.Condition</span>
+                </div>
+                <div class="delete-detail-item">
+                    <span class="delete-detail-label">Màu sắc</span>
+                    <span class="delete-detail-value">@(Model.Color ?? "N/A")</span>
+                </div>
+                <div class="delete-detail-item">
+                    <span class="delete-detail-label">Kích thước khung</span>
+                    <span class="delete-detail-value">@(Model.FrameSize ?? "N/A")</span>
+                </div>
+                <div class="delete-detail-item">
+                    <span class="delete-detail-label">Năm sản xuất</span>
+                    <span class="delete-detail-value">@(Model.YearManufactured?.ToString() ?? "N/A")</span>
+                </div>
+                <div class="delete-detail-item">
+                    <span class="delete-detail-label">Địa điểm</span>
+                    <span class="delete-detail-value">@(Model.Location ?? "N/A")</span>
+                </div>
+                <div class="delete-detail-item">
+                    <span class="delete-detail-label">Người bán</span>
+                    <span class="delete-detail-value">@(Model.Seller?.Name ?? "N/A")</span>
+                </div>
+                <div class="delete-detail-item">
+                    <span class="delete-detail-label">Ngày đăng</span>
+                    <span class="delete-detail-value">@(Model.CreatedAt?.ToString("dd/MM/yyyy HH:mm") ?? "N/A")</span>
+                </div>
+                <div class="delete-detail-item">
+                    <span class="delete-detail-label">Số ảnh</span>
+                    <span class="delete-detail-value">@(Model.VehicleImages?.Count ?? 0) ảnh</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Actions -->
+        <div class="delete-actions">
+            <form asp-action="Delete" method="post" id="deleteForm">
+                <input type="hidden" asp-for="Id" />
+                @Html.AntiForgeryToken()
+                <button type="button" class="delete-btn delete-btn-confirm" onclick="confirmDelete()">
+                    <i class="bi bi-trash-fill"></i> Xóa tin đăng
+                </button>
+            </form>
+            <a asp-action="MyPost" class="delete-btn delete-btn-cancel">
+                <i class="bi bi-arrow-left"></i> Quay lại
+            </a>
+        </div>
+    </div>
 </div>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+        function confirmDelete() {
+            Swal.fire({
+                title: 'Xóa tin đăng?',
+                html: `<p>Bạn có chắc muốn xóa <strong>@Html.Raw(Model.Title?.Replace("'", "\\'"))</strong>?</p>
+                       <p style="font-size:13px;color:#65676b;">Tin đăng sẽ bị ẩn khỏi trang web.</p>`,
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#d32f2f',
+                cancelButtonColor: '#6c757d',
+                confirmButtonText: '<i class="bi bi-trash-fill"></i> Xóa tin đăng',
+                cancelButtonText: 'Hủy',
+                reverseButtons: true,
+                focusCancel: true
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    document.getElementById('deleteForm').submit();
+                }
+            });
+        }
+    </script>
+}

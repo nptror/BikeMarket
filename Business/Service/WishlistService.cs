@@ -85,4 +85,9 @@ public class WishlistService : IWishlistService
     {
         return _vehicleRepository.GetAllWithIncludesAsync();
     }
+
+    public Task<List<Wishlist>> GetByBuyerIdAsync(int buyerId)
+    {
+        return _wishlistRepository.GetByBuyerIdWithIncludesAsync(buyerId);
+    }
 }

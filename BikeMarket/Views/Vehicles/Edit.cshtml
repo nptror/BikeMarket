@@ -143,6 +143,12 @@
                             <button type="submit" class="btn btn-primary btn-lg">
                                 <i class="bi bi-save"></i> Lưu thay đổi
                             </button>
+                            @if (Model.Status != null && Model.Status.Equals("draft", StringComparison.OrdinalIgnoreCase))
+                            {
+                                <button type="button" class="btn btn-success btn-lg" onclick="publishDraft()">
+                                    <i class="bi bi-upload"></i> Đăng tin
+                                </button>
+                            }
                         </div>
                     </div>
                 </div>
@@ -327,7 +333,7 @@
         }
 
         function deleteImage(imageId) {
-            if (!confirm('Bạn có chắc muốn xóa ảnh này?')) return;
+            
             document.getElementById('deleteImageId').value = imageId;
             document.getElementById('deleteImageForm').submit();
         }
@@ -532,15 +538,28 @@
             }, 300);
         }
 
+        function publishDraft() {
+            document.getElementById('statusInput').value = 'pending';
+            document.getElementById('editForm').requestSubmit();
+        }
+
         // Intercept form submit to resize images
         document.getElementById('editForm').addEventListener('submit', async function(e) {
             e.preventDefault();
 
             const form = e.target;
-            const submitBtn = form.querySelector('button[type="submit"]');
-            const originalBtnHtml = submitBtn.innerHTML;
-            submitBtn.disabled = true;
-            submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Đang xử lý ảnh...';
+            const allBtns = form.querySelectorAll('button');
+            const statusInput = document.getElementById('statusInput');
+            const isPublishing = statusInput.value === 'pending' && '@Model.Status?.ToLower()' === 'draft';
+
+            // Disable all buttons
+            allBtns.forEach(btn => btn.disabled = true);
+
+            const activeBtn = isPublishing
+                ? form.querySelector('button[onclick="publishDraft()"]')
+                : form.querySelector('button[type="submit"]');
+            const originalBtnHtml = activeBtn.innerHTML;
+            activeBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Đang xử lý ảnh...';
 
             try {
                 const formData = new FormData(form);
@@ -561,7 +580,9 @@
                     console.log('✅ All images resized');
                 }
 
-                submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Đang lưu...';
+                activeBtn.innerHTML = isPublishing
+                    ? '<span class="spinner-border spinner-border-sm me-2"></span>Đang đăng tin...'
+                    : '<span class="spinner-border spinner-border-sm me-2"></span>Đang lưu...';
 
                 const response = await fetch(form.action, {
                     method: 'POST',
@@ -576,15 +597,15 @@
                     document.write(html);
                     document.close();
                 } else {
-                    alert('Có lỗi xảy ra khi lưu. Vui lòng thử lại.');
-                    submitBtn.disabled = false;
-                    submitBtn.innerHTML = originalBtnHtml;
+                    alert(isPublishing ? 'Có lỗi xảy ra khi đăng tin.' : 'Có lỗi xảy ra khi lưu. Vui lòng thử lại.');
+                    allBtns.forEach(btn => btn.disabled = false);
+                    activeBtn.innerHTML = originalBtnHtml;
                 }
             } catch (error) {
                 console.error('❌ Submit error:', error);
                 alert('Có lỗi xảy ra. Vui lòng thử lại.');
-                submitBtn.disabled = false;
-                submitBtn.innerHTML = originalBtnHtml;
+                allBtns.forEach(btn => btn.disabled = false);
+                activeBtn.innerHTML = originalBtnHtml;
             }
         });
     </script>

@@ -650,6 +650,10 @@
                                 {
                                     <span class="price-badge" style="background:#ffebee; color:#d32f2f;">Đã bán</span>
                                 }
+                                else if (Model.Status == "paid")
+                                {
+                                    <span class="price-badge" style="background:#fff3e0; color:#e65100;">Đang giao dịch</span>
+                                }
                                 else
                                 {
                                     <span class="price-badge">✓ Giá tốt</span>
@@ -660,7 +664,7 @@
                     </div>
 
                     <!-- Action Buttons -->
-                    @if (Model.Status != "sold")
+                    @if (Model.Status != "sold" && Model.Status != "paid")
                     {
                         <div class="action-buttons">
                             <form id="wishlistTokenForm" method="post" style="display:none;">
@@ -699,6 +703,14 @@
                             }
                         </div>
                     }
+                    else if (Model.Status == "paid")
+                    {
+                        <div class="mt-2 mb-3">
+                            <div class="alert alert-warning text-center mb-0" style="font-weight:600;">
+                                <i class="bi bi-hourglass-split"></i> Sản phẩm đang trong quá trình giao dịch
+                            </div>
+                        </div>
+                    }
                     else
                     {
                         <div class="mt-2 mb-3">
@@ -725,6 +737,10 @@
                                     @if (Model.Status == "available")
                                     {
                                         <span class="status-badge status-available">Còn hàng</span>
+                                    }
+                                    else if (Model.Status == "paid")
+                                    {
+                                        <span class="status-badge" style="background:#fff3e0; color:#e65100;">Đang giao dịch</span>
                                     }
                                     else if (Model.Status == "sold")
                                     {

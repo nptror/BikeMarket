@@ -185,7 +185,8 @@ public class VehicleService : IVehicleService
         var vehicle = await _vehicleRepository.GetByIdAsync(id);
         if (vehicle != null)
         {
-            await _vehicleRepository.DeleteAsync(vehicle);
+            vehicle.Status = "deleted";
+            await _vehicleRepository.UpdateAsync(vehicle);
         }
     }
 
@@ -259,7 +260,7 @@ public class VehicleService : IVehicleService
         var displayCount = vehicles.Count(v => string.IsNullOrEmpty(v.Status) || v.Status.Equals("available", StringComparison.OrdinalIgnoreCase));
         var draftCount = vehicles.Count(v => v.Status != null && v.Status.Equals("draft", StringComparison.OrdinalIgnoreCase));
         var pendingCount = vehicles.Count(v => v.Status != null && v.Status.Equals("pending", StringComparison.OrdinalIgnoreCase));
-        var deniedCount = vehicles.Count(v => v.Status != null && v.Status.Equals("denied", StringComparison.OrdinalIgnoreCase));
+        var deniedCount = vehicles.Count(v => v.Status != null && v.Status.Equals("rejected", StringComparison.OrdinalIgnoreCase));
 
         return new MyPostSummaryDTO
         {

@@ -1,35 +1,504 @@
 ﻿@model IEnumerable<DataAccess.Models.Wishlist>
 
 @{
-    ViewData["Title"] = "Index";
+    ViewData["Title"] = "Tin đăng đã lưu";
 }
 
-<h1>Index</h1>
+<style>
+    .wishlist-container {
+        min-height: 60vh;
+    }
 
-<p>
-    <a asp-action="Create">Create New</a>
-</p>
-<table class="table">
-    <thead>
-        <tr>
-            <th>
-                @Html.DisplayNameFor(model => model.CreatedAt)
-            </th>
-            <th></th>
-        </tr>
-    </thead>
-    <tbody>
-@foreach (var item in Model) {
-        <tr>
-            <td>
-                @Html.DisplayFor(modelItem => item.CreatedAt)
-            </td>
-            <td>
-                <a asp-action="Edit" asp-route-id="@item.Id">Edit</a> |
-                <a asp-action="Details" asp-route-id="@item.Id">Details</a> |
-                <a asp-action="Delete" asp-route-id="@item.Id">Delete</a>
-            </td>
-        </tr>
+    .wishlist-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 24px;
+    }
+
+    .wishlist-title {
+        font-size: 24px;
+        font-weight: 700;
+        color: #222;
+    }
+
+    .wishlist-count {
+        font-size: 14px;
+        color: #65676b;
+        font-weight: 400;
+    }
+
+    .wishlist-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+        gap: 20px;
+    }
+
+    .wishlist-card {
+        background: #fff;
+        border-radius: 12px;
+        overflow: hidden;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        transition: all 0.3s ease;
+        position: relative;
+    }
+
+    .wishlist-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+    }
+
+    .wishlist-card-image {
+        position: relative;
+        width: 100%;
+        padding-bottom: 65%;
+        overflow: hidden;
+        background: #f0f2f5;
+    }
+
+    .wishlist-card-image img {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transition: transform 0.5s ease;
+    }
+
+    .wishlist-card:hover .wishlist-card-image img {
+        transform: scale(1.05);
+    }
+
+    .wishlist-card-placeholder {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        color: #bbb;
+        font-size: 3rem;
+    }
+
+    .wishlist-remove-btn {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        border: none;
+        background: rgba(255, 255, 255, 0.9);
+        color: #d32f2f;
+        font-size: 18px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.2s;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+        z-index: 2;
+    }
+
+    .wishlist-remove-btn:hover {
+        background: #d32f2f;
+        color: white;
+        transform: scale(1.1);
+    }
+
+    .wishlist-status-badge {
+        position: absolute;
+        top: 10px;
+        left: 10px;
+        padding: 4px 10px;
+        border-radius: 16px;
+        font-size: 11px;
+        font-weight: 700;
+        text-transform: uppercase;
+        backdrop-filter: blur(10px);
+        z-index: 2;
+    }
+
+    .ws-available {
+        background: rgba(66, 183, 42, 0.9);
+        color: white;
+    }
+
+    .ws-sold {
+        background: rgba(107, 114, 128, 0.9);
+        color: white;
+    }
+
+    .ws-pending {
+        background: rgba(245, 158, 11, 0.9);
+        color: white;
+    }
+
+    .wishlist-card-body {
+        padding: 14px;
+    }
+
+    .wishlist-card-title {
+        font-size: 15px;
+        font-weight: 600;
+        color: #222;
+        margin-bottom: 6px;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+        min-height: 40px;
+        line-height: 1.35;
+    }
+
+    .wishlist-card-title a {
+        color: inherit;
+        text-decoration: none;
+    }
+
+    .wishlist-card-title a:hover {
+        color: #1877f2;
+    }
+
+    .wishlist-card-price {
+        font-size: 18px;
+        font-weight: 700;
+        color: #d32f2f;
+        margin-bottom: 8px;
+    }
+
+    .wishlist-card-meta {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+        margin-bottom: 10px;
+        font-size: 13px;
+        color: #65676b;
+    }
+
+    .wishlist-card-meta-item {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    .wishlist-card-meta-item i {
+        font-size: 14px;
+        color: #1877f2;
+        width: 16px;
+        text-align: center;
+    }
+
+    .wishlist-card-date {
+        font-size: 12px;
+        color: #999;
+        display: flex;
+        align-items: center;
+        gap: 4px;
+        padding-top: 8px;
+        border-top: 1px solid #f0f0f0;
+    }
+
+    .wishlist-card-actions {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 8px;
+        padding: 0 14px 14px;
+    }
+
+    .wishlist-action-btn {
+        padding: 8px;
+        border: none;
+        border-radius: 8px;
+        font-size: 13px;
+        font-weight: 600;
+        cursor: pointer;
+        text-decoration: none;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 4px;
+        transition: all 0.2s;
+    }
+
+    .wishlist-btn-view {
+        background: #f0f2f5;
+        color: #222;
+    }
+
+    .wishlist-btn-view:hover {
+        background: #e4e6eb;
+        color: #222;
+    }
+
+    .wishlist-btn-remove {
+        background: #fff0f0;
+        color: #d32f2f;
+    }
+
+    .wishlist-btn-remove:hover {
+        background: #d32f2f;
+        color: white;
+    }
+
+    /* Empty State */
+    .wishlist-empty {
+        text-align: center;
+        padding: 80px 20px;
+        background: white;
+        border-radius: 16px;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    }
+
+    .wishlist-empty-icon {
+        font-size: 5rem;
+        color: #ddd;
+        margin-bottom: 20px;
+    }
+
+    .wishlist-empty h3 {
+        font-size: 22px;
+        font-weight: 700;
+        color: #222;
+        margin-bottom: 8px;
+    }
+
+    .wishlist-empty p {
+        font-size: 15px;
+        color: #65676b;
+        margin-bottom: 24px;
+    }
+
+    .wishlist-empty a {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        background: #1877f2;
+        color: white;
+        padding: 12px 28px;
+        border-radius: 8px;
+        font-weight: 600;
+        text-decoration: none;
+        transition: all 0.3s;
+    }
+
+    .wishlist-empty a:hover {
+        background: #166fe5;
+        color: white;
+        transform: translateY(-2px);
+    }
+
+    @@media (max-width: 576px) {
+        .wishlist-grid {
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+        }
+
+        .wishlist-card-body {
+            padding: 10px;
+        }
+
+        .wishlist-card-title {
+            font-size: 13px;
+            min-height: 36px;
+        }
+
+        .wishlist-card-price {
+            font-size: 16px;
+        }
+
+        .wishlist-card-meta {
+            font-size: 12px;
+        }
+
+        .wishlist-card-actions {
+            padding: 0 10px 10px;
+        }
+
+        .wishlist-action-btn {
+            font-size: 12px;
+            padding: 7px;
+        }
+    }
+</style>
+
+<div class="container-lg py-4 wishlist-container">
+    <form id="tokenForm" method="post" style="display:none;">
+        @Html.AntiForgeryToken()
+    </form>
+
+    <div class="wishlist-header">
+        <h1 class="wishlist-title">
+            <i class="bi bi-heart-fill" style="color: #d32f2f;"></i> Tin đăng đã lưu
+            <span class="wishlist-count">(@Model.Count() tin)</span>
+        </h1>
+        <a asp-controller="Home" asp-action="Index" class="btn btn-outline-secondary">
+            <i class="bi bi-search"></i> Tìm thêm
+        </a>
+    </div>
+
+    @if (!Model.Any())
+    {
+        <div class="wishlist-empty">
+            <div class="wishlist-empty-icon">
+                <i class="bi bi-heart"></i>
+            </div>
+            <h3>Chưa có tin đăng nào được lưu</h3>
+            <p>Hãy lưu những tin đăng yêu thích để xem lại sau!</p>
+            <a asp-controller="Home" asp-action="Index">
+                <i class="bi bi-search"></i> Khám phá ngay
+            </a>
+        </div>
+    }
+    else
+    {
+        <div class="wishlist-grid">
+            @foreach (var item in Model)
+            {
+                var vehicle = item.Vehicle;
+                var thumbnail = vehicle.VehicleImages?.OrderBy(img => img.Id).FirstOrDefault()?.ImageUrl;
+                var status = string.IsNullOrEmpty(vehicle.Status) ? "available" : vehicle.Status.ToLower();
+                var statusClass = status switch
+                {
+                    "available" => "ws-available",
+                    "sold" => "ws-sold",
+                    "pending" => "ws-pending",
+                    _ => "ws-available"
+                };
+                var statusText = status switch
+                {
+                    "available" => "Còn hàng",
+                    "sold" => "Đã bán",
+                    "pending" => "Chờ duyệt",
+                    _ => status
+                };
+
+                <div class="wishlist-card" id="wishlist-card-@item.Id">
+                    <!-- Image -->
+                    <div class="wishlist-card-image">
+                        @if (!string.IsNullOrEmpty(thumbnail))
+                        {
+                            <img src="@thumbnail" alt="@vehicle.Title" />
+                        }
+                        else
+                        {
+                            <i class="bi bi-bicycle wishlist-card-placeholder"></i>
+                        }
+
+                        <span class="wishlist-status-badge @statusClass">@statusText</span>
+
+                        <button type="button" class="wishlist-remove-btn" title="Bỏ lưu"
+                                onclick="removeWishlist(@vehicle.Id, @item.Id)">
+                            <i class="bi bi-heart-fill"></i>
+                        </button>
+                    </div>
+
+                    <!-- Body -->
+                    <div class="wishlist-card-body">
+                        <div class="wishlist-card-title">
+                            <a asp-controller="Vehicles" asp-action="DetailsBuyer" asp-route-id="@vehicle.Id">
+                                @vehicle.Title
+                            </a>
+                        </div>
+
+                        <div class="wishlist-card-price">@vehicle.Price.ToString("N0") ₫</div>
+
+                        <div class="wishlist-card-meta">
+                            <div class="wishlist-card-meta-item">
+                                <i class="bi bi-tag-fill"></i>
+                                <span>@vehicle.Brand?.Name · @vehicle.Category?.Name</span>
+                            </div>
+                            @if (!string.IsNullOrEmpty(vehicle.Location))
+                            {
+                                <div class="wishlist-card-meta-item">
+                                    <i class="bi bi-geo-alt-fill"></i>
+                                    <span>@vehicle.Location</span>
+                                </div>
+                            }
+                        </div>
+
+                        <div class="wishlist-card-date">
+                            <i class="bi bi-bookmark"></i>
+                            Đã lưu @(item.CreatedAt?.ToString("dd/MM/yyyy") ?? "N/A")
+                        </div>
+                    </div>
+
+                    <!-- Actions -->
+                    <div class="wishlist-card-actions">
+                        <a asp-controller="Vehicles" asp-action="DetailsBuyer" asp-route-id="@vehicle.Id"
+                           class="wishlist-action-btn wishlist-btn-view">
+                            <i class="bi bi-eye-fill"></i> Xem
+                        </a>
+                        <button type="button" class="wishlist-action-btn wishlist-btn-remove"
+                                onclick="removeWishlist(@vehicle.Id, @item.Id)">
+                            <i class="bi bi-heart-break-fill"></i> Bỏ lưu
+                        </button>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+</div>
+
+@section Scripts {
+    <script>
+        async function removeWishlist(vehicleId, wishlistId) {
+            
+
+            const token = document.querySelector('input[name="__RequestVerificationToken"]')?.value;
+
+            try {
+                const res = await fetch('/Wishlists/ToggleAjax', {
+                    method: 'POST',
+                    credentials: 'same-origin',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'RequestVerificationToken': token
+                    },
+                    body: JSON.stringify({ vehicleId: vehicleId })
+                });
+
+                const data = await res.json();
+
+                if (data.success && !data.isWishlisted) {
+                    const card = document.getElementById('wishlist-card-' + wishlistId);
+                    if (card) {
+                        card.style.transition = 'all 0.3s ease';
+                        card.style.opacity = '0';
+                        card.style.transform = 'scale(0.9)';
+                        setTimeout(() => {
+                            card.remove();
+                            updateCount();
+                        }, 300);
+                    }
+                } else {
+                    alert('Có lỗi xảy ra. Vui lòng thử lại.');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('Có lỗi xảy ra. Vui lòng thử lại.');
+            }
+        }
+
+        function updateCount() {
+            const remaining = document.querySelectorAll('.wishlist-card').length;
+            const countEl = document.querySelector('.wishlist-count');
+            if (countEl) countEl.textContent = `(${remaining} tin)`;
+
+            if (remaining === 0) {
+                document.querySelector('.wishlist-grid')?.remove();
+                const container = document.querySelector('.wishlist-container');
+                if (container) {
+                    const empty = document.createElement('div');
+                    empty.className = 'wishlist-empty';
+                    empty.innerHTML = `
+                        <div class="wishlist-empty-icon"><i class="bi bi-heart"></i></div>
+                        <h3>Chưa có tin đăng nào được lưu</h3>
+                        <p>Hãy lưu những tin đăng yêu thích để xem lại sau!</p>
+                        <a href="/"><i class="bi bi-search"></i> Khám phá ngay</a>
+                    `;
+                    container.appendChild(empty);
+                }
+            }
+        }
+    </script>
 }
-    </tbody>
-</table>

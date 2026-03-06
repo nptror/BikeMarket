@@ -51,10 +51,10 @@ namespace BikeMarket.Controllers
                 filteredVehicles = summary.Vehicles
                     .Where(v => !string.IsNullOrEmpty(v.Status) && v.Status.Equals("pending", StringComparison.OrdinalIgnoreCase));
             }
-            else if (activeTab == "denied")
+            else if (activeTab == "rejected")
             {
                 filteredVehicles = summary.Vehicles
-                    .Where(v => !string.IsNullOrEmpty(v.Status) && v.Status.Equals("denied", StringComparison.OrdinalIgnoreCase));
+                    .Where(v => !string.IsNullOrEmpty(v.Status) && v.Status.Equals("rejected", StringComparison.OrdinalIgnoreCase));
             }
             else
             {
@@ -281,7 +281,7 @@ namespace BikeMarket.Controllers
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
             await _vehicleService.DeleteAsync(id);
-            return RedirectToAction(nameof(Index));
+            return RedirectToAction(nameof(MyPost));
         }
 
         [HttpPost]

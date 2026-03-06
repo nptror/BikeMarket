@@ -15,4 +15,8 @@ public interface IOrderService
     Task<bool> PayAsync(int id);
     Task<List<User>> GetUsersAsync();
     Task<List<Vehicle>> GetVehiclesAsync();
+    Task<List<Order>> GetPaidOrdersByBuyerAsync(int buyerId);
+    Task<List<Order>> GetPaidOrdersBySellerAsync(int sellerId);
+    Task ConfirmHandoverAsync(int orderId);
+    Task ConfirmReceivedAsync(int orderId);
 }

@@ -68,6 +68,30 @@ public class OrderRepository : IOrderRepository
         await _context.SaveChangesAsync();
     }
 
+    public Task<List<Order>> GetPaidOrdersByBuyerAsync(int buyerId)
+    {
+        return _context.Orders
+            .Include(o => o.Buyer)
+            .Include(o => o.Seller)
+            .Include(o => o.Vehicle)
+                .ThenInclude(v => v.VehicleImages)
+            .Where(o => o.BuyerId == buyerId && o.PaymentStatus == "paid" && o.Status != "completed")
+            .OrderByDescending(o => o.CreatedAt)
+            .ToListAsync();
+    }
+
+    public Task<List<Order>> GetPaidOrdersBySellerAsync(int sellerId)
+    {
+        return _context.Orders
+            .Include(o => o.Buyer)
+            .Include(o => o.Seller)
+            .Include(o => o.Vehicle)
+                .ThenInclude(v => v.VehicleImages)
+            .Where(o => o.SellerId == sellerId && o.PaymentStatus == "paid" && o.Status != "completed")
+            .OrderByDescending(o => o.CreatedAt)
+            .ToListAsync();
+    }
+
     public Task<bool> ExistsAsync(int id)
     {
         return _context.Orders.AnyAsync(e => e.Id == id);

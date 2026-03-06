@@ -91,6 +91,81 @@ namespace BikeMarket.Controllers
             return View(viewModel);
         }
 
+        // GET: Orders/MyOrders
+        public async Task<IActionResult> MyOrders(string? tab)
+        {
+            var userIdStr = HttpContext.Session.GetString("UserId");
+            if (string.IsNullOrEmpty(userIdStr))
+            {
+                return RedirectToAction("Login", "Users");
+            }
+
+            var userId = int.Parse(userIdStr);
+            var activeTab = string.IsNullOrWhiteSpace(tab) ? "bought" : tab.Trim().ToLowerInvariant();
+
+            var boughtOrders = await _orderService.GetPaidOrdersByBuyerAsync(userId);
+            var handoverOrders = await _orderService.GetPaidOrdersBySellerAsync(userId);
+
+            var viewModel = new MyOrdersViewModel
+            {
+                ActiveTab = activeTab,
+                BoughtOrders = boughtOrders,
+                HandoverOrders = handoverOrders,
+                BoughtCount = boughtOrders.Count,
+                HandoverCount = handoverOrders.Count
+            };
+
+            return View(viewModel);
+        }
+
+        // POST: Orders/ConfirmHandover
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> ConfirmHandover(int orderId)
+        {
+            var userIdStr = HttpContext.Session.GetString("UserId");
+            if (string.IsNullOrEmpty(userIdStr))
+            {
+                return RedirectToAction("Login", "Users");
+            }
+
+            var userId = int.Parse(userIdStr);
+            var order = await _orderService.GetByIdAsync(orderId);
+
+            if (order == null || order.SellerId != userId)
+            {
+                return Forbid();
+            }
+
+            await _orderService.ConfirmHandoverAsync(orderId);
+            TempData["SuccessMessage"] = "Đã xác nhận bàn giao xe thành công!";
+            return RedirectToAction(nameof(MyOrders), new { tab = "handover" });
+        }
+
+        // POST: Orders/ConfirmReceived
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> ConfirmReceived(int orderId)
+        {
+            var userIdStr = HttpContext.Session.GetString("UserId");
+            if (string.IsNullOrEmpty(userIdStr))
+            {
+                return RedirectToAction("Login", "Users");
+            }
+
+            var userId = int.Parse(userIdStr);
+            var order = await _orderService.GetByIdAsync(orderId);
+
+            if (order == null || order.BuyerId != userId)
+            {
+                return Forbid();
+            }
+
+            await _orderService.ConfirmReceivedAsync(orderId);
+            TempData["SuccessMessage"] = "Đã xác nhận nhận xe thành công!";
+            return RedirectToAction(nameof(MyOrders), new { tab = "bought" });
+        }
+
         // GET: Orders
         public async Task<IActionResult> Index()
         {

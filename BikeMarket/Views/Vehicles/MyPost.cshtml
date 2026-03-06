@@ -620,8 +620,8 @@
                         Tin nháp
                         <span class="tab-count">@Model.DraftCount</span>
                     </a>
-                    <a href="@Url.Action("MyPost", new { tab = "denied" })" 
-                       class="tab-item @(Model.ActiveTab == "denied" ? "active" : "")">
+                    <a href="@Url.Action("MyPost", new { tab = "rejected" })"
+                       class="tab-item @(Model.ActiveTab == "rejected" ? "active" : "")">
                         Bị từ chối
                         <span class="tab-count">@Model.DeniedCount</span>
                     </a>
@@ -651,7 +651,7 @@
                     {
                         <text>Không có tin đang chờ duyệt</text>
                     }
-                    else if (Model.ActiveTab == "denied")
+                    else if (Model.ActiveTab == "rejected")
                     {
                         <text>Không có tin bị từ chối</text>
                     }
@@ -690,7 +690,7 @@
                                     "available" => "status-available",
                                     "pending" => "status-pending",
                                     "draft" => "status-draft",
-                                    "denied" => "status-denied",
+                                    "rejected" => "status-rejected",
                                     "sold" => "status-sold",
                                     _ => "status-available"
                                 };
@@ -699,7 +699,7 @@
                                     "available" => "Đang hiển thị",
                                     "pending" => "Chờ duyệt",
                                     "draft" => "Tin nháp",
-                                    "denied" => "Bị từ chối",
+                                    "rejected" => "Bị từ chối",
                                     "sold" => "Đã bán",
                                     _ => status
                                 };

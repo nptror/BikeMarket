@@ -18,6 +18,26 @@ public class WishlistRepository : IWishlistRepository
         return _context.Wishlists
             .Include(w => w.Buyer)
             .Include(w => w.Vehicle)
+                .ThenInclude(v => v.Brand)
+            .Include(w => w.Vehicle)
+                .ThenInclude(v => v.Category)
+            .Include(w => w.Vehicle)
+                .ThenInclude(v => v.VehicleImages)
+            .ToListAsync();
+    }
+
+    public Task<List<Wishlist>> GetByBuyerIdWithIncludesAsync(int buyerId)
+    {
+        return _context.Wishlists
+            .Include(w => w.Buyer)
+            .Include(w => w.Vehicle)
+                .ThenInclude(v => v.Brand)
+            .Include(w => w.Vehicle)
+                .ThenInclude(v => v.Category)
+            .Include(w => w.Vehicle)
+                .ThenInclude(v => v.VehicleImages)
+            .Where(w => w.BuyerId == buyerId)
+            .OrderByDescending(w => w.CreatedAt)
             .ToListAsync();
     }
 
@@ -26,6 +46,11 @@ public class WishlistRepository : IWishlistRepository
         return _context.Wishlists
             .Include(w => w.Buyer)
             .Include(w => w.Vehicle)
+                .ThenInclude(v => v.Brand)
+            .Include(w => w.Vehicle)
+                .ThenInclude(v => v.Category)
+            .Include(w => w.Vehicle)
+                .ThenInclude(v => v.VehicleImages)
             .FirstOrDefaultAsync(w => w.Id == id);
     }
 

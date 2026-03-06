@@ -5,6 +5,7 @@ namespace DataAccess.Interface;
 public interface IWishlistRepository
 {
     Task<List<Wishlist>> GetAllWithIncludesAsync();
+    Task<List<Wishlist>> GetByBuyerIdWithIncludesAsync(int buyerId);
     Task<Wishlist?> GetByIdWithIncludesAsync(int id);
     Task<Wishlist?> GetByIdAsync(int id);
     Task<Wishlist?> GetByBuyerVehicleAsync(int buyerId, int vehicleId);

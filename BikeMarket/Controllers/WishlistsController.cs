@@ -23,7 +23,15 @@ namespace BikeMarket.Controllers
         // GET: Wishlists
         public async Task<IActionResult> Index()
         {
-            return View(await _wishlistService.GetAllAsync());
+            var userIdStr = HttpContext.Session.GetString("UserId");
+            if (string.IsNullOrEmpty(userIdStr))
+            {
+                return RedirectToAction("Login", "Users");
+            }
+
+            var userId = int.Parse(userIdStr);
+            var wishlists = await _wishlistService.GetByBuyerIdAsync(userId);
+            return View(wishlists);
         }
 
         [HttpPost]
