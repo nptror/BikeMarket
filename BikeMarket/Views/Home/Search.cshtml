@@ -1,0 +1,231 @@
+@using DTO.Vehicle
+@using DataAccess.Models
+@using BikeMarket.Models
+@using System.Linq
+
+@model HomeIndexViewModel
+
+@{
+    ViewData["Title"] = "Search Bicycles";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+
+    var keyword = Model.Keyword ?? string.Empty;
+    var selectedCategory = Model.CategoryId?.ToString() ?? string.Empty;
+    var selectedBrandId = Model.BrandId;
+    var categoryOptions = Model.Categories.Select(c => (c.Id.ToString(), c.Name)).ToList();
+
+    var selectedCategoryName = "";
+    if (Model.CategoryId.HasValue)
+    {
+        selectedCategoryName = Model.Categories.FirstOrDefault(c => c.Id == Model.CategoryId.Value)?.Name ?? "";
+    }
+
+    var selectedBrandName = "";
+    if (Model.BrandId.HasValue)
+    {
+        selectedBrandName = Model.Brands.FirstOrDefault(b => b.Id == Model.BrandId.Value)?.Name ?? "";
+    }
+}
+
+<div class="search-page">
+    <!-- SEARCH HEADER -->
+    <div class="search-header">
+        <div class="search-header-inner">
+            <form class="search-form" method="get" asp-controller="Home" asp-action="Search">
+                <div class="search-form-row">
+                    <select class="form-select search-category-select" name="categoryId">
+                        <option value="">All Categories</option>
+                        @foreach (var option in categoryOptions)
+                        {
+                            <option value="@option.Item1" selected="@(option.Item1 == selectedCategory)">@option.Item2</option>
+                        }
+                    </select>
+                    <div class="search-input-wrap">
+                        <i class="bi bi-search"></i>
+                        <input class="form-control" type="text" name="keyword" value="@keyword" placeholder="Search title, brand..." />
+                    </div>
+                    @if (selectedBrandId.HasValue)
+                    {
+                        <input type="hidden" name="brandId" value="@selectedBrandId" />
+                    }
+                    <button class="btn search-submit-btn" type="submit">Search</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="search-body">
+        <!-- SIDEBAR FILTERS -->
+        <aside class="search-sidebar">
+            <div class="filter-section">
+                <h4 class="filter-title"><i class="bi bi-grid"></i> Categories</h4>
+                <ul class="filter-list">
+                    <li>
+                        <a class="filter-link @(string.IsNullOrEmpty(selectedCategory) ? "active" : "")"
+                           asp-controller="Home" asp-action="Search"
+                           asp-route-keyword="@keyword"
+                           asp-route-brandId="@selectedBrandId">
+                            All
+                        </a>
+                    </li>
+                    @foreach (var cat in Model.Categories)
+                    {
+                        <li>
+                            <a class="filter-link @(Model.CategoryId == cat.Id ? "active" : "")"
+                               asp-controller="Home" asp-action="Search"
+                               asp-route-categoryId="@cat.Id"
+                               asp-route-keyword="@keyword"
+                               asp-route-brandId="@selectedBrandId">
+                                @cat.Name
+                            </a>
+                        </li>
+                    }
+                </ul>
+            </div>
+
+            <div class="filter-section">
+                <h4 class="filter-title"><i class="bi bi-award"></i> Brands</h4>
+                <ul class="filter-list">
+                    <li>
+                        <a class="filter-link @(!selectedBrandId.HasValue ? "active" : "")"
+                           asp-controller="Home" asp-action="Search"
+                           asp-route-keyword="@keyword"
+                           asp-route-categoryId="@Model.CategoryId">
+                            All
+                        </a>
+                    </li>
+                    @foreach (var brand in Model.Brands)
+                    {
+                        <li>
+                            <a class="filter-link @(selectedBrandId == brand.Id ? "active" : "")"
+                               asp-controller="Home" asp-action="Search"
+                               asp-route-brandId="@brand.Id"
+                               asp-route-keyword="@keyword"
+                               asp-route-categoryId="@Model.CategoryId">
+                                @brand.Name
+                            </a>
+                        </li>
+                    }
+                </ul>
+            </div>
+        </aside>
+
+        <!-- RESULTS -->
+        <div class="search-results">
+            <!-- Active filters & count -->
+            <div class="search-results-header">
+                <div class="search-results-info">
+                    <span class="search-results-count">@Model.Vehicles.Count() results</span>
+                    @if (!string.IsNullOrEmpty(keyword))
+                    {
+                        <span class="search-results-for">for "<strong>@keyword</strong>"</span>
+                    }
+                </div>
+                <div class="search-active-filters">
+                    @if (!string.IsNullOrEmpty(selectedCategoryName))
+                    {
+                        <a class="search-filter-tag"
+                           asp-controller="Home" asp-action="Search"
+                           asp-route-keyword="@keyword"
+                           asp-route-brandId="@selectedBrandId">
+                            @selectedCategoryName <i class="bi bi-x"></i>
+                        </a>
+                    }
+                    @if (!string.IsNullOrEmpty(selectedBrandName))
+                    {
+                        <a class="search-filter-tag"
+                           asp-controller="Home" asp-action="Search"
+                           asp-route-keyword="@keyword"
+                           asp-route-categoryId="@Model.CategoryId">
+                            @selectedBrandName <i class="bi bi-x"></i>
+                        </a>
+                    }
+                    @if (!string.IsNullOrEmpty(keyword) || Model.CategoryId.HasValue || Model.BrandId.HasValue)
+                    {
+                        <a class="search-clear-all" asp-controller="Home" asp-action="Search">
+                            Clear All <i class="bi bi-x-circle"></i>
+                        </a>
+                    }
+                </div>
+            </div>
+
+            @if (!Model.Vehicles.Any())
+            {
+                <div class="search-empty">
+                    <i class="bi bi-search"></i>
+                    <h3>No results found</h3>
+                    <p>Try changing keywords or removing some filters</p>
+                    <a class="btn search-submit-btn" asp-controller="Home" asp-action="Search">View All Bikes</a>
+                </div>
+            }
+            else
+            {
+                <div class="search-list">
+                    @foreach (var item in Model.Vehicles)
+                    {
+                        var conditionLabel = item.Condition?.ToLowerInvariant() switch
+                        {
+                            "new" => "New",
+                            "like new" => "Like New",
+                            "used" => "Used",
+                            _ => item.Condition ?? ""
+                        };
+                        var conditionClass = item.Condition?.ToLowerInvariant() switch
+                        {
+                            "new" => "badge-new",
+                            "like new" => "badge-like-new",
+                            _ => "badge-used"
+                        };
+
+                        <a class="search-item" asp-controller="Vehicles" asp-action="DetailsBuyer" asp-route-id="@item.VehicleId">
+                            <div class="search-item-image">
+                                @if (!string.IsNullOrEmpty(item.ThumbnailUrl))
+                                {
+                                    <img src="@item.ThumbnailUrl" alt="@item.Title" />
+                                }
+                                else
+                                {
+                                    <div class="no-image"><i class="bi bi-image" style="font-size:32px;"></i></div>
+                                }
+                                @if (!string.IsNullOrEmpty(item.Condition))
+                                {
+                                    <span class="vehicle-badge @conditionClass">@conditionLabel</span>
+                                }
+                            </div>
+                            <div class="search-item-info">
+                                <h3 class="search-item-title">@item.Title</h3>
+                                <div class="search-item-price">@item.Price.ToString("N0") ₫</div>
+                                <div class="search-item-meta">
+                                    @if (!string.IsNullOrEmpty(item.BrandName))
+                                    {
+                                        <span class="vehicle-meta-tag"><i class="bi bi-tag"></i> @item.BrandName</span>
+                                    }
+                                    @if (!string.IsNullOrEmpty(item.CategoryName))
+                                    {
+                                        <span class="vehicle-meta-tag"><i class="bi bi-bicycle"></i> @item.CategoryName</span>
+                                    }
+                                    @if (!string.IsNullOrEmpty(item.FrameSize))
+                                    {
+                                        <span class="vehicle-meta-tag"><i class="bi bi-rulers"></i> @item.FrameSize</span>
+                                    }
+                                    @if (!string.IsNullOrEmpty(item.Color))
+                                    {
+                                        <span class="vehicle-meta-tag"><i class="bi bi-palette"></i> @item.Color</span>
+                                    }
+                                </div>
+                                <div class="search-item-bottom">
+                                    <span class="search-item-location">
+                                        <i class="bi bi-geo-alt"></i> @(item.Location ?? "—")
+                                    </span>
+                                    <span class="search-item-date">
+                                        @(item.CreatedAt?.ToString("dd/MM/yyyy") ?? "")
+                                    </span>
+                                </div>
+                            </div>
+                        </a>
+                    }
+                </div>
+            }
+        </div>
+    </div>
+</div>

@@ -1,4 +1,4 @@
-﻿using DTO.User;
+using DTO.User;
 using Business.Interface;
 using Business.Models;
 using BikeMarket.Models;
@@ -114,11 +114,11 @@ namespace BikeMarket.Controllers
                 var result = await _userService.RegisterAsync(registerDto);
                 if (!result.Success)
                 {
-                    ModelState.AddModelError("Email", result.ErrorMessage ?? "Đăng ký thất bại");
+                    ModelState.AddModelError("Email", result.ErrorMessage ?? "Registration failed");
                     return View(registerDto);
                 }
 
-                TempData["SuccessMessage"] = "Đăng ký thành công! Vui lòng đăng nhập.";
+                TempData["SuccessMessage"] = "Registration successful! Please login.";
                 return RedirectToAction(nameof(Login));
             }
             return View(registerDto);
@@ -143,7 +143,7 @@ namespace BikeMarket.Controllers
             var result = await _userService.AuthenticateAsync(loginDto);
             if (!result.Success || result.User == null)
             {
-                ModelState.AddModelError(string.Empty, result.ErrorMessage ?? "Email hoặc mật khẩu không đúng");
+                ModelState.AddModelError(string.Empty, result.ErrorMessage ?? "Invalid email or password");
                 return View(loginDto);
             }
 

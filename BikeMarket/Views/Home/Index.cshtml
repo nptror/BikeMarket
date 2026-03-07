@@ -1,4 +1,4 @@
-﻿@using DTO.Vehicle
+@using DTO.Vehicle
 @using DataAccess.Models
 @using BikeMarket.Models
 @using System.Linq
@@ -6,69 +6,252 @@
 @model HomeIndexViewModel
 
 @{
-    ViewData["Title"] = "Home";
+    ViewData["Title"] = "Home Page";
+    Layout = "~/Views/Shared/_Layout.cshtml";
 
-    var keyword = Model.Keyword ?? string.Empty;
-    var selectedCategory = Model.CategoryId?.ToString() ?? string.Empty;
-    var selectedBrandId = Model.BrandId;
-
-    var categoryOptions = Model.Categories
-        .Select(c => (c.Id.ToString(), c.Name))
-        .ToList();
+    var categoryOptions = Model.Categories.Select(c => (c.Id.ToString(), c.Name)).ToList();
+    var isLoggedIn = !string.IsNullOrEmpty(Context.Session.GetString("UserId"));
+    var userIdStr = Context.Session.GetString("UserId") ?? "";
+    var latestVehicles = Model.Vehicles.Take(8).ToList();
 }
 
-<div class="home-hero">
-    <div class="home-search-wrapper">
-        <form class="home-search-bar" method="get" asp-controller="Home" asp-action="Index">
-            <div class="home-search-group">
-                <select class="form-select home-search-category" name="categoryId">
-                    <option value="">Danh mục</option>
-                    @foreach (var option in categoryOptions)
-                    {
-                        <option value="@option.Item1" selected="@(option.Item1 == selectedCategory)">@option.Item2</option>
-                    }
-                </select>
-                <div class="home-search-input">
-                    <i class="bi bi-search"></i>
-                    <input class="form-control" type="text" name="keyword" value="@keyword" placeholder="Tìm tên xe..." />
-                </div>
-                @if (selectedBrandId.HasValue)
-                {
-                    <input type="hidden" name="brandId" value="@selectedBrandId" />
-                }
-                <button class="btn home-search-button" type="submit">Tìm kiếm</button>
-            </div>
-        </form>
+<!-- HERO BANNER -->
+<div class="hero-banner">
+    <div class="hero-content">
+        <span class="hero-badge">🚲 Vietnam's #1 Platform</span>
+        <h1 class="hero-title">Buy & Sell Bicycles<br/>Trusted & Fast</h1>
+        <p class="hero-subtitle">Thousands of quality bikes waiting for you. Post for free, trade safely.</p>
+        <div class="hero-actions">
+            @if (isLoggedIn)
+            {
+                <a class="hero-btn-primary" asp-controller="Vehicles" asp-action="Create">
+                    <i class="bi bi-plus-circle"></i> Post Now
+                </a>
+            }
+            else
+            {
+                <a class="hero-btn-primary" asp-controller="Users" asp-action="Register">
+                    <i class="bi bi-person-plus"></i> Join Now
+                </a>
+            }
+            <a class="hero-btn-secondary" asp-controller="Home" asp-action="Search">
+                <i class="bi bi-search"></i> Explore Bikes
+            </a>
+        </div>
+    </div>
+</div>
 
-        @if (Model.Brands.Any())
-        {
-            <div class="home-brand-scroll">
-                <button type="button" class="home-brand-nav" data-direction="left" aria-label="Cuộn trái">
-                    <i class="bi bi-chevron-left"></i>
-                </button>
-                <div class="home-brand-cards" id="brandScroller">
-                    @foreach (var brand in Model.Brands)
-                    {
-                        var isActive = selectedBrandId.HasValue && brand.Id == selectedBrandId.Value;
-                        <a class="home-brand-card @(isActive ? "active" : string.Empty)"
-                           asp-controller="Home"
-                           asp-action="Index"
-                           asp-route-brandId="@brand.Id"
-                           asp-route-categoryId="@Model.CategoryId"
-                           asp-route-keyword="@Model.Keyword">
-                            <div class="home-brand-image">
-                                <img src="@brand.ImageUrl" alt="@brand.Name" />
-                            </div>
-                            <div class="home-brand-name">@brand.Name</div>
-                        </a>
-                    }
-                </div>
-                <button type="button" class="home-brand-nav" data-direction="right" aria-label="Cuộn phải">
-                    <i class="bi bi-chevron-right"></i>
-                </button>
+<!-- SEARCH BAR -->
+<div class="search-section">
+    <form class="home-search-bar" method="get" asp-controller="Home" asp-action="Search">
+        <div class="home-search-group">
+            <select class="form-select home-search-category" name="categoryId">
+                <option value="">Categories</option>
+                @foreach (var option in categoryOptions)
+                {
+                    <option value="@option.Item1">@option.Item2</option>
+                }
+            </select>
+            <div class="home-search-input">
+                <i class="bi bi-search"></i>
+                <input class="form-control" type="text" name="keyword" placeholder="Search bikes, brands..." />
             </div>
+            <button class="btn home-search-button" type="submit">Search</button>
+        </div>
+    </form>
+</div>
+
+<!-- QUICK NAV -->
+<div class="quick-nav">
+    <div class="quick-nav-grid">
+        <a class="quick-nav-item" asp-controller="Home" asp-action="Search">
+            <div class="quick-nav-icon icon-category"><i class="bi bi-grid"></i></div>
+            <span class="quick-nav-label">Categories</span>
+        </a>
+        @if (isLoggedIn)
+        {
+            <a class="quick-nav-item" asp-controller="Wishlists" asp-action="Index">
+                <div class="quick-nav-icon icon-wishlist"><i class="bi bi-heart"></i></div>
+                <span class="quick-nav-label">Wishlist</span>
+            </a>
+            <a class="quick-nav-item" asp-controller="Orders" asp-action="MyOrders">
+                <div class="quick-nav-icon icon-orders"><i class="bi bi-bag-check"></i></div>
+                <span class="quick-nav-label">Orders</span>
+            </a>
+            <a class="quick-nav-item" asp-controller="Chat" asp-action="Index">
+                <div class="quick-nav-icon icon-chat"><i class="bi bi-chat-dots"></i></div>
+                <span class="quick-nav-label">Messages</span>
+            </a>
+            <a class="quick-nav-item" asp-controller="Vehicles" asp-action="Create">
+                <div class="quick-nav-icon icon-post"><i class="bi bi-plus-lg"></i></div>
+                <span class="quick-nav-label">Sell Bike</span>
+            </a>
+            <a class="quick-nav-item" asp-controller="Users" asp-action="Owner" asp-route-id="@userIdStr">
+                <div class="quick-nav-icon icon-store"><i class="bi bi-shop"></i></div>
+                <span class="quick-nav-label">Store</span>
+            </a>
+        }
+        else
+        {
+            <a class="quick-nav-item" asp-controller="Users" asp-action="Login">
+                <div class="quick-nav-icon icon-wishlist"><i class="bi bi-heart"></i></div>
+                <span class="quick-nav-label">Wishlist</span>
+            </a>
+            <a class="quick-nav-item" asp-controller="Users" asp-action="Login">
+                <div class="quick-nav-icon icon-orders"><i class="bi bi-bag-check"></i></div>
+                <span class="quick-nav-label">Orders</span>
+            </a>
+            <a class="quick-nav-item" asp-controller="Users" asp-action="Login">
+                <div class="quick-nav-icon icon-chat"><i class="bi bi-chat-dots"></i></div>
+                <span class="quick-nav-label">Messages</span>
+            </a>
+            <a class="quick-nav-item" asp-controller="Users" asp-action="Register">
+                <div class="quick-nav-icon icon-post"><i class="bi bi-plus-lg"></i></div>
+                <span class="quick-nav-label">Sell Bike</span>
+            </a>
+            <a class="quick-nav-item" asp-controller="Users" asp-action="Login">
+                <div class="quick-nav-icon icon-store"><i class="bi bi-shop"></i></div>
+                <span class="quick-nav-label">Store</span>
+            </a>
         }
     </div>
+</div>
+
+<!-- BRANDS SECTION -->
+@if (Model.Brands.Any())
+{
+    <div class="brand-section">
+        <div class="section-header">
+            <h2 class="section-title"><i class="bi bi-award"></i> Brands</h2>
+        </div>
+        <div class="home-brand-scroll">
+            <button type="button" class="home-brand-nav" data-direction="left" aria-label="Scroll Left">
+                <i class="bi bi-chevron-left"></i>
+            </button>
+            <div class="home-brand-cards" id="brandScroller">
+                @foreach (var brand in Model.Brands)
+                {
+                    <a class="home-brand-card"
+                       asp-controller="Home"
+                       asp-action="Search"
+                       asp-route-brandId="@brand.Id">
+                        <div class="home-brand-image">
+                            <img src="@brand.ImageUrl" alt="@brand.Name" />
+                        </div>
+                        <div class="home-brand-name">@brand.Name</div>
+                    </a>
+                }
+            </div>
+            <button type="button" class="home-brand-nav" data-direction="right" aria-label="Scroll Right">
+                <i class="bi bi-chevron-right"></i>
+            </button>
+        </div>
+    </div>
+}
+
+<!-- CATEGORIES SECTION -->
+@if (Model.Categories.Any())
+{
+    <div class="section-container" id="category-section">
+        <div class="section-header">
+            <h2 class="section-title"><i class="bi bi-grid"></i> Categories</h2>
+            <a class="section-see-all" asp-controller="Home" asp-action="Search">
+                See All <i class="bi bi-chevron-right"></i>
+            </a>
+        </div>
+        <div class="category-grid">
+            @foreach (var cat in Model.Categories)
+            {
+                <a class="category-card"
+                   asp-controller="Home"
+                   asp-action="Search"
+                   asp-route-categoryId="@cat.Id">
+                    <div class="category-card-icon">🚲</div>
+                    <div class="category-card-name">@cat.Name</div>
+                </a>
+            }
+        </div>
+    </div>
+}
+
+<!-- VEHICLES SECTION -->
+<div class="section-container" id="vehicles-section">
+    <div class="section-header">
+        <h2 class="section-title"><i class="bi bi-fire"></i> Fresh Listings</h2>
+        <a class="section-see-all" asp-controller="Home" asp-action="Search">
+            See All Listings <i class="bi bi-chevron-right"></i>
+        </a>
+    </div>
+
+    @if (!latestVehicles.Any())
+    {
+        <div style="text-align:center; padding: 60px 20px; color:#999;">
+            <i class="bi bi-inbox" style="font-size:48px; display:block; margin-bottom:12px;"></i>
+            <p style="font-size:16px;">No listings yet.</p>
+        </div>
+    }
+    else
+    {
+        <div class="vehicle-grid">
+            @foreach (var item in latestVehicles)
+            {
+                var conditionClass = item.Condition?.ToLowerInvariant() switch
+                {
+                    "new" => "badge-new",
+                    "like new" => "badge-like-new",
+                    _ => "badge-used"
+                };
+                var conditionLabel = item.Condition?.ToLowerInvariant() switch
+                {
+                    "new" => "New",
+                    "like new" => "Like New",
+                    "used" => "Used",
+                    _ => item.Condition ?? ""
+                };
+
+                <div class="vehicle-card">
+                    <a asp-controller="Vehicles" asp-action="DetailsBuyer" asp-route-id="@item.VehicleId" style="text-decoration:none;color:inherit;">
+                        <div class="vehicle-card-image">
+                            @if (!string.IsNullOrEmpty(item.ThumbnailUrl))
+                            {
+                                <img src="@item.ThumbnailUrl" alt="@item.Title" />
+                            }
+                            else
+                            {
+                                <div class="no-image"><i class="bi bi-image" style="font-size:32px;"></i></div>
+                            }
+                            @if (!string.IsNullOrEmpty(item.Condition))
+                            {
+                                <span class="vehicle-badge @conditionClass">@conditionLabel</span>
+                            }
+                        </div>
+                        <div class="vehicle-card-body">
+                            <div class="vehicle-card-title">@item.Title</div>
+                            <div class="vehicle-card-price">@item.Price.ToString("N0") ₫</div>
+                            <div class="vehicle-card-meta">
+                                @if (!string.IsNullOrEmpty(item.BrandName))
+                                {
+                                    <span class="vehicle-meta-tag"><i class="bi bi-tag"></i> @item.BrandName</span>
+                                }
+                                @if (!string.IsNullOrEmpty(item.CategoryName))
+                                {
+                                    <span class="vehicle-meta-tag"><i class="bi bi-bicycle"></i> @item.CategoryName</span>
+                                }
+                            </div>
+                        </div>
+                    </a>
+                    <div class="vehicle-card-footer">
+                        <span class="vehicle-card-location">
+                            <i class="bi bi-geo-alt"></i> @(item.Location ?? "—")
+                        </span>
+                        <span class="vehicle-card-date">
+                            @(item.CreatedAt?.ToString("dd/MM/yyyy") ?? "")
+                        </span>
+                    </div>
+                </div>
+            }
+        </div>
+    }
 </div>
 
 @section Scripts {
@@ -84,59 +267,3 @@
         });
     </script>
 }
-
-<h2 class="mt-4">Bike Marketplace</h2>
-
-<div class="row">
-    @foreach (var item in Model.Vehicles)
-    {
-        <div class="col-md-3 mb-4">
-            <div class="card h-100 shadow-sm">
-
-                @if (!string.IsNullOrEmpty(item.ThumbnailUrl))
-                {
-                    <img src="@item.ThumbnailUrl" class="card-img-top" style="height:180px; object-fit:cover;" />
-                }
-                else
-                {
-                    <div style="height:180px; background:#eee; display:flex; align-items:center; justify-content:center;">
-                        <span>No Image</span>
-                    </div>
-                }
-
-                <div class="card-body">
-                    <h5 class="card-title">@item.Title</h5>
-
-                    <p class="card-text mb-1">
-                        <b>Brand:</b> @item.BrandName
-                    </p>
-
-                    <p class="card-text mb-1">
-                        <b>Category:</b> @item.CategoryName
-                    </p>
-
-                    <p class="card-text mb-1">
-                        <b>Price:</b> @item.Price.ToString("N0") ₫
-                    </p>
-
-                    <p class="card-text mb-1">
-                        <b>Location:</b> @item.Location
-                    </p>
-
-                    <p class="card-text text-muted" style="font-size: 13px;">
-                        Posted: @(item.CreatedAt?.ToString("dd/MM/yyyy") ?? "N/A")
-                    </p>
-                </div>
-
-                <div class="card-footer bg-white">
-                    <a class="btn btn-primary w-100"
-                       asp-controller="Vehicles"
-                       asp-action="DetailsBuyer"
-                       asp-route-id="@item.VehicleId">
-                        View Details
-                    </a>
-                </div>
-            </div>
-        </div>
-    }
-</div>

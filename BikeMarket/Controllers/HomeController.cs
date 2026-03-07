@@ -19,7 +19,23 @@ namespace BikeMarket.Controllers
             _vehicleService = vehicleService;
         }
 
-        public async Task<IActionResult> Index(string? keyword, int? categoryId, int? brandId)
+        public async Task<IActionResult> Index()
+        {
+            var categories = await _vehicleService.GetCategoriesAsync();
+            var brands = await _vehicleService.GetBrandsAsync();
+            var vehicles = await _vehicleService.GetAvailableListAsync();
+
+            var viewModel = new HomeIndexViewModel
+            {
+                Categories = categories,
+                Brands = brands,
+                Vehicles = vehicles
+            };
+
+            return View(viewModel);
+        }
+
+        public async Task<IActionResult> Search(string? keyword, int? categoryId, int? brandId)
         {
             var categories = await _vehicleService.GetCategoriesAsync();
             var brands = await _vehicleService.GetBrandsAsync();
@@ -62,6 +78,7 @@ namespace BikeMarket.Controllers
 
             return View(viewModel);
         }
+
         public IActionResult Privacy()
         {
             return View();
